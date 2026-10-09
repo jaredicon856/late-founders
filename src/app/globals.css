@@ -41,7 +41,8 @@ button, input, textarea, select { font: inherit; color: inherit; }
 /* ---------- header ---------- */
 .topbar { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 22px 0; border-bottom: 1px solid var(--line); flex-wrap: wrap; }
 .brand { display: flex; align-items: center; gap: 14px; }
-.brand img { height: 30px; width: auto; }
+.brand img { height: 46px; width: auto; }
+@media (max-width: 640px) { .brand img { height: 38px; } .brand .cc { display: none; } }
 .brand .cc { font-weight: 700; font-size: 12px; letter-spacing: .2em; color: var(--muted); text-transform: uppercase; }
 .nav { display: flex; gap: 8px; flex-wrap: wrap; }
 .pill {

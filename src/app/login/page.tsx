@@ -8,7 +8,7 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
   return (
     <main className="auth">
       <div className="card">
-        <img src="/brand/lf_horizontal_bright_transparent.png" alt="Late Founders" style={{ height: 44, margin: "0 0 6px -8px" }} />
+        <img src="/brand/lf_horizontal_bright_transparent.png" alt="Late Founders" style={{ height: 64, margin: "0 0 6px -12px" }} />
         <div className="eyebrow" style={{ marginBottom: 20 }}>Command Center</div>
         <LoginForm needsCode={!!process.env.SIGNUP_CODE} next={next} />
       </div>
