@@ -23,6 +23,7 @@ model User {
   createdAt    DateTime @default(now())
 
   sessions      Session[]
+  resets        PasswordReset[]
   profileFields ProfileField[]
   assetStates   AssetState[]
   versions      AssetVersion[]
@@ -38,6 +39,20 @@ model Session {
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
+}
+
+// One-time password reset links. Only a hash of the token is stored, so a
+// database leak can't be turned into working reset links.
+model PasswordReset {
+  id        String    @id @default(cuid())
+  userId    String
+  tokenHash String    @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
 }
 
 // The member record. key is a field name from src/content/profile.ts.
