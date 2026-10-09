@@ -50,6 +50,7 @@ export interface TableDef {
   addable?: boolean;
   rowLabels?: string[]; // fixed first-cell labels, e.g. value-driver names
   highlightFrom?: number; // rows from this index get highlighted (e.g. top five)
+  twoUp?: boolean; // print as two side-by-side halves to save paper height
 }
 
 export type Computed = string | number | { headers: string[]; rows: string[][] } | null;

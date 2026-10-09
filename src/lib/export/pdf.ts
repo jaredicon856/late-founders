@@ -237,7 +237,7 @@ class Writer {
   titleBlock() {
     this.spaced(this.rd.eyebrow, MARGIN, this.y - 8, 7.5, C.grey);
     this.y -= 22;
-    const size = this.rd.title.length > 34 ? 20 : 24;
+    const size = this.dense ? 20 : this.rd.title.length > 34 ? 20 : 24;
     for (const ln of wrap(this.rd.title, this.f.black, size, CONTENT_W)) {
       this.page.drawText(ln, { x: MARGIN, y: this.y - size, size, font: this.f.black, color: C.ink });
       this.y -= size * 1.15;
@@ -288,12 +288,13 @@ class Writer {
 
   heading(text: string) {
     this.ensure(40);
-    this.y -= this.dense ? 6 : 10;
-    for (const ln of wrap(text, this.f.bold, 12, CONTENT_W)) {
-      this.page.drawText(ln, { x: MARGIN, y: this.y - 12, size: 12, font: this.f.bold, color: C.ink });
-      this.y -= 15;
+    const size = this.dense ? 10.5 : 12;
+    this.y -= this.dense ? 4 : 10;
+    for (const ln of wrap(text, this.f.bold, size, CONTENT_W)) {
+      this.page.drawText(ln, { x: MARGIN, y: this.y - size, size, font: this.f.bold, color: C.ink });
+      this.y -= size + 2.5;
     }
-    this.y -= this.dense ? 2 : 4;
+    this.y -= this.dense ? 1 : 4;
   }
 
   subheading(text: string) {
@@ -357,13 +358,13 @@ class Writer {
     const widths = rel.map((w) => (w / sum) * CONTENT_W);
     const size = this.dense ? 7 : 8;
     const pad = 3;
-    const minRow = this.dense ? 13 : 17;
+    const minRow = this.dense ? 12 : 17;
     const staticCols = new Set(t.staticCols ?? []);
     const boxCols = new Set(t.checkboxCols ?? []);
 
     const drawHeader = () => {
       const hl = t.headers.map((h, i) => wrap(h.toUpperCase(), this.f.semibold, 6.5, widths[i] - pad * 2));
-      const hh = Math.max(14, Math.max(...hl.map((l) => l.length)) * 8 + 6);
+      const hh = Math.max(this.dense ? 12 : 14, Math.max(...hl.map((l) => l.length)) * 8 + (this.dense ? 4 : 6));
       this.ensure(hh + minRow);
       this.page.drawRectangle({ x: MARGIN, y: this.y - hh, width: CONTENT_W, height: hh, color: C.black });
       let x = MARGIN;
@@ -480,12 +481,12 @@ class Writer {
 
   paragraph(text: string, tone?: "muted" | "accent") {
     this.lines(text, {
-      size: 9,
+      size: this.dense ? 8.5 : 9,
       color: tone === "muted" ? C.grey : tone === "accent" ? C.teal : C.ink,
       font: tone === "accent" ? this.f.semibold : this.f.regular,
-      leading: 13,
+      leading: this.dense ? 11 : 13,
     });
-    this.y -= 5;
+    this.y -= this.dense ? 3 : 5;
   }
 
   block(b: DocBlock) {

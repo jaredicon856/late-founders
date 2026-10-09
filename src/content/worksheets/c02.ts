@@ -36,6 +36,7 @@ export const hiddenAssetsInventory: WorksheetDef = {
             key: "network",
             minRows: 20,
             maxRows: 20,
+            twoUp: true,
             columns: [
               { key: "name", label: "Name", type: "text", width: 1.2 },
               { key: "source", label: "Where you know them from", type: "text", width: 1.6 },
