@@ -264,8 +264,8 @@ class Writer {
     const form = this.doc.getForm();
     const tf = form.createTextField(this.fieldName(name));
     if (multiline) tf.enableMultiline();
-    tf.setFontSize(this.dense ? 7.5 : 8.5);
-    if (value) tf.setText(clean(value));
+    // addToPage writes the field's default appearance (font); size and text
+    // can only be set after it exists.
     tf.addToPage(this.page, {
       x, y, width: w, height: h,
       font: this.f.regular,
@@ -274,6 +274,8 @@ class Writer {
       borderColor: C.rule,
       borderWidth: 0.6,
     });
+    tf.setFontSize(this.dense ? 7.5 : 8.5);
+    if (value) tf.setText(clean(value));
   }
 
   checkBox(name: string, checked: boolean, x: number, y: number, s: number) {
