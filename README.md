@@ -21,7 +21,7 @@ cd late-founders
 cp .env.example .env          # then put your Claude API key in .env
 npm install
 npm run fonts                 # copies Montserrat into src/fonts and public/fonts
-npx prisma db push            # creates the local SQLite database
+npx prisma db push            # creates the tables in the database in .env
 npm run db:seed               # optional: demo member demo@latefounders.com / late-founders-demo
 npm run dev                   # http://localhost:3000
 ```
@@ -32,7 +32,8 @@ Expect a few hundred MB on disk once dependencies are installed, almost all of i
 
 | Variable | Needed | What it does |
 |---|---|---|
-| `DATABASE_URL` | yes | `file:./dev.db` locally. Postgres in production (see below). |
+| `DATABASE_URL` | yes | Supabase **Transaction pooler** string (port 6543) + `?pgbouncer=true&connection_limit=1`. |
+| `DIRECT_URL` | yes | Supabase **Session pooler** string (port 5432). Used to create and update tables. |
 | `ANTHROPIC_API_KEY` | for AI apps | Claude API key. Without it the AI apps show a "not connected" notice. |
 | `ANTHROPIC_MODEL` | no | Defaults to `claude-opus-5-5`. `claude-sonnet-5-5` costs half. |
 | `SIGNUP_CODE` | recommended | Members need this code to create an account. Empty means open sign-up. |
@@ -44,12 +45,12 @@ Never commit `.env`.
 
 ## Deploying
 
-Any Node host works (Vercel, Render, Railway, Fly). Two changes for production:
+Hosted on Vercel with Supabase Postgres (project `late-founders-command-center`, US East).
 
-1. In `prisma/schema.prisma`, change `provider = "sqlite"` to `provider = "postgresql"` and set `DATABASE_URL` to the Postgres URL. Run `npx prisma db push`.
-2. Set the environment variables above in the host's dashboard.
+1. Import the GitHub repo in Vercel and set the environment variables above.
+2. Every deploy runs `vercel-build`: type-check, tests, table sync (`prisma db push`), Row Level Security on every table, then the Next.js build. A failing test or a schema change that would delete data stops the deploy.
 
-AI turns can take up to a few minutes on long conversations; the assistant route allows 300 seconds.
+The app talks to the database only through Prisma on the server. Row Level Security with no policies keeps Supabase's public Data API closed.
 
 ## Checks
 
