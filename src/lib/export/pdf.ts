@@ -130,6 +130,11 @@ export function wrap(text: string, font: PDFFont, size: number, width: number): 
   return out;
 }
 
+// Table-cell form fields. Montserrat's line box is ~1.22em, and pdf-lib pads
+// text by about 3pt inside a field, so a cell box must be at least
+// font * 1.25 + 3 tall or typed text gets clipped (checked in tests).
+export const FIELD = { font: 8.5, row: 18, denseFont: 7, denseRow: 14, inset: 1 } as const;
+
 // Left half holds the first rows, right half the rest, side by side.
 function twoUp(t: DocTable): DocTable {
   const cols = t.headers.length;
@@ -293,7 +298,7 @@ class Writer {
       borderColor: C.rule,
       borderWidth: 0.6,
     });
-    tf.setFontSize(this.dense ? 7.5 : 8.5);
+    tf.setFontSize(this.dense ? FIELD.denseFont : FIELD.font);
     if (value) tf.setText(clean(value));
   }
 
@@ -378,7 +383,7 @@ class Writer {
     const widths = rel.map((w) => (w / sum) * CONTENT_W);
     const size = this.dense ? 7 : 8;
     const pad = 3;
-    const minRow = this.dense ? 12 : 17;
+    const minRow = this.dense ? FIELD.denseRow : FIELD.row;
     const staticCols = new Set(t.staticCols ?? []);
     const boxCols = new Set(t.checkboxCols ?? []);
 
@@ -403,7 +408,11 @@ class Writer {
         staticCols.has(i) || !t.fillable ? wrap(cell, this.f.regular, size, widths[i] - pad * 2) : [cell],
       );
       const lineCount = (i: number) =>
-        staticCols.has(i) || !t.fillable ? wrapped[i].length : Math.min(4, Math.ceil(this.f.regular.widthOfTextAtSize(clean(row[i] || ""), size) / (widths[i] - 6)) || 1);
+        staticCols.has(i) || !t.fillable
+          ? wrapped[i].length
+          : this.dense
+            ? 1 // one-page sheets: cells never grow; the full text stays in the field
+            : Math.min(4, Math.ceil(this.f.regular.widthOfTextAtSize(clean(row[i] || ""), size) / (widths[i] - 6)) || 1);
       const h = Math.max(minRow, ...row.map((_, i) => lineCount(i) * (size + 2.5) + 5));
       if (this.y - h < FOOTER_H + 12) {
         this.newPage();
@@ -419,7 +428,8 @@ class Writer {
           const s = 8;
           this.checkBox(`${t.name ?? "t"}_${r}_${i}`, cell === "true", x + (w - s) / 2, this.y - h / 2 - s / 2, s);
         } else if (t.fillable && t.name && !staticCols.has(i)) {
-          this.textField(`${t.name}_${r}_${i}`, cell, x + 1.5, this.y - h + 1.5, w - 3, h - 3, h > minRow);
+          const inset = FIELD.inset;
+          this.textField(`${t.name}_${r}_${i}`, cell, x + inset, this.y - h + inset, w - inset * 2, h - inset * 2, h > minRow);
         } else {
           wrapped[i].forEach((ln, j) =>
             this.page.drawText(ln, { x: x + pad, y: this.y - size - 3 - j * (size + 2.5), size, font: this.f.regular, color: C.ink }),

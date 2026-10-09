@@ -4,7 +4,7 @@ import { ASSETS } from "@/content/catalog";
 import { getWorksheet } from "@/content/registry";
 import { worksheetToDoc } from "@/lib/docs/fromWorksheet";
 import { renderDocx } from "@/lib/export/docx";
-import { renderPdf, wrap } from "@/lib/export/pdf";
+import { FIELD, renderPdf, wrap } from "@/lib/export/pdf";
 import { renderXlsx } from "@/lib/export/xlsx";
 
 const sheets = ASSETS.filter((a) => getWorksheet(a.id)).map((a) => [a.id, a, getWorksheet(a.id)!] as const);
@@ -31,6 +31,28 @@ describe("exports", () => {
       expect(pdf.getPageCount()).toBe(1);
     },
   );
+
+  it("makes table cells tall enough that typed text is not clipped", () => {
+    for (const [font, row] of [[FIELD.font, FIELD.row], [FIELD.denseFont, FIELD.denseRow]]) {
+      expect(row - FIELD.inset * 2).toBeGreaterThanOrEqual(font * 1.25 + 3);
+    }
+  });
+
+  it("keeps a filled-in Hidden Assets Inventory on one page", async () => {
+    const asset = ASSETS.find((a) => a.id === "hidden-assets-inventory")!;
+    const def = getWorksheet(asset.id)!;
+    const row = (i: number) => ({ name: `Person ${i}`, source: "Former colleague at a large agency", ask: "An introduction to their head of operations" });
+    const data = {
+      experience: Array.from({ length: 5 }, () => ({ skill: "Enterprise sales", outcome: "Closed $400k in new contracts in 2024" })),
+      network: Array.from({ length: 20 }, (_, i) => row(i)),
+      top_five: Array.from({ length: 5 }, (_, i) => row(i)),
+      runway_months: 8,
+      financial_standing: 40000,
+      judgment: "I can tell within one call whether a client will churn in six months.",
+    };
+    const pdf = await PDFDocument.load(await renderPdf(worksheetToDoc(asset, def, data, {})));
+    expect(pdf.getPageCount()).toBe(1);
+  });
 
   it("wraps long words without losing characters", async () => {
     const doc = await PDFDocument.create();
