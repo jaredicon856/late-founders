@@ -124,38 +124,17 @@ export function courseStatus(course: number, statuses: StatusMap): Status {
   return "not_started";
 }
 
-// A course opens when the course before it on the member's route is complete.
-// Courses the member already started stay open. Before the diagnostic only
-// Course 01 is open.
-export function unlockedCourses(profile: ProfileData, statuses: StatusMap): Set<number> {
-  if (process.env.UNLOCK_ALL_COURSES === "true") return new Set(COURSES.map((c) => c.number));
-  const open = new Set<number>([1]);
-  if (!profile.founder_type) return open;
-  const route = routeFor(profile);
-  for (let i = 0; i < route.length; i++) {
-    const n = route[i];
-    if (i === 0 || courseStatus(route[i - 1], statuses) === "complete") open.add(n);
-    else break;
-  }
-  for (const c of COURSES) if (courseStatus(c.number, statuses) !== "not_started") open.add(c.number);
-  return open;
-}
-
+// Every course is open. Skool decides which lessons a member reaches; the
+// Command Center only recommends an order (the member's route) so a link
+// from any Skool lesson always lands on a working tool.
 export function nextAsset(profile: ProfileData, statuses: StatusMap) {
-  const open = unlockedCourses(profile, statuses);
   for (const n of routeFor(profile)) {
-    if (!open.has(n)) continue;
     const course = COURSES.find((c) => c.number === n);
     for (const id of course?.assets ?? []) {
       if (statuses[id]?.status !== "complete") return getAsset(id) ?? null;
     }
   }
   return null;
-}
-
-export function isUnlocked(assetId: string, profile: ProfileData, statuses: StatusMap): boolean {
-  const asset = getAsset(assetId);
-  return !!asset && unlockedCourses(profile, statuses).has(asset.course);
 }
 
 export const TOTAL_ASSETS = ASSETS.length;

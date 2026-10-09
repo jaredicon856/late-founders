@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import { courseLabel, getAsset } from "@/content/catalog";
 import { PROFILE_FIELDS } from "@/content/profile";
@@ -8,7 +7,7 @@ import SopLibrary from "@/components/SopLibrary";
 import SweepTool from "@/components/SweepTool";
 import VersionList from "@/components/VersionList";
 import WorksheetForm from "@/components/WorksheetForm";
-import { getStatuses, isUnlocked, loadSheet } from "@/lib/assets";
+import { loadSheet } from "@/lib/assets";
 import { aiConfigured, currentRun, getTranscript } from "@/lib/assistant/engine";
 import { requireUser } from "@/lib/auth";
 import { db } from "@/lib/db";
@@ -20,7 +19,7 @@ export default async function AssetPage({ params }: { params: Promise<{ assetId:
   const asset = getAsset(assetId);
   if (!asset) notFound();
   const user = await requireUser();
-  const [profile, statuses] = await Promise.all([getProfile(user.id), getStatuses(user.id)]);
+  const profile = await getProfile(user.id);
 
   const head = (
     <>
@@ -32,18 +31,6 @@ export default async function AssetPage({ params }: { params: Promise<{ assetId:
       <div className="accent" />
     </>
   );
-
-  if (!isUnlocked(assetId, profile, statuses)) {
-    return (
-      <>
-        {head}
-        <div className="card">
-          <p>This course opens when you finish the one before it on your route.</p>
-          <Link className="link" href="/courses">See your route</Link>
-        </div>
-      </>
-    );
-  }
 
   const versions = (
     await db.assetVersion.findMany({

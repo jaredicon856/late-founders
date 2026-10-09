@@ -1,7 +1,7 @@
 "use server";
 
 import { redirect } from "next/navigation";
-import { createSession, destroySession, hashPassword, verifyPassword } from "@/lib/auth";
+import { createSession, destroySession, hashPassword, safeNext, verifyPassword } from "@/lib/auth";
 import { db } from "@/lib/db";
 
 export type AuthState = { error?: string };
@@ -18,7 +18,7 @@ export async function login(_: AuthState, form: FormData): Promise<AuthState> {
     return { error: "That email and password don't match." };
   }
   await createSession(user.id);
-  redirect("/dashboard");
+  redirect(safeNext(form.get("next")) ?? "/dashboard");
 }
 
 export async function signup(_: AuthState, form: FormData): Promise<AuthState> {
@@ -33,7 +33,7 @@ export async function signup(_: AuthState, form: FormData): Promise<AuthState> {
   if (await db.user.findUnique({ where: { email } })) return { error: "An account with that email already exists. Log in instead." };
   const user = await db.user.create({ data: { name, email, passwordHash: await hashPassword(password) } });
   await createSession(user.id);
-  redirect("/assets/founder-diagnostic");
+  redirect(safeNext(form.get("next")) ?? "/assets/founder-diagnostic");
 }
 
 export async function logout() {

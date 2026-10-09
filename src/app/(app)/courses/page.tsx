@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { COURSES, getAsset } from "@/content/catalog";
 import type { AssetKind } from "@/content/types";
-import { courseStatus, getStatuses, routeFor, unlockedCourses } from "@/lib/assets";
+import { courseStatus, getStatuses, routeFor } from "@/lib/assets";
 import { requireUser } from "@/lib/auth";
 import { getProfile } from "@/lib/record";
 
@@ -22,10 +22,8 @@ const STATUS_TEXT = { complete: "Complete", in_progress: "In progress", not_star
 export default async function Courses() {
   const user = await requireUser();
   const [profile, statuses] = await Promise.all([getProfile(user.id), getStatuses(user.id)]);
-  const open = unlockedCourses(profile, statuses);
   const route = routeFor(profile);
   const ordered = [...COURSES].sort((a, b) => route.indexOf(a.number) - route.indexOf(b.number));
-  const firstLocked = ordered.find((c) => !open.has(c.number))?.number;
 
   let lastPillar = "";
   return (
@@ -34,24 +32,23 @@ export default async function Courses() {
       <h1 className="title">Courses</h1>
       <div className="accent" />
       {ordered.map((course) => {
-        const unlocked = open.has(course.number);
         const cs = courseStatus(course.number, statuses);
         const pillarHead = course.pillar !== lastPillar ? course.pillar : null;
         lastPillar = course.pillar;
         return (
           <div key={course.number}>
             {pillarHead && <div className="pillar">{pillarHead}</div>}
-            <section className={`shelf ${unlocked ? "" : "locked"}`} aria-disabled={!unlocked}>
+            <section className="shelf">
               <div className="shelf-head">
                 <span className="num">{String(course.number).padStart(2, "0")}</span>
                 <div>
                   <div className="name">{course.title}</div>
                   <div className="meta">
-                    {course.assets.length} assets{unlocked && cs !== "not_started" ? ` · ${STATUS_TEXT[cs].toLowerCase()}` : ""}
+                    {course.assets.length} assets{cs !== "not_started" ? ` · ${STATUS_TEXT[cs].toLowerCase()}` : ""}
                   </div>
                 </div>
                 <span className="state">
-                  {!unlocked ? (course.number === firstLocked ? "Unlocks next" : "Locked") : cs === "complete" ? "✓ Complete" : cs === "in_progress" ? "• In progress" : "Open"}
+                  {cs === "complete" ? "✓ Complete" : cs === "in_progress" ? "• In progress" : ""}
                 </span>
               </div>
               <div className="shelf-body">
@@ -64,13 +61,11 @@ export default async function Courses() {
                     <>
                       <span className={`tag ${tag === "AI App" ? "ai" : ""}`}>{tag}</span>
                       <span className="t">{a.title}</span>
-                      <span className={`s s-${s}`}>{unlocked ? STATUS_TEXT[s] : ""}</span>
+                      <span className={`s s-${s}`}>{STATUS_TEXT[s]}</span>
                     </>
                   );
-                  return unlocked ? (
+                  return (
                     <Link key={id} href={`/assets/${id}`} className="asset-row">{inner}</Link>
-                  ) : (
-                    <div key={id} className="asset-row">{inner}</div>
                   );
                 })}
               </div>

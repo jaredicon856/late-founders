@@ -4,9 +4,12 @@
 
 import { randomBytes } from "node:crypto";
 import bcrypt from "bcryptjs";
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { db } from "./db";
+import { safeNext } from "./safeNext";
+
+export { safeNext };
 
 const COOKIE = "lf_session";
 const DAYS = 30;
@@ -53,6 +56,9 @@ export async function getUser(): Promise<CurrentUser | null> {
 
 export async function requireUser(): Promise<CurrentUser> {
   const u = await getUser();
-  if (!u) redirect("/login");
+  if (!u) {
+    const here = safeNext((await headers()).get("x-pathname"));
+    redirect(here && here !== "/dashboard" ? `/login?next=${encodeURIComponent(here)}` : "/login");
+  }
   return u;
 }

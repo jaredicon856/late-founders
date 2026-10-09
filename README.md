@@ -6,7 +6,7 @@ The member workspace for Late Founders. Skool holds the teaching; the Command Ce
 
 ## What is in it
 
-- **Login, Dashboard, Course shelves, Asset pages, My Files.** Founder type, Freedom Number, 90-day target, first five moves and a next-action card on the dashboard. Courses unlock along the member's route.
+- **Login, Dashboard, Course shelves, Asset pages, My Files.** Founder type, Freedom Number, 90-day target, first five moves and a next-action card on the dashboard. Every course is open; the member's route sets the recommended order and the Next up card.
 - **One Assistant** (`src/lib/assistant/engine.ts`) runs every AI app as a *mode*. Each mode reads only its slice of the member record, never asks for what is already there, and ends by writing named fields back plus a downloadable document.
 - **One member record** (`ProfileField` table, keys in `src/content/profile.ts`). Every asset reads and writes it, so the Go/No-Go Scorer sees the interview tally, the Offer-Builder sees the Hidden Assets Inventory, and the Valuation Estimator sees the Sellability Scorecard.
 - **Everything saves, downloads and versions.** Worksheets autosave as you type. Completing or re-running anything adds a new version; earlier versions stay downloadable. Downloads are branded fillable PDFs, plus DOCX or XLSX where the spec asks.
@@ -37,7 +37,6 @@ Expect a few hundred MB on disk once dependencies are installed, almost all of i
 | `ANTHROPIC_API_KEY` | for AI apps | Claude API key. Without it the AI apps show a "not connected" notice. |
 | `ANTHROPIC_MODEL` | no | Defaults to `claude-opus-5-5`. `claude-sonnet-5-5` costs half. |
 | `SIGNUP_CODE` | recommended | Members need this code to create an account. Empty means open sign-up. |
-| `UNLOCK_ALL_COURSES` | no | `true` opens every course (testing, admins). |
 | `TRADEMARK_API_URL`, `TRADEMARK_API_KEY` | no | Trademark search for the Availability-Sweep Agent. Without them the trademark column says "not cleared" and links to the USPTO search. |
 | `TRANSCRIPTION_API_URL`, `TRANSCRIPTION_API_KEY` | no | Speech-to-text for SOP Generator recordings. Without them members paste or upload a transcript. |
 
