@@ -130,6 +130,25 @@ export function wrap(text: string, font: PDFFont, size: number, width: number): 
   return out;
 }
 
+// Left half holds the first rows, right half the rest, side by side.
+function twoUp(t: DocTable): DocTable {
+  const cols = t.headers.length;
+  const half = Math.ceil(t.rows.length / 2);
+  const blank = Array<string>(cols).fill("");
+  const shift = (xs?: number[]) => (xs ? [...xs, ...xs.map((i) => i + cols)] : undefined);
+  return {
+    ...t,
+    twoUp: false,
+    headers: [...t.headers, ...t.headers],
+    widths: t.widths ? [...t.widths, ...t.widths] : undefined,
+    checkboxCols: shift(t.checkboxCols),
+    staticCols: shift(t.staticCols),
+    rows: Array.from({ length: half }, (_, i) => [...t.rows[i], ...(t.rows[half + i] ?? blank)]),
+    highlightFrom: undefined,
+    totalRow: undefined,
+  };
+}
+
 class Writer {
   page!: PDFPage;
   y = 0;
@@ -351,7 +370,8 @@ class Writer {
     flush();
   }
 
-  table(t: DocTable) {
+  table(input: DocTable) {
+    const t = input.twoUp ? twoUp(input) : input;
     const n = t.headers.length;
     const rel = t.widths && t.widths.length === n ? t.widths : Array(n).fill(1);
     const sum = rel.reduce((a, b) => a + b, 0);

@@ -69,23 +69,6 @@ export function blockToDoc(block: Block, data: SheetData, profile: ProfileData):
       const offset = t.rowLabels ? 1 : 0;
       const out: DocBlock[] = [];
       if (block.label) out.push({ type: "subheading", text: block.label });
-      if (t.twoUp && !t.rowLabels) {
-        // Left half holds the first rows, right half the rest, side by side.
-        const half = Math.ceil(rows.length / 2);
-        const cells = (r: TableRow | undefined) => t.columns.map((c) => (r ? fieldText(c.type, r[c.key]) : ""));
-        out.push({
-          type: "table",
-          table: {
-            name: t.key,
-            fillable: true,
-            headers: [...t.columns.map((c) => c.label), ...t.columns.map((c) => c.label)],
-            widths: [...t.columns.map((c) => c.width ?? 1), ...t.columns.map((c) => c.width ?? 1)],
-            checkboxCols: t.columns.flatMap((c, i) => (c.type === "checkbox" ? [i, i + t.columns.length] : [])),
-            rows: Array.from({ length: half }, (_, i) => [...cells(rows[i]), ...cells(rows[half + i])]),
-          },
-        });
-        return out;
-      }
       out.push({
         type: "table",
         table: {
@@ -95,6 +78,7 @@ export function blockToDoc(block: Block, data: SheetData, profile: ProfileData):
           widths: t.rowLabels ? [1.4, ...t.columns.map((c) => c.width ?? 1)] : t.columns.map((c) => c.width ?? 1),
           checkboxCols: t.columns.flatMap((c, i) => (c.type === "checkbox" ? [i + offset] : [])),
           staticCols: t.rowLabels ? [0] : [],
+          twoUp: t.twoUp && !t.rowLabels,
           highlightFrom: t.highlightFrom,
           rows: rows.map((r, i) => [
             ...(t.rowLabels ? [t.rowLabels[i] ?? ""] : []),

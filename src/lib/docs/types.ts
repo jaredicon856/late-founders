@@ -22,6 +22,7 @@ export interface DocTable {
   rows: string[][];
   checkboxCols?: number[]; // column indexes rendered as checkboxes
   staticCols?: number[]; // printed labels, never form fields
+  twoUp?: boolean; // PDF only: print as two side-by-side halves to save height
   highlightFrom?: number;
   fillable?: boolean;
   totalRow?: string[];
