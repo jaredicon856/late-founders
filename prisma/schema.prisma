@@ -1,0 +1,129 @@
+// Late Founders Command Center data model.
+//
+// One member record per user (ProfileField rows keyed by field name). Every
+// asset reads and writes that record; nothing an asset produces lives only in
+// its own state. JSON is stored as text so the schema runs on SQLite locally
+// and on Postgres in production without changes beyond the provider line.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  name         String
+  passwordHash String
+  createdAt    DateTime @default(now())
+
+  sessions      Session[]
+  profileFields ProfileField[]
+  assetStates   AssetState[]
+  versions      AssetVersion[]
+  messages      Message[]
+  sops          Sop[]
+}
+
+model Session {
+  id        String   @id
+  userId    String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+// The member record. key is a field name from src/content/profile.ts.
+model ProfileField {
+  id        String   @id @default(cuid())
+  userId    String
+  key       String
+  valueJson String
+  source    String // asset id that last wrote it, or "member"
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, key])
+}
+
+// Live, autosaved working state of one asset for one member.
+model AssetState {
+  id          String    @id @default(cuid())
+  userId      String
+  assetId     String
+  dataJson    String    @default("{}")
+  status      String    @default("not_started") // not_started | in_progress | complete
+  updatedAt   DateTime  @updatedAt
+  completedAt DateTime?
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, assetId])
+}
+
+// Immutable snapshot taken on every completion or re-run. Nothing is lost on re-run.
+model AssetVersion {
+  id        String   @id @default(cuid())
+  userId    String
+  assetId   String
+  version   Int
+  dataJson  String // the inputs or AI output that produced this version
+  docJson   String // RenderDoc used for PDF/DOCX/XLSX downloads
+  label     String   @default("")
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, assetId, version])
+  @@index([userId, createdAt])
+}
+
+// Assistant conversation turns. contentJson holds the exact API content blocks
+// (including thinking blocks) so history is replayed append-only; text is the
+// member-visible rendering.
+model Message {
+  id          String   @id @default(cuid())
+  userId      String
+  assetId     String
+  run         Int      @default(1) // a fresh run starts a new conversation; old runs stay readable
+  role        String // user | assistant | system (member-record injections)
+  contentJson String
+  text        String
+  hidden      Boolean  @default(false) // tool round-trips the member never sees
+  createdAt   DateTime @default(now())
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, assetId, run, createdAt])
+}
+
+// SOP Library (Course 12). Each change creates a new SopVersion.
+model Sop {
+  id         String       @id @default(cuid())
+  userId     String
+  role       String
+  title      String
+  owner      String       @default("")
+  nextReview DateTime?
+  createdAt  DateTime     @default(now())
+  updatedAt  DateTime     @updatedAt
+  user       User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  versions   SopVersion[]
+
+  @@index([userId, role])
+}
+
+model SopVersion {
+  id          String   @id @default(cuid())
+  sopId       String
+  version     Int
+  contentJson String // { steps: [{what, why}], exceptions: [{when, do}], purpose }
+  notes       String   @default("")
+  createdAt   DateTime @default(now())
+  sop         Sop      @relation(fields: [sopId], references: [id], onDelete: Cascade)
+
+  @@unique([sopId, version])
+}
