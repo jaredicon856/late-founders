@@ -41,6 +41,7 @@ const C = {
   black: hex(BRAND.black),
   ink: hex(BRAND.ink),
   grey: hex(BRAND.grey),
+  muted: hex("#5C6169"), // brand sheet's readable grey, for sentences on white
   offWhite: hex(BRAND.offWhite),
   teal: hex(BRAND.teal),
   white: rgb(1, 1, 1),
@@ -133,7 +134,7 @@ export function wrap(text: string, font: PDFFont, size: number, width: number): 
 // Table-cell form fields. Montserrat's line box is ~1.22em, and pdf-lib pads
 // text by about 3pt inside a field, so a cell box must be at least
 // font * 1.25 + 3 tall or typed text gets clipped (checked in tests).
-export const FIELD = { font: 8.5, row: 18, denseFont: 7, denseRow: 14, inset: 1 } as const;
+export const FIELD = { font: 9, row: 18, denseFont: 8, denseRow: 15, inset: 1 } as const;
 
 // Left half holds the first rows, right half the rest, side by side.
 function twoUp(t: DocTable): DocTable {
@@ -281,7 +282,7 @@ class Writer {
   }
 
   label(text: string, x: number, y: number) {
-    this.spaced(text.toUpperCase(), x, y, 6.5, C.grey, 0.8);
+    this.spaced(text.toUpperCase(), x, y, 7, C.grey, 0.8);
   }
 
   textField(name: string, value: string, x: number, y: number, w: number, h: number, multiline: boolean) {
@@ -362,7 +363,7 @@ class Writer {
         x += w + gap;
       });
       this.y -= h + (row.some((f) => f.kind !== "checkbox") ? 11 : 0) + (this.dense ? 5 : 8);
-      for (const f of row) if (f.hint) this.lines(f.hint, { size: 7, color: C.grey, leading: 9 });
+      for (const f of row) if (f.hint) this.lines(f.hint, { size: 7.5, color: C.muted, leading: 9.5 });
       row = [];
       used = 0;
     };
@@ -512,7 +513,7 @@ class Writer {
   paragraph(text: string, tone?: "muted" | "accent") {
     this.lines(text, {
       size: this.dense ? 8.5 : 9,
-      color: tone === "muted" ? C.grey : tone === "accent" ? C.teal : C.ink,
+      color: tone === "muted" ? C.muted : tone === "accent" ? C.teal : C.ink,
       font: tone === "accent" ? this.f.semibold : this.f.regular,
       leading: this.dense ? 11 : 13,
     });
