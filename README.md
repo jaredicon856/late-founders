@@ -38,6 +38,7 @@ Expect a few hundred MB on disk once dependencies are installed, almost all of i
 | `ANTHROPIC_MODEL` | no | Defaults to `claude-opus-5-5`. `claude-sonnet-5-5` costs half. |
 | `SIGNUP_CODE` | recommended | Members need this code to create an account. Empty means open sign-up. |
 | `TRADEMARK_API_URL`, `TRADEMARK_API_KEY` | no | Trademark search for the Availability-Sweep Agent. Without them the trademark column says "not cleared" and links to the USPTO search. |
+| `CRON_SECRET` | recommended | Protects the daily keep-alive job (`/api/keepalive`, see `vercel.json`) that stops a Free-plan Supabase project pausing. |
 | `TRANSCRIPTION_API_URL`, `TRANSCRIPTION_API_KEY` | no | Speech-to-text for SOP Generator recordings. Without them members paste or upload a transcript. |
 
 Never commit `.env`.
