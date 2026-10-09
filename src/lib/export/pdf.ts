@@ -261,7 +261,7 @@ class Writer {
 
   titleBlock() {
     this.spaced(this.rd.eyebrow, MARGIN, this.y - 8, 7.5, C.grey);
-    this.y -= 22;
+    this.y -= this.dense ? 18 : 22;
     const size = this.dense ? 20 : this.rd.title.length > 34 ? 20 : 24;
     for (const ln of wrap(this.rd.title, this.f.black, size, CONTENT_W)) {
       this.page.drawText(ln, { x: MARGIN, y: this.y - size, size, font: this.f.black, color: C.ink });
@@ -278,7 +278,7 @@ class Writer {
         this.rd.meta.version && `Version ${this.rd.meta.version}`].filter(Boolean);
       this.lines(bits.join("  ·  "), { size: 7.5, color: C.grey });
     }
-    this.y -= this.dense ? 4 : 8;
+    this.y -= this.dense ? 2 : 8;
   }
 
   label(text: string, x: number, y: number) {
@@ -311,8 +311,30 @@ class Writer {
 
   // ---- blocks ----
 
-  heading(text: string) {
-    this.ensure(40);
+  // Rough height of a block's first line of content, so a heading is never
+  // left alone at the bottom of a page.
+  firstHeight(b: DocBlock | undefined): number {
+    if (!b) return 0;
+    const minRow = this.dense ? FIELD.denseRow : FIELD.row;
+    switch (b.type) {
+      case "fields":
+        return Math.max(...b.fields.map((f) => (f.kind === "multiline" ? Math.max(2, f.lines ?? 3) * (this.dense ? 11 : 13) + 4 : f.kind === "signature" ? 34 : 18))) + 18;
+      case "table":
+        return 16 + minRow * Math.min(2, b.table.rows.length);
+      case "paragraph":
+      case "bullets":
+      case "kv":
+        return 28;
+      case "callout":
+      case "big":
+        return 50;
+      default:
+        return 0;
+    }
+  }
+
+  heading(text: string, next: number = 0) {
+    this.ensure(22 + next);
     const size = this.dense ? 10.5 : 12;
     this.y -= this.dense ? 4 : 10;
     for (const ln of wrap(text, this.f.bold, size, CONTENT_W)) {
@@ -362,7 +384,7 @@ class Writer {
         }
         x += w + gap;
       });
-      this.y -= h + (row.some((f) => f.kind !== "checkbox") ? 11 : 0) + (this.dense ? 5 : 8);
+      this.y -= h + (row.some((f) => f.kind !== "checkbox") ? 11 : 0) + (this.dense ? 4 : 8);
       for (const f of row) if (f.hint) this.lines(f.hint, { size: 7.5, color: C.muted, leading: 9.5 });
       row = [];
       used = 0;
@@ -451,7 +473,7 @@ class Writer {
       });
       this.y -= h;
     }
-    this.y -= this.dense ? 6 : 10;
+    this.y -= this.dense ? 3 : 10;
   }
 
   bullets(items: string[], style: "bullet" | "numbered" | "checkbox" = "bullet") {
@@ -520,9 +542,11 @@ class Writer {
     this.y -= this.dense ? 3 : 5;
   }
 
+  lookahead = 0;
+
   block(b: DocBlock) {
     switch (b.type) {
-      case "heading": return this.heading(b.text);
+      case "heading": return this.heading(b.text, this.lookahead);
       case "subheading": return this.subheading(b.text);
       case "paragraph": return this.paragraph(b.text, b.tone);
       case "bullets": return this.bullets(b.items, b.style);
@@ -548,7 +572,15 @@ export async function renderPdf(rd: RenderDoc): Promise<Uint8Array> {
   const w = new Writer(doc, fonts, logo, rd);
   w.newPage();
   w.titleBlock();
-  for (const b of rd.blocks) w.block(b);
+  rd.blocks.forEach((b, i) => {
+    // A heading keeps its intro line and the first line of its content with it.
+    if (b.type === "heading") {
+      const n1 = rd.blocks[i + 1];
+      const n2 = rd.blocks[i + 2];
+      w.lookahead = n1?.type === "paragraph" ? w.firstHeight(n1) + w.firstHeight(n2) : w.firstHeight(n1);
+    }
+    w.block(b);
+  });
 
   const form = doc.getForm();
   if (form.getFields().length) form.updateFieldAppearances(fonts.regular);

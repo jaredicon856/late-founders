@@ -7,6 +7,9 @@ import { renderDocx } from "@/lib/export/docx";
 import { FIELD, renderPdf, wrap } from "@/lib/export/pdf";
 import { renderXlsx } from "@/lib/export/xlsx";
 
+// Every real download carries this line under the title; layouts must leave room for it.
+const REAL_META = { member: "Alexandra Montgomery-Smith", completedAt: "Sep 30, 2026", version: 12 };
+
 const sheets = ASSETS.filter((a) => getWorksheet(a.id)).map((a) => [a.id, a, getWorksheet(a.id)!] as const);
 
 describe("exports", () => {
@@ -27,7 +30,8 @@ describe("exports", () => {
     async (id) => {
       const asset = ASSETS.find((a) => a.id === id)!;
       const def = getWorksheet(id)!;
-      const pdf = await PDFDocument.load(await renderPdf(worksheetToDoc(asset, def, def.initial?.({}) ?? {}, {})));
+      const doc = { ...worksheetToDoc(asset, def, def.initial?.({}) ?? {}, {}), meta: REAL_META };
+      const pdf = await PDFDocument.load(await renderPdf(doc));
       expect(pdf.getPageCount()).toBe(1);
     },
   );
@@ -50,7 +54,7 @@ describe("exports", () => {
       financial_standing: 40000,
       judgment: "I can tell within one call whether a client will churn in six months.",
     };
-    const pdf = await PDFDocument.load(await renderPdf(worksheetToDoc(asset, def, data, {})));
+    const pdf = await PDFDocument.load(await renderPdf({ ...worksheetToDoc(asset, def, data, {}), meta: REAL_META }));
     expect(pdf.getPageCount()).toBe(1);
   });
 
