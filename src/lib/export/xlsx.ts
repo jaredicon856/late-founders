@@ -65,7 +65,7 @@ export async function renderXlsx(rd: RenderDoc): Promise<Uint8Array> {
   wb.creator = "Late Founders";
   const used = new Set<string>();
   const summary = wb.addWorksheet(sheetName("Summary", used), {
-    pageSetup: { paperSize: 1, orientation: "portrait", fitToPage: true, fitToWidth: 1, fitToHeight: 0 },
+    pageSetup: { orientation: "portrait", fitToPage: true, fitToWidth: 1, fitToHeight: 0 }, // Letter is the default paper size
   });
   summary.columns = [{ width: 34 }, { width: 60 }, { width: 18 }, { width: 18 }, { width: 18 }, { width: 18 }];
 
