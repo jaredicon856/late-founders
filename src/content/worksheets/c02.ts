@@ -28,7 +28,7 @@ export const hiddenAssetsInventory: WorksheetDef = {
     },
     {
       title: "2 · Network",
-      intro: "Twenty names and where you know them from. The last five rows are your top five, each with one specific ask.",
+      intro: "Twenty names and where you know them from. Then pick your top five below, each with one specific ask.",
       blocks: [
         {
           kind: "table",
