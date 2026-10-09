@@ -1,4 +1,4 @@
-import { FOUNDER_TYPE_COPY, ROUTES, getCourse, courseLabel } from "../catalog";
+import { FOUNDER_TYPE_COPY, ROUTES, courseLabel } from "../catalog";
 import { asNumber, money } from "../profile";
 import type { ModeDef } from "../types";
 import { SaveError, str, strArray, obj } from "./util";
@@ -118,8 +118,8 @@ When all five stages are covered, summarise what you heard in a few lines and as
           { type: "paragraph", text: target, tone: "accent" },
           { type: "heading", text: "Where you stand" },
           { type: "paragraph", text: str(o.summary) },
-          { type: "heading", text: "Your route" },
-          { type: "bullets", style: "numbered", items: route.map((n) => `${courseLabel(n)} · ${getCourse(n)?.title ?? ""}`) },
+          // One line, so the results sheet stays on a single page.
+          { type: "kv", items: [{ label: "Your route", value: route.map((n) => courseLabel(n).replace("Course ", "")).join(" → ") }] },
         ],
       },
     };
