@@ -114,6 +114,7 @@ model Message {
   user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId, assetId, run, createdAt])
+  @@index([userId, createdAt]) // daily Assistant cap
 }
 
 // SOP Library (Course 12). Each change creates a new SopVersion.

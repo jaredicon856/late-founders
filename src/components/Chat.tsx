@@ -7,6 +7,8 @@ import Markdown from "./Markdown";
 
 type Line = { id: string; role: "user" | "assistant"; text: string; createdAt: string };
 type Saved = { version: number; summary: string };
+// The server turned the message away on purpose (e.g. the daily cap); show its words.
+class Refused extends Error {}
 
 function initials(name: string) {
   return name.split(/\s+/).map((p) => p[0]).join("").slice(0, 2).toUpperCase() || "ME";
@@ -117,6 +119,7 @@ export default function Chat({
         body: JSON.stringify({ message: text }),
       });
       const body = (await res.json().catch(() => ({}))) as { messages?: Line[]; saved?: Saved; notice?: string; error?: string };
+      if (res.status === 429 && body.error) throw new Refused(body.error);
       if (!res.ok) throw new Error(body.error || "Request failed");
       setLines((l) => [...l.filter((x) => x.id !== temp.id), ...(body.messages?.length ? body.messages : [temp])]);
       if (body.notice) setNotice(body.notice);
@@ -124,8 +127,8 @@ export default function Chat({
         setSaved(body.saved);
         router.refresh();
       }
-    } catch {
-      setNotice("Your message didn't reach the Assistant. It is back in the box; send it again.");
+    } catch (e) {
+      setNotice(e instanceof Refused ? e.message : "Your message didn't reach the Assistant. It is back in the box; send it again.");
       setLines((l) => l.filter((x) => x.id !== temp.id));
       setDraft(text);
     } finally {

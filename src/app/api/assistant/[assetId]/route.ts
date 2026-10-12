@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getMode } from "@/content/registry";
 import { runTurn } from "@/lib/assistant/engine";
+import { overDailyLimit } from "@/lib/assistant/limit";
 import { guardAsset } from "@/lib/guard";
 
 export const maxDuration = 300; // long Assistant turns (thinking + a save round-trip)
@@ -14,5 +15,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ assetId
   const message = typeof body?.message === "string" ? body.message : "";
   if (!message.trim()) return NextResponse.json({ error: "Empty message" }, { status: 400 });
   if (message.length > 50_000) return NextResponse.json({ error: "That message is too long. Split it up." }, { status: 413 });
+  const capped = await overDailyLimit(g.user.id);
+  if (capped) return NextResponse.json({ error: capped }, { status: 429 });
   return NextResponse.json(await runTurn(g.user.id, assetId, message));
 }
