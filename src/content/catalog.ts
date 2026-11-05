@@ -81,6 +81,7 @@ export const COURSES: CourseDef[] = [
     title: "AI for Founders",
     pillar: "Pillar 2",
     assets: ["ai-audit-tracker", "workflow-library", "repurposing-engine", "hours-saved-tracker"],
+    note: "Monthly AI for Founders live session: the date and Zoom link are on the Skool Calendar tab.",
   },
   {
     number: 12,

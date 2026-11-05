@@ -13,6 +13,7 @@ import { SaveError, str, objArray } from "./util";
 //   time_wanted: string;     // how they want to spend it instead
 //   reframed: string;        // the same events with the member as the actor
 //   spoken_sentence: string; // the one-sentence, said-aloud version
+//   about_line: string;      // optional written version for a LinkedIn About opening (Lesson 3.3); "" if declined
 // }[]
 // Entries are permanent: every save appends; prior entries are never edited or removed.
 //
@@ -43,6 +44,7 @@ Steps, in order:
 3. Time gap (Lesson 3.2). Ask how they spend a typical working week now, then how they want to spend it instead. Keep both in their words and concrete (hours, tasks, people), not slogans. The gap between the two is what the business has to close; say so in one line.
 4. Reframe. Write the same account again with the member as the actor: same events, same order, told from that first decision forward. Use only events and details the member described. Do not invent conversations, feelings, outcomes, dates or people. Do not exaggerate. Keep their voice; first person; plain words. Show it to them and revise until they say it is true.
 5. Spoken sentence. Compress the reframe into one sentence they could say aloud when someone asks "So what made you start this?" Under ${MAX_SENTENCE_WORDS} words, first person, no jargon. Ask them to say it out loud and tell you if it sounds like them. Revise until it does. Tell them this sentence becomes their origin story, used on their 90-Day Commitment Worksheet, and replaces any previous one.
+6. Written version (optional, Lesson 3.3). Offer to turn the reframe into the opening of their LinkedIn About section: two or three sentences, first person, that open on the turning point and say what they do now because of it. Same facts only. If they want it, revise until they approve; if they decline, save it empty.
 
 Save only after the member approves both the reframe and the sentence. "factual" must be the member's own account as they wrote it (you may join multiple messages, but do not rewrite it).`,
   opener: (p: ProfileData) => {
@@ -70,7 +72,7 @@ Save only after the member approves both the reframe and the sentence. "factual"
   outputSchema: {
     type: "object",
     additionalProperties: false,
-    required: ["prompt_set", "factual", "first_decision", "time_now", "time_wanted", "reframed", "spoken_sentence"],
+    required: ["prompt_set", "factual", "first_decision", "time_now", "time_wanted", "reframed", "spoken_sentence", "about_line"],
     properties: {
       prompt_set: { type: "string", enum: [...PROMPT_SETS] },
       factual: { type: "string", description: "The member's factual account, in their own words." },
@@ -79,6 +81,7 @@ Save only after the member approves both the reframe and the sentence. "factual"
       time_wanted: { type: "string", description: "How the member wants to spend it instead, in their words." },
       reframed: { type: "string", description: "The approved reframe, with the member as the actor. Only events they described." },
       spoken_sentence: { type: "string", description: "One sentence to say aloud, approved by the member." },
+      about_line: { type: "string", description: "Optional LinkedIn About opening, two or three sentences, approved by the member. Empty string if they declined." },
     },
   },
   onSave: (o, profile) => {
@@ -111,6 +114,7 @@ Save only after the member approves both the reframe and the sentence. "factual"
       time_wanted: timeWanted,
       reframed,
       spoken_sentence: sentence,
+      about_line: str(o.about_line),
     };
     // Append only: prior entries are kept exactly as saved.
     const entries = [...existingEntries(profile), entry];
@@ -134,6 +138,7 @@ Save only after the member approves both the reframe and the sentence. "factual"
       },
       { type: "big", label: "Say it out loud", value: sentence, note: "Your origin story, in one sentence." },
     ];
+    if (entry.about_line) blocks.push({ type: "heading", text: "For your LinkedIn About section" }, { type: "paragraph", text: entry.about_line });
     if (earlier.length) {
       blocks.push(
         { type: "heading", text: "Earlier entries" },
