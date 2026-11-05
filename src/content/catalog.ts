@@ -55,6 +55,13 @@ export const COURSES: CourseDef[] = [
     assets: ["profile-audit", "hook-library", "content-pillars", "content-calendar"],
   },
   {
+    number: 8,
+    title: "LinkedIn Automation & Campaign Setup",
+    pillar: "Pillar 2",
+    assets: ["icp-worksheet", "sequence-generator", "campaign-metrics"],
+    note: "Before you start: this course uses paid tools you buy yourself: HeyReach, plus either LinkedIn Sales Navigator or Apollo. Check current pricing on each before Lesson 1.2.",
+  },
+  {
     number: 11,
     title: "AI for Founders",
     pillar: "Pillar 2",
@@ -161,6 +168,14 @@ export const ASSETS: AssetDef[] = [
   { id: "content-calendar", code: "07.5", course: 7, kind: "template", title: "4-Week Content Calendar",
     summary: "Your pillars on a three-a-week rotation for four weeks, pre-filled so you never face an empty grid." },
 
+  // Course 08 (08.2 and 08.4 are walkthrough videos, hosted rather than built)
+  { id: "icp-worksheet", code: "08.1", course: 8, kind: "worksheet", title: "ICP Worksheet",
+    summary: "One real buyer in four facts, including the trigger condition that makes a first line land." },
+  { id: "sequence-generator", code: "08.3", course: 8, kind: "ai", title: "Message-Sequence Generator",
+    summary: "A four-step LinkedIn sequence from your ICP, each message with one job and the value message tested." },
+  { id: "campaign-metrics", code: "08.5", course: 8, kind: "worksheet", title: "Campaign Metrics Tracker",
+    summary: "Weekly rates per sequence step, the weakest one flagged with its fix, one change at a time." },
+
   // Course 11
   { id: "ai-audit-tracker", code: "11.1", course: 11, kind: "worksheet", title: "AI Audit Tracker",
     summary: "Five days of tasks, sorted and ranked by hours a month, to find your top three automation targets." },
@@ -230,9 +245,9 @@ export function eyebrowFor(asset: AssetDef): string {
 // Founder type -> course order. Fresh Start and First-Timer validate an idea
 // first; a Buried Founder already runs a business and needs out of it first.
 export const ROUTES: Record<string, number[]> = {
-  "Fresh Start": [1, 2, 3, 4, 5, 6, 7, 11, 12, 13, 14],
-  "First-Timer": [1, 2, 3, 4, 5, 6, 7, 11, 12, 13, 14],
-  "Buried Founder": [1, 2, 12, 11, 14, 13, 7, 3, 4, 5, 6],
+  "Fresh Start": [1, 2, 3, 4, 5, 6, 7, 8, 11, 12, 13, 14],
+  "First-Timer": [1, 2, 3, 4, 5, 6, 7, 8, 11, 12, 13, 14],
+  "Buried Founder": [1, 2, 12, 11, 14, 13, 7, 8, 3, 4, 5, 6],
 };
 export const DEFAULT_ROUTE = ROUTES["Fresh Start"];
 

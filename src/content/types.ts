@@ -183,4 +183,5 @@ export interface CourseDef {
   title: string;
   pillar: string;
   assets: string[]; // asset ids in curriculum order
+  note?: string; // shown on the course shelf, e.g. costs the member pays themselves
 }

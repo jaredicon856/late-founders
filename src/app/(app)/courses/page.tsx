@@ -51,6 +51,7 @@ export default async function Courses() {
                   {cs === "complete" ? "✓ Complete" : cs === "in_progress" ? "• In progress" : ""}
                 </span>
               </div>
+              {course.note && <div className="shelf-note">{course.note}</div>}
               <div className="shelf-body">
                 {course.assets.map((id) => {
                   const a = getAsset(id);
