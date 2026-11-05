@@ -46,7 +46,7 @@ export const personalRoadmap: WorksheetDef = {
         {
           kind: "callout",
           tone: "note",
-          text: "This is the destination, not the quit gate. Course 06 sets the separate, lower number you need before leaving a paycheck.",
+          text: "This is the destination, not the quit gate. Course 06 sets your Minimum Viable Income, the separate number you need before leaving a paycheck.",
         },
       ],
     },

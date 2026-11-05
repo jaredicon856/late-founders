@@ -61,7 +61,7 @@ export default async function Dashboard() {
               {money(freedom)}
               <small>/mo</small>
             </div>
-            <p className="muted small">The destination. Course 06 sets the lower number you need before you quit.</p>
+            <p className="muted small">The destination. Course 06 sets your Minimum Viable Income: the number you need before you quit.</p>
           </div>
           <div className="card">
             <div className="eyebrow">90-day target</div>

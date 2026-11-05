@@ -43,6 +43,12 @@ export const COURSES: CourseDef[] = [
     assets: ["offer-builder", "one-page-offer", "skeptical-buyer"],
   },
   {
+    number: 6,
+    title: "Quit or Stay",
+    pillar: "Pillar 1 · Clarity & Execution",
+    assets: ["runway-calculator", "risk-inventory", "decision-engine", "contract-review-checklist"],
+  },
+  {
     number: 12,
     title: "Get Out of Your Own Business",
     pillar: "Pillar 3 · Legacy & Exit",
@@ -123,6 +129,16 @@ export const ASSETS: AssetDef[] = [
   { id: "skeptical-buyer", code: "05.3", course: 5, kind: "ai", title: "Skeptical-Buyer Simulation",
     summary: "Your hardest buyer pushes on your offer. Every objection is kept." },
 
+  // Course 06
+  { id: "runway-calculator", code: "06.1", course: 6, kind: "calculator", title: "Runway Calculator",
+    summary: "Your true monthly burn, your Minimum Viable Income, and three ways out of the job side by side." },
+  { id: "risk-inventory", code: "06.2", course: 6, kind: "worksheet", title: "Risk Inventory Worksheet",
+    summary: "Dependents, health cover and debts, each marked open or closed, so the fear has specifics." },
+  { id: "decision-engine", code: "06.3", course: 6, kind: "ai", title: "AI Decision Engine",
+    summary: "Reads your numbers and recommends quit now, quit in three to six months, or stay and build, with the gaps named." },
+  { id: "contract-review-checklist", code: "06.4", course: 6, kind: "checklist", title: "Employment Contract Review Checklist",
+    summary: "What to look for in IP, non-compete and moonlighting clauses before you build on the side." },
+
   // Course 12
   { id: "owners-audit", code: "12.1", course: 12, kind: "worksheet", title: "Owner's Audit Worksheet",
     summary: "Five days of every task you do, logged as you switch." },
@@ -182,9 +198,9 @@ export function eyebrowFor(asset: AssetDef): string {
 // Founder type -> course order. Fresh Start and First-Timer validate an idea
 // first; a Buried Founder already runs a business and needs out of it first.
 export const ROUTES: Record<string, number[]> = {
-  "Fresh Start": [1, 2, 3, 4, 5, 12, 13, 14],
-  "First-Timer": [1, 2, 3, 4, 5, 12, 13, 14],
-  "Buried Founder": [1, 2, 12, 14, 13, 3, 4, 5],
+  "Fresh Start": [1, 2, 3, 4, 5, 6, 12, 13, 14],
+  "First-Timer": [1, 2, 3, 4, 5, 6, 12, 13, 14],
+  "Buried Founder": [1, 2, 12, 14, 13, 3, 4, 5, 6],
 };
 export const DEFAULT_ROUTE = ROUTES["Fresh Start"];
 

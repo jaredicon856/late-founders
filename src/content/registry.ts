@@ -9,6 +9,7 @@ import { course02Worksheets } from "./worksheets/c02";
 import { course03Worksheets } from "./worksheets/c03";
 import { course04Worksheets } from "./worksheets/c04";
 import { course05Worksheets } from "./worksheets/c05";
+import { course06Worksheets } from "./worksheets/c06";
 import { course12Worksheets } from "./worksheets/c12";
 import { course13Worksheets } from "./worksheets/c13";
 import { course14Worksheets } from "./worksheets/c14";
@@ -18,6 +19,7 @@ import { course02Modes } from "./modes/c02";
 import { course03Modes } from "./modes/c03";
 import { course04Modes } from "./modes/c04";
 import { course05Modes } from "./modes/c05";
+import { course06Modes } from "./modes/c06";
 import { course12Modes } from "./modes/c12";
 import { course13Modes } from "./modes/c13";
 
@@ -27,6 +29,7 @@ const WORKSHEETS: WorksheetDef[] = [
   ...course03Worksheets,
   ...course04Worksheets,
   ...course05Worksheets,
+  ...course06Worksheets,
   ...course12Worksheets,
   ...course13Worksheets,
   ...course14Worksheets,
@@ -39,6 +42,7 @@ const MODES: ModeDef[] = [
   ...course03Modes,
   ...course04Modes,
   ...course05Modes,
+  ...course06Modes,
   ...course12Modes,
   ...course13Modes,
 ];

@@ -13,6 +13,15 @@ export const PROFILE_FIELDS: Record<string, string> = {
   journal_entries: "Reframing Journal entries",
   origin_story: "Your one-line origin story",
   commitment: "90-day commitment",
+
+  monthly_burn: "Monthly burn",
+  mvi: "Minimum Viable Income",
+  committed_revenue: "Signed monthly revenue",
+  reserve_balance: "Reserve",
+  quit_scenarios: "Quit scenarios",
+  open_risk_count: "Open risks",
+  risk_items: "Open risk items",
+  quit_decision: "Quit or Stay decision",
   daily_action_log: "Daily action check-ins",
 
   problem_statement: "Problem statement",
