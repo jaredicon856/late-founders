@@ -66,6 +66,7 @@ Save only after the member approves both the reframe and the sentence. "factual"
         "- **Perfectly timed**: why starting now, later in your career, is the right moment and not a late one.",
       ].join("\n"),
       `Which one do you want to work on today?${suggestion}`,
+      "[[The layoff reframe | Rut as signal | Perfectly timed]]",
     );
     return lines.join("\n\n");
   },

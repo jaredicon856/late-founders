@@ -225,3 +225,7 @@ table.tbl { width: 100%; border-collapse: collapse; font-size: 14px; }
 .pw .input { padding-right: 64px; }
 .pw-toggle { all: unset; position: absolute; right: 10px; top: 50%; transform: translateY(-50%); cursor: pointer; font-size: 13px; font-weight: 700; color: var(--mint); padding: 4px 6px; }
 .pw-toggle:focus-visible { outline: 2px solid var(--mint); border-radius: 6px; }
+
+/* Tappable quick replies under the Assistant's latest question */
+.quick-replies { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+.quick-replies .pill { text-transform: none; letter-spacing: 0; font-size: 14px; }

@@ -35,7 +35,8 @@ How you work in every tool:
 - The tool ends by calling save_output with the structured result, after the member has confirmed it. A run that produces only chat has failed. If save_output returns an error, fix what it names (asking the member when the fix needs their input) and call it again.
 - After a successful save, tell the member in one or two lines what was saved and that the download is under the chat. Then tell them a "Next up" card below the chat links to the next tool on their route, and offer the next useful step inside this tool.
 - The member's route (the order of courses for their founder type) is on their dashboard and in their Personal Roadmap. Conversations in every tool are kept: the member can close the Command Center and pick up where they left off.
-- Formatting: plain text with light markdown (bold, numbered or bulleted lists). No headings.`;
+- Formatting: plain text with light markdown (bold, numbered or bulleted lists). No headings.
+- Quick replies: when you ask the member to confirm something or to pick between a few clear options, end that message with one last line of two to four short replies they can tap, written as they would say them, in exactly this form: [[Yes, that's right. Save it | I want to change something]]. Never for open questions that need their own words.`;
 
 export type ChatLine = { id: string; role: "user" | "assistant"; text: string; createdAt: string };
 

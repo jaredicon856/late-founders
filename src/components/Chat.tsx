@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import type { FieldDef } from "@/content/types";
+import { splitReplies } from "@/lib/quickReplies";
 import Markdown from "./Markdown";
 
 type Line = { id: string; role: "user" | "assistant"; text: string; createdAt: string };
@@ -111,8 +112,8 @@ export default function Chat({
     composerRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
   }, [lines.length, busy]);
 
-  async function send() {
-    const text = draft.trim();
+  async function send(quick?: string) {
+    const text = (quick ?? draft).trim();
     if (!text || busy) return;
     setBusy(true);
     setNotice("");
@@ -196,12 +197,25 @@ export default function Chat({
         </div>
       )}
       <div className="chat">
-        {lines.map((l) => (
-          <div key={l.id} className="msg">
-            <div className={`avatar ${l.role === "assistant" ? "lf" : "me"}`}>{l.role === "assistant" ? "LF" : initials(name)}</div>
-            <div className="bubble">{l.role === "assistant" ? <Markdown text={l.text} /> : <p style={{ whiteSpace: "pre-wrap" }}>{l.text}</p>}</div>
-          </div>
-        ))}
+        {lines.map((l, i) => {
+          const { body, replies } = l.role === "assistant" ? splitReplies(l.text) : { body: l.text, replies: [] };
+          const showReplies = replies.length > 0 && i === lines.length - 1 && !busy;
+          return (
+            <div key={l.id} className="msg">
+              <div className={`avatar ${l.role === "assistant" ? "lf" : "me"}`}>{l.role === "assistant" ? "LF" : initials(name)}</div>
+              <div className="bubble">
+                {l.role === "assistant" ? <Markdown text={body} /> : <p style={{ whiteSpace: "pre-wrap" }}>{body}</p>}
+                {showReplies && (
+                  <div className="quick-replies" role="group" aria-label="Quick replies">
+                    {replies.map((r) => (
+                      <button key={r} type="button" className="pill" onClick={() => void send(r)}>{r}</button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          );
+        })}
         {busy && <div className="typing">The Assistant is thinking…</div>}
         {saved && (
           <div className="saved">
@@ -225,7 +239,7 @@ export default function Chat({
               }
             }}
           />
-          <button className="btn-primary" onClick={send} disabled={busy || !draft.trim()}>Send</button>
+          <button className="btn-primary" onClick={() => void send()} disabled={busy || !draft.trim()}>Send</button>
         </div>
         <div style={{ marginTop: 14, display: "flex", gap: 10, flexWrap: "wrap" }}>
           {uploads && (
