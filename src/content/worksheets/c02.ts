@@ -45,8 +45,8 @@ export const hiddenAssetsInventory: WorksheetDef = {
             maxRows: 20,
             twoUp: true,
             columns: [
-              { key: "name", label: "Name", type: "text", width: 1.2 },
-              { key: "source", label: "Where you know them from", type: "text", width: 1.6 },
+              { key: "name", label: "Name", type: "text", width: 1.1 },
+              { key: "source", label: "Where you know them from", type: "text", width: 1.5 },
               { key: "could", label: "How they help", type: "select", options: ["Refer", "Buy", "Advise", "Introduce", "Vouch"], width: 0.9 },
             ],
           },
@@ -74,19 +74,20 @@ export const hiddenAssetsInventory: WorksheetDef = {
           kind: "fields",
           fields: [
             {
-              key: "runway_months", label: "Runway in months", type: "number", width: "third",
+              key: "runway_months", label: "Runway (months)", type: "number", width: "quarter",
               screenHint: "How many months you could cover your living costs with no new income.",
             },
             {
-              key: "financial_standing", label: "Available financial standing ($)", type: "money", width: "third",
+              key: "financial_standing", label: "Financial standing ($)", type: "money", width: "quarter",
               screenHint: "Money you could put into the business without risking the essentials.",
             },
             {
-              key: "launch_minimum", label: "Smallest amount to launch ($)", type: "money", width: "third",
+              key: "launch_minimum", label: "Launch minimum ($)", type: "money", width: "quarter",
               screenHint: "The least you need to run a first real test. Often much less than you think.",
             },
             {
-              key: "capital_kinds", label: "Kinds of capital you could use", type: "text",
+              key: "capital_kinds", label: "Kinds of capital", type: "text", width: "quarter",
+              screenHint: "Every kind you could draw on, not just cash.",
               placeholder: "Savings, severance, a partner, customer pre-sales, a small loan…",
             },
           ],

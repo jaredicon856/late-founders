@@ -353,7 +353,7 @@ class Writer {
 
   fields(fields: DocField[]) {
     const gap = 10;
-    const unit = (w?: DocField["width"]) => (w === "half" ? 0.5 : w === "third" ? 1 / 3 : 1);
+    const unit = (w?: DocField["width"]) => (w === "half" ? 0.5 : w === "third" ? 1 / 3 : w === "quarter" ? 0.25 : 1);
     let row: DocField[] = [];
     let used = 0;
     const flush = () => {

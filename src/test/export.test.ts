@@ -45,13 +45,15 @@ describe("exports", () => {
   it("keeps a filled-in Hidden Assets Inventory on one page", async () => {
     const asset = ASSETS.find((a) => a.id === "hidden-assets-inventory")!;
     const def = getWorksheet(asset.id)!;
-    const row = (i: number) => ({ name: `Person ${i}`, source: "Former colleague at a large agency", ask: "An introduction to their head of operations" });
+    const row = (i: number) => ({ name: `Person ${i}`, source: "Former colleague at a large agency", could: "Introduce", ask: "An introduction to their head of operations" });
     const data = {
       experience: Array.from({ length: 5 }, () => ({ skill: "Enterprise sales", outcome: "Closed $400k in new contracts in 2024" })),
       network: Array.from({ length: 20 }, (_, i) => row(i)),
       top_five: Array.from({ length: 5 }, (_, i) => row(i)),
       runway_months: 8,
       financial_standing: 40000,
+      launch_minimum: 5000,
+      capital_kinds: "Savings, severance, customer pre-sales",
       judgment: "I can tell within one call whether a client will churn in six months.",
     };
     const pdf = await PDFDocument.load(await renderPdf({ ...worksheetToDoc(asset, def, data, {}), meta: REAL_META }));

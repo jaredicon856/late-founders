@@ -31,7 +31,7 @@ export interface FieldDef {
   placeholder?: string;
   options?: string[]; // for select
   lines?: number; // textarea height, also paper height
-  width?: "full" | "half" | "third";
+  width?: "full" | "half" | "third" | "quarter";
   readOnly?: boolean; // shown but filled from the member record
 }
 

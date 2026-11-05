@@ -12,7 +12,7 @@ export interface DocField {
   kind: FieldKind;
   lines?: number;
   hint?: string;
-  width?: "full" | "half" | "third";
+  width?: "full" | "half" | "third" | "quarter";
 }
 
 export interface DocTable {

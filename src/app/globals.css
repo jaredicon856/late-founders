@@ -139,8 +139,8 @@ details.older summary { cursor: pointer; }
 .input:focus, .textarea:focus, .select:focus { border-color: var(--mint); }
 .textarea { resize: vertical; min-height: 64px; }
 .row-fields { display: grid; gap: 16px; grid-template-columns: repeat(6, minmax(0, 1fr)); margin-bottom: 16px; }
-.w-full { grid-column: span 6; } .w-half { grid-column: span 3; } .w-third { grid-column: span 2; }
-@media (max-width: 640px) { .w-half, .w-third { grid-column: span 6; } }
+.w-full { grid-column: span 6; } .w-half { grid-column: span 3; } .w-third { grid-column: span 2; } .w-quarter { grid-column: span 3; }
+@media (max-width: 640px) { .w-half, .w-third, .w-quarter { grid-column: span 6; } }
 .seg { display: inline-flex; border: 1px solid var(--line-strong); border-radius: 999px; overflow: hidden; }
 .seg button { all: unset; cursor: pointer; padding: 6px 14px; font-size: 13px; font-weight: 600; }
 .seg button.on { background: var(--grad); color: var(--black); }
