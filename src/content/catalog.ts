@@ -1,7 +1,7 @@
 import type { AssetDef, CourseDef } from "./types";
 
-// In scope this round: Courses 01-05 and 12-14. Courses 06-11 come later; add
-// them here and their assets will appear on the shelves automatically.
+// All fourteen courses. Resources that live outside the Command Center (GHL
+// snapshot items, walkthrough videos, IconPress, live sessions) are not listed.
 
 export const COURSES: CourseDef[] = [
   {
@@ -60,6 +60,21 @@ export const COURSES: CourseDef[] = [
     pillar: "Pillar 2",
     assets: ["icp-worksheet", "sequence-generator", "campaign-metrics"],
     note: "Before you start: this course uses paid tools you buy yourself: HeyReach, plus either LinkedIn Sales Navigator or Apollo. Check current pricing on each before Lesson 1.2.",
+  },
+  {
+    number: 9,
+    title: "Your Tech Stack in a Weekend",
+    pillar: "Pillar 2",
+    assets: ["weekend-tracker", "launch-checklist"],
+    note: "Your CRM, website, pipeline and email sequences live in your Late Founders GHL workspace. The Command Center tracks your progress and holds the launch checklist.",
+    link: { label: "Open your GHL workspace", envKey: "GHL_LOGIN_URL", fallback: "https://app.gohighlevel.com/" },
+  },
+  {
+    number: 10,
+    title: "The Sales Framework",
+    pillar: "Pillar 2",
+    assets: ["discovery-sheet", "objection-library"],
+    note: "Your CRM follow-up sequence and lost-deal reasons are set up in your GHL workspace.",
   },
   {
     number: 11,
@@ -176,6 +191,18 @@ export const ASSETS: AssetDef[] = [
   { id: "campaign-metrics", code: "08.5", course: 8, kind: "worksheet", title: "Campaign Metrics Tracker",
     summary: "Weekly rates per sequence step, the weakest one flagged with its fix, one change at a time." },
 
+  // Course 09 (the GHL sub-account, pipeline, templates and sequences live in GHL)
+  { id: "weekend-tracker", code: "09.0", course: 9, kind: "checklist", title: "Weekend Setup Tracker",
+    summary: "Tick off your GHL workspace setup, step by step, across the weekend." },
+  { id: "launch-checklist", code: "09.1", course: 9, kind: "checklist", title: "8-Point Launch Checklist",
+    summary: "Eight pass-or-fail checks before your site goes live. All eight must pass." },
+
+  // Course 10 (10.1 Sales-Call AI is pending; 10.4 and 10.5 live in GHL)
+  { id: "discovery-sheet", code: "10.2", course: 10, kind: "worksheet", title: "Discovery Question Sheet",
+    summary: "The five questions in order, a Now and Wanted grid you sort live, and the gap in their words. One per prospect." },
+  { id: "objection-library", code: "10.3", course: 10, kind: "template", title: "Objection-Handling Script Library",
+    summary: "Your ask, your price line and your answers to three objections, in your own words, on one screen." },
+
   // Course 11
   { id: "ai-audit-tracker", code: "11.1", course: 11, kind: "worksheet", title: "AI Audit Tracker",
     summary: "Five days of tasks, sorted and ranked by hours a month, to find your top three automation targets." },
@@ -245,9 +272,9 @@ export function eyebrowFor(asset: AssetDef): string {
 // Founder type -> course order. Fresh Start and First-Timer validate an idea
 // first; a Buried Founder already runs a business and needs out of it first.
 export const ROUTES: Record<string, number[]> = {
-  "Fresh Start": [1, 2, 3, 4, 5, 6, 7, 8, 11, 12, 13, 14],
-  "First-Timer": [1, 2, 3, 4, 5, 6, 7, 8, 11, 12, 13, 14],
-  "Buried Founder": [1, 2, 12, 11, 14, 13, 7, 8, 3, 4, 5, 6],
+  "Fresh Start": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14],
+  "First-Timer": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14],
+  "Buried Founder": [1, 2, 12, 11, 14, 13, 7, 8, 9, 10, 3, 4, 5, 6],
 };
 export const DEFAULT_ROUTE = ROUTES["Fresh Start"];
 

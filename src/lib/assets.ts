@@ -106,7 +106,7 @@ export async function saveSheet(userId: string, assetId: string, data: SheetData
   if (!complete) return { status, version: null as number | null };
   const fresh = await getProfile(userId);
   const doc = worksheetToDoc(asset, def, def.live ? { ...data, ...def.live(fresh) } : data, fresh);
-  const version = await createVersion(userId, assetId, data, doc, "Completed");
+  const version = await createVersion(userId, assetId, data, doc, def.versionLabel?.(data).trim() || "Completed");
   return { status, version };
 }
 

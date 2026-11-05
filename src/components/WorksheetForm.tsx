@@ -333,6 +333,20 @@ export default function WorksheetForm({
             {save === "saving" ? "Saving…" : save === "saved" ? `All changes saved ${savedAt}` : save === "error" ? "Not saved. Retrying when you type again." : "Changes save automatically"}
           </span>
         )}
+        {def.resetLabel && !readOnly && (
+          <button
+            type="button"
+            className="btn-ghost"
+            onClick={() => {
+              if (window.confirm("Clear this sheet for the next one? Everything you completed stays in My Files.")) {
+                update(def.initial?.(profile) ?? {});
+                setMessage("");
+              }
+            }}
+          >
+            {def.resetLabel}
+          </button>
+        )}
         {message && <span className="status" role="status" style={{ color: messageIsError ? "var(--danger)" : "var(--mint)" }}>{message}</span>}
       </div>
       {!readOnly && (

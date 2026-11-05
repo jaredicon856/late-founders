@@ -29,6 +29,7 @@ export const PROFILE_FIELDS: Record<string, string> = {
   icp_paragraph: "ICP paragraph",
   message_sequence: "Message sequence",
   campaign_metrics: "Campaign metrics",
+  objection_scripts: "Objection-handling scripts",
   audit_top_three: "Top three automation targets",
   repurposed_pieces: "Repurposed content",
   hours_saved: "Hours saved",

@@ -116,6 +116,11 @@ export interface WorksheetDef {
   // Member record fields written when the member saves/completes.
   writes?: { key: string; from: (data: SheetData, profile: ProfileData) => unknown }[];
   exports: ("pdf" | "xlsx" | "docx" | "zip")[];
+  // Names each saved version (e.g. after the prospect), shown in My Files.
+  versionLabel?: (data: SheetData) => string;
+  // Sheets used once per item (one per prospect): a button that clears the
+  // sheet for the next one. Saved versions are kept.
+  resetLabel?: string;
   // Blocks "Mark complete" with a message when something required is missing.
   // Checked on the server; autosave is never blocked.
   completeCheck?: (data: SheetData, profile: ProfileData) => string | null;
@@ -184,4 +189,7 @@ export interface CourseDef {
   pillar: string;
   assets: string[]; // asset ids in curriculum order
   note?: string; // shown on the course shelf, e.g. costs the member pays themselves
+  // A link out from the shelf (e.g. the member's GHL workspace). The URL comes
+  // from the server env var when set, else the fallback.
+  link?: { label: string; envKey: string; fallback: string };
 }

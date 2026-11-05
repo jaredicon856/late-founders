@@ -52,6 +52,13 @@ export default async function Courses() {
                 </span>
               </div>
               {course.note && <div className="shelf-note">{course.note}</div>}
+              {course.link && (
+                <div className="shelf-note link-note">
+                  <a className="btn-primary" href={process.env[course.link.envKey] || course.link.fallback} target="_blank" rel="noopener noreferrer">
+                    {course.link.label} ↗
+                  </a>
+                </div>
+              )}
               <div className="shelf-body">
                 {course.assets.map((id) => {
                   const a = getAsset(id);

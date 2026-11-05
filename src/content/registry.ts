@@ -12,6 +12,8 @@ import { course05Worksheets } from "./worksheets/c05";
 import { course06Worksheets } from "./worksheets/c06";
 import { course07Worksheets } from "./worksheets/c07";
 import { course08Worksheets } from "./worksheets/c08";
+import { course09Worksheets } from "./worksheets/c09";
+import { course10Worksheets } from "./worksheets/c10";
 import { course11Worksheets } from "./worksheets/c11";
 import { course12Worksheets } from "./worksheets/c12";
 import { course13Worksheets } from "./worksheets/c13";
@@ -38,6 +40,8 @@ const WORKSHEETS: WorksheetDef[] = [
   ...course06Worksheets,
   ...course07Worksheets,
   ...course08Worksheets,
+  ...course09Worksheets,
+  ...course10Worksheets,
   ...course11Worksheets,
   ...course12Worksheets,
   ...course13Worksheets,
