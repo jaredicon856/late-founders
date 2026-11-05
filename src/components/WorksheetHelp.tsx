@@ -23,7 +23,9 @@ export default function WorksheetHelp({ assetId, title }: { assetId: string; tit
       .catch(() => setLines([]));
   }, [open, lines, assetId]);
 
-  useEffect(() => endRef.current?.scrollIntoView({ block: "nearest" }), [lines, busy]);
+  useEffect(() => {
+    endRef.current?.scrollIntoView({ block: "nearest" });
+  }, [lines, busy]);
 
   async function send() {
     const text = draft.trim();

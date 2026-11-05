@@ -13,7 +13,9 @@ export default function DailyAction({ action, log: initial }: { action: string; 
   const [log, setLog] = useState(initial);
   const [days, setDays] = useState<string[]>([]); // last 7 days, oldest first; set after mount to use the member's clock
   const [error, setError] = useState("");
-  useEffect(() => setDays(Array.from({ length: 7 }, (_, i) => localDay(i - 6))), []);
+  useEffect(() => {
+    setDays(Array.from({ length: 7 }, (_, i) => localDay(i - 6)));
+  }, []);
 
   const today = days[6];
   const doneToday = !!today && log.includes(today);
