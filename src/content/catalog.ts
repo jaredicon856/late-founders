@@ -49,6 +49,12 @@ export const COURSES: CourseDef[] = [
     assets: ["runway-calculator", "risk-inventory", "decision-engine", "contract-review-checklist"],
   },
   {
+    number: 7,
+    title: "LinkedIn Authority",
+    pillar: "Pillar 2",
+    assets: ["profile-audit", "hook-library", "content-pillars", "content-calendar"],
+  },
+  {
     number: 11,
     title: "AI for Founders",
     pillar: "Pillar 2",
@@ -145,6 +151,16 @@ export const ASSETS: AssetDef[] = [
   { id: "contract-review-checklist", code: "06.4", course: 6, kind: "checklist", title: "Employment Contract Review Checklist",
     summary: "What to look for in IP, non-compete and moonlighting clauses before you build on the side." },
 
+  // Course 07 (07.4 IconPress is an external ICON product, linked rather than built)
+  { id: "profile-audit", code: "07.1", course: 7, kind: "ai", title: "Profile-Audit AI",
+    summary: "Paste your LinkedIn profile section by section; each is scored, rewritten, and the weakest flagged." },
+  { id: "hook-library", code: "07.2", course: 7, kind: "library", title: "Hook & Template Library",
+    summary: "Hooks, post formats, comment, connection and DM openers, each with a generic and a specific example." },
+  { id: "content-pillars", code: "07.3", course: 7, kind: "worksheet", title: "Content Pillar Worksheet",
+    summary: "Five pillars with one post idea only you could write, and the angle statement every post runs through." },
+  { id: "content-calendar", code: "07.5", course: 7, kind: "template", title: "4-Week Content Calendar",
+    summary: "Your pillars on a three-a-week rotation for four weeks, pre-filled so you never face an empty grid." },
+
   // Course 11
   { id: "ai-audit-tracker", code: "11.1", course: 11, kind: "worksheet", title: "AI Audit Tracker",
     summary: "Five days of tasks, sorted and ranked by hours a month, to find your top three automation targets." },
@@ -214,9 +230,9 @@ export function eyebrowFor(asset: AssetDef): string {
 // Founder type -> course order. Fresh Start and First-Timer validate an idea
 // first; a Buried Founder already runs a business and needs out of it first.
 export const ROUTES: Record<string, number[]> = {
-  "Fresh Start": [1, 2, 3, 4, 5, 6, 11, 12, 13, 14],
-  "First-Timer": [1, 2, 3, 4, 5, 6, 11, 12, 13, 14],
-  "Buried Founder": [1, 2, 12, 11, 14, 13, 3, 4, 5, 6],
+  "Fresh Start": [1, 2, 3, 4, 5, 6, 7, 11, 12, 13, 14],
+  "First-Timer": [1, 2, 3, 4, 5, 6, 7, 11, 12, 13, 14],
+  "Buried Founder": [1, 2, 12, 11, 14, 13, 7, 3, 4, 5, 6],
 };
 export const DEFAULT_ROUTE = ROUTES["Fresh Start"];
 

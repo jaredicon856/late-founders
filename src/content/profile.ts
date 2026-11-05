@@ -24,6 +24,8 @@ export const PROFILE_FIELDS: Record<string, string> = {
   quit_decision: "Quit or Stay decision",
 
   angle_statement: "Angle statement",
+  content_pillars: "Content pillars",
+  linkedin_audit: "LinkedIn profile audit",
   audit_top_three: "Top three automation targets",
   repurposed_pieces: "Repurposed content",
   hours_saved: "Hours saved",

@@ -40,8 +40,8 @@ describe("catalog", () => {
     for (const route of Object.values(ROUTES)) expect([...route].sort((a, b) => a - b)).toEqual(COURSES.map((c) => c.number).sort((a, b) => a - b));
   });
 
-  it("covers the in-scope courses only: 01-06 and 11-14", () => {
-    expect(COURSES.map((c) => c.number)).toEqual([1, 2, 3, 4, 5, 6, 11, 12, 13, 14]);
+  it("covers the in-scope courses only: 01-07 and 11-14", () => {
+    expect(COURSES.map((c) => c.number)).toEqual([1, 2, 3, 4, 5, 6, 7, 11, 12, 13, 14]);
   });
 });
 

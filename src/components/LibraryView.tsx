@@ -16,6 +16,7 @@ export default function LibraryView({ block, profile }: { block: LibraryBlock; p
     }
   })();
   const [filter, setFilter] = useState<string>(forYou.length ? "For you" : "All");
+  const [tag, setTag] = useState("");
   const [copied, setCopied] = useState("");
   useEffect(() => {
     if (!copied) return;
@@ -23,9 +24,9 @@ export default function LibraryView({ block, profile }: { block: LibraryBlock; p
     return () => clearTimeout(t);
   }, [copied]);
 
-  const shown = block.entries.filter((e) =>
-    filter === "All" ? true : filter === "For you" ? forYou.includes(e.category) : e.category === filter,
-  );
+  const shown = block.entries
+    .filter((e) => (filter === "All" ? true : filter === "For you" ? forYou.includes(e.category) : e.category === filter))
+    .filter((e) => !tag || !e.tags || e.tags.includes(tag));
   const chips = [...(forYou.length ? ["For you"] : []), "All", ...block.categories];
 
   async function copy(id: string, text: string) {
@@ -46,11 +47,22 @@ export default function LibraryView({ block, profile }: { block: LibraryBlock; p
           </button>
         ))}
       </div>
+      {block.tagFilter && (
+        <div className="chips" role="group" aria-label={`Filter by ${block.tagFilter.label}`}>
+          <span className="lbl" style={{ alignSelf: "center" }}>{block.tagFilter.label}</span>
+          {["", ...block.tagFilter.tags].map((t) => (
+            <button key={t || "any"} type="button" className={`pill ${tag === t ? "active" : ""}`} onClick={() => setTag(t)}>
+              {t || "Any"}
+            </button>
+          ))}
+        </div>
+      )}
       {filter === "For you" && <p className="muted small">Matched to your top automation targets from the AI Audit Tracker.</p>}
       {shown.map((e) => (
         <article key={`${e.category}-${e.title}`} className="lib-entry">
           <div className="eyebrow">{e.category}</div>
           <h3>{e.title}</h3>
+          {e.tags && <p className="muted small" style={{ marginTop: -6 }}>Suits: {e.tags.join(", ")}</p>}
           {e.parts.map((p, j) => {
             const id = `${e.title}-${j}`;
             return (

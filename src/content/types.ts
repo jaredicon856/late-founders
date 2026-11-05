@@ -60,6 +60,7 @@ export interface LibraryEntry {
   category: string;
   title: string;
   parts: { label: string; text: string; copy?: boolean }[];
+  tags?: string[]; // e.g. the content pillars an entry suits
 }
 
 export type Computed = string | number | { headers: string[]; rows: string[][] } | null;
@@ -82,6 +83,8 @@ export type Block =
       entries: LibraryEntry[];
       // Categories to open on for this member (e.g. their top audit targets).
       forYou?: (profile: ProfileData) => string[];
+      // A second filter row over entry tags (e.g. "Pillar": Clarity, Lessons…).
+      tagFilter?: { label: string; tags: string[] };
     }
   | {
       kind: "computed";
