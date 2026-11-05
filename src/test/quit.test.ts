@@ -66,3 +66,13 @@ describe("Decision Engine", () => {
     expect(decide({ ...i, founder_type: "First-Timer" }).band).toBe("Quit in three to six months");
   });
 });
+
+describe("Decision Engine reads the offer", () => {
+  it("counts the signed clients a monthly package needs to close the MVI gap", async () => {
+    const { offerSummary } = await import("@/content/modes/c06");
+    const p = { mvi: 4400, committed_revenue: 1000, offer_record: { package: { name: "Ops Reset", price: "$1,500/mo" } } };
+    expect(offerSummary(p)).toMatchObject({ name: "Ops Reset", monthly: 1500, clientsToMvi: 3 });
+    expect(offerSummary({ offer_record: { package: { name: "Audit", price: "$4,500" } } })?.clientsToMvi).toBeNull();
+    expect(offerSummary({})).toBeNull();
+  });
+});

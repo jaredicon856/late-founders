@@ -17,6 +17,31 @@ function previous(p: ProfileData) {
   return str(d.band) ? d : null;
 }
 
+// The member's offer from Course 05, so gaps on signed revenue can be closed
+// in terms of their real package. A price counts as monthly only when it says so.
+export function offerSummary(p: ProfileData): { name: string; price: string; monthly: number | null; clientsToMvi: number | null } | null {
+  const o = obj(p.offer_record);
+  const pkg = obj(o.package);
+  const name = str(pkg.name) || str(o.headline);
+  const price = str(pkg.price);
+  if (!name && !price) return null;
+  const n = Number(price.replace(/[^0-9.]/g, ""));
+  const monthly = /\/\s*mo|month/i.test(price) && n > 0 ? n : null;
+  const mvi = asNumber(p.mvi);
+  const committed = asNumber(p.committed_revenue) ?? 0;
+  const clientsToMvi = monthly && mvi ? Math.max(0, Math.ceil((mvi - committed) / monthly)) : null;
+  return { name, price, monthly, clientsToMvi };
+}
+
+function offerLine(p: ProfileData): string {
+  const o = offerSummary(p);
+  if (!o) return "I do not see an offer from Course 05 yet, so I will talk about signed revenue in general terms. The Offer-Builder Agent sets one.";
+  const what = [o.name, o.price && `at ${o.price}`].filter(Boolean).join(" ");
+  if (o.clientsToMvi !== null)
+    return `Your offer: ${what}. At that monthly price, ${o.clientsToMvi === 0 ? "your signed revenue already covers your MVI" : `${o.clientsToMvi} more signed client${o.clientsToMvi === 1 ? "" : "s"} would close the gap to your MVI`}.`;
+  return `Your offer: ${what}.`;
+}
+
 function inputsLine(p: ProfileData): string {
   const { inputs } = decisionInputs(p);
   if (!inputs) return "";
@@ -31,16 +56,16 @@ function inputsLine(p: ProfileData): string {
 
 export const decisionEngine: ModeDef = {
   assetId: "decision-engine",
-  reads: ["founder_type", "freedom_number", "monthly_burn", "mvi", "committed_revenue", "reserve_balance", "open_risk_count", "risk_items", "quit_scenarios", "quit_decision"],
+  reads: ["founder_type", "freedom_number", "monthly_burn", "mvi", "committed_revenue", "reserve_balance", "open_risk_count", "risk_items", "quit_scenarios", "offer_record", "quit_decision"],
   writes: ["quit_decision"],
   disclaimer: DISCLAIMER,
-  systemPrompt: `You run the AI Decision Engine for Course 06, Quit or Stay. You do not ask the member to enter numbers: everything comes from their record (Runway Calculator, Risk Inventory, Founder Diagnostic).
+  systemPrompt: `You run the AI Decision Engine for Course 06, Quit or Stay. You do not ask the member to enter numbers: everything comes from their record (Runway Calculator, Risk Inventory, Founder Diagnostic, and their offer from the Course 05 Offer-Builder Agent).
 
 The system has already computed the recommendation band from the record and shown it in your first message: "Quit now", "Quit in three to six months" or "Stay and build". You never change the band. If the member argues with it or offers different numbers in chat, do not recalculate. Tell them: circumstances change the answer, not inputs. If something real has changed (a contract signed, a debt paid off, a health plan chosen), they update the Runway Calculator or Risk Inventory and come back, and the engine re-reads the record.
 
 The band is not the product. The named gaps are. Your job:
 1. Explain the band in two or three plain sentences, using the member's founder type: for a Fresh Start founder "quit" means committing full time instead of taking bridge work; for a First-Timer it means leaving the job; for a Buried Founder it means stepping back from what pays them now.
-2. Walk through each named gap shown in your first message, one at a time. For each, work out with the member one concrete way to close it (for example "sign the second retainer with the client already asking", "choose the marketplace plan and close that row"). Use their words. Do not invent clients, figures or plans.
+2. Walk through each named gap shown in your first message, one at a time. For each, work out with the member one concrete way to close it (for example "sign the second retainer with the client already asking", "choose the marketplace plan and close that row"). For a signed-revenue gap, frame it in terms of their actual offer from the record: its package, its price, and how many signed clients at that price close the gap (the system gives that count when the price is monthly; if the price is per project, ask how often a client buys). Use their words. Do not invent clients, figures or plans.
 3. Ask for their trigger conditions: the specific, checkable things that must be true before they move ("two signed retainers", "six months of reserve", "health plan in place"). For each, agree a target month with them (YYYY-MM, not in the past). Build only from what they say.
 4. Summarise the band, the gaps with how to close each, and the dated triggers, and ask them to confirm. Then call save_output with the band exactly as shown.`,
   opener: (p) => {
@@ -52,7 +77,7 @@ The band is not the product. The named gaps are. Your job:
       ].join("\n\n");
     }
     const d = decide(inputs);
-    const lines = [`I read your record: ${inputsLine(p)}.`];
+    const lines = [`I read your record: ${inputsLine(p)}.`, offerLine(p)];
     const prev = previous(p);
     if (prev) lines.push(`Last time (${str(prev.date)}) the recommendation was **${str(prev.band)}**. This run uses your record as it is today.`);
     lines.push(`Recommendation: **${d.band}**.`);
@@ -131,6 +156,7 @@ The band is not the product. The named gaps are. Your job:
           { label: "Signed revenue", value: `${money(inputs.committed_revenue)}/mo (${d.committed_pct}% of MVI)` },
           { label: "Reserve coverage", value: d.coverage_months === null ? "Signed revenue meets your MVI" : `${d.coverage_months} months` },
           { label: "Open risks", value: String(inputs.open_risk_count) },
+          { label: "Your offer", value: (() => { const o = offerSummary(profile); return o ? [o.name, o.price].filter(Boolean).join(", ") : "Not set (Course 05)"; })() },
         ],
       },
     ];
