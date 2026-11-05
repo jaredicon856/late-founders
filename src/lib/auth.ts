@@ -43,7 +43,8 @@ export async function destroySession() {
   jar.delete(COOKIE);
 }
 
-export type CurrentUser = { id: string; email: string; name: string };
+// name is the first name (greetings); fullName is for documents and admin.
+export type CurrentUser = { id: string; email: string; name: string; lastName: string; fullName: string };
 
 export async function getUser(): Promise<CurrentUser | null> {
   const jar = await cookies();
@@ -51,7 +52,8 @@ export async function getUser(): Promise<CurrentUser | null> {
   if (!id) return null;
   const s = await db.session.findUnique({ where: { id }, include: { user: true } });
   if (!s || s.expiresAt < new Date()) return null;
-  return { id: s.user.id, email: s.user.email, name: s.user.name };
+  const { id: uid, email, name, lastName } = s.user;
+  return { id: uid, email, name, lastName, fullName: [name, lastName].filter(Boolean).join(" ") };
 }
 
 export async function requireUser(): Promise<CurrentUser> {

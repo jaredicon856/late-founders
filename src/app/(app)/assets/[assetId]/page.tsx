@@ -65,7 +65,7 @@ export default async function AssetPage({ params }: { params: Promise<{ assetId:
           disclaimer={mode.disclaimer ?? null}
           memberEntry={mode.memberEntry ? { ...mode.memberEntry, values: entry ?? {} } : null}
           connected={aiConfigured()}
-          name={user.name}
+          name={user.fullName}
           uploads={assetId === "sop-generator"}
         />
         <VersionList assetId={assetId} versions={versions} formats={["pdf", "docx"]} />

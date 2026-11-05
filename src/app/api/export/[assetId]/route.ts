@@ -62,7 +62,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ assetId:
   doc = {
     ...doc,
     meta: {
-      member: doc.template === "neutral" ? undefined : user.name,
+      member: doc.template === "neutral" ? undefined : user.fullName,
       completedAt: completedAt?.toLocaleDateString("en-US", { dateStyle: "medium" }),
       version: version ?? undefined,
     },

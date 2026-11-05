@@ -26,7 +26,10 @@ export default function LoginForm({ needsCode, next }: { needsCode: boolean; nex
       ) : (
         <form action={signupAction}>
           {next && <input type="hidden" name="next" value={next} />}
-          <div className="field"><label htmlFor="name">First name</label><input className="input" id="name" name="name" autoComplete="given-name" required /></div>
+          <div className="row-fields">
+            <div className="field w-half"><label htmlFor="name">First name</label><input className="input" id="name" name="name" autoComplete="given-name" required /></div>
+            <div className="field w-half"><label htmlFor="lastName">Last name</label><input className="input" id="lastName" name="lastName" autoComplete="family-name" required /></div>
+          </div>
           <div className="field"><label htmlFor="email2">Email</label><input className="input" id="email2" name="email" type="email" autoComplete="email" required /></div>
           <div className="field"><label htmlFor="password2">Password</label><input className="input" id="password2" name="password" type="password" autoComplete="new-password" minLength={10} required /></div>
           {needsCode && (
