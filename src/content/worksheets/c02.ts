@@ -45,9 +45,10 @@ export const hiddenAssetsInventory: WorksheetDef = {
             maxRows: 20,
             twoUp: true,
             columns: [
-              { key: "name", label: "Name", type: "text", width: 1.1 },
-              { key: "source", label: "Where you know them from", type: "text", width: 1.5 },
-              { key: "could", label: "How they help", type: "select", options: ["Refer", "Buy", "Advise", "Introduce", "Vouch"], width: 0.9 },
+              // Source gets the room: on the one-page PDF it fits about 33 characters.
+              { key: "name", label: "Name", type: "text", width: 0.95 },
+              { key: "source", label: "Where you know them from", type: "text", width: 1.95 },
+              { key: "could", label: "How they help", type: "select", options: ["Refer", "Buy", "Advise", "Introduce", "Vouch"], width: 0.7 },
             ],
           },
         },
