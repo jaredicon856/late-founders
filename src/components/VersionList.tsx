@@ -27,9 +27,9 @@ export default function VersionList({
         <table className="versions">
           <thead><tr><th>Version</th><th>Saved</th><th>Note</th><th>Download</th></tr></thead>
           <tbody>
-            {versions.map((v) => (
+            {versions.map((v, i) => (
               <tr key={v.version}>
-                <td>v{v.version}</td>
+                <td>v{v.version}{i === 0 && <span className="tag-current">Current</span>}</td>
                 <td className="muted">{new Date(v.createdAt).toLocaleDateString("en-US", { dateStyle: "medium" })}</td>
                 <td className="muted">{v.label}</td>
                 <td className="dl">
@@ -42,7 +42,7 @@ export default function VersionList({
           </tbody>
         </table>
       ) : (
-        <p className="muted small" style={{ margin: "10px 0 0" }}>Each time you complete or re-run this, a new version is kept here. Earlier versions are never overwritten.</p>
+        <p className="muted small" style={{ margin: "10px 0 0" }}>Each time you complete or re-run this, a new version is kept here as a dated snapshot you can download. Earlier versions are never overwritten.</p>
       )}
     </section>
   );

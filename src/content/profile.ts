@@ -13,6 +13,7 @@ export const PROFILE_FIELDS: Record<string, string> = {
   journal_entries: "Reframing Journal entries",
   origin_story: "Your one-line origin story",
   commitment: "90-day commitment",
+  daily_action_log: "Daily action check-ins",
 
   problem_statement: "Problem statement",
   audience: "Audience",

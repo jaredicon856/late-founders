@@ -144,7 +144,10 @@ export default function WorksheetForm({
     if (timer.current) clearTimeout(timer.current);
     timer.current = setTimeout(flush, 800);
   };
-  const setField = (key: string, v: unknown) => update({ ...latest.current, [key]: v });
+  const setField = (key: string, v: unknown) => {
+    const merged = { ...latest.current, [key]: v };
+    update(def?.derive ? { ...merged, ...def.derive(key, merged) } : merged);
+  };
 
   async function complete() {
     setCompleting(true);
@@ -175,6 +178,7 @@ export default function WorksheetForm({
         <Input type={f.type} label={f.label} value={data[f.key]} options={f.options} lines={f.lines} placeholder={f.placeholder} onChange={(v) => setField(f.key, v)} />
       )}
       {f.hint && <span className="hint">{f.hint}</span>}
+      {f.screenHint && !readOnly && <span className="hint">{f.screenHint}</span>}
     </div>
   );
 
@@ -304,6 +308,7 @@ export default function WorksheetForm({
         <section key={i} className="card sheet-section">
           <h2>{s.title}</h2>
           {s.intro && <p className="intro">{s.intro}</p>}
+          {s.screenNote && !readOnly && <p className="intro screen-note">{s.screenNote}</p>}
           {s.blocks.map(renderBlock)}
         </section>
       ))}
@@ -318,6 +323,12 @@ export default function WorksheetForm({
         )}
         {message && <span className="status" style={{ color: "var(--mint)" }}>{message}</span>}
       </div>
+      {!readOnly && (
+        <p className="muted small" style={{ margin: "10px 0 0" }}>
+          Your changes save as you type, so you can close this page and come back. {status === "complete" ? "Save a new version" : "Mark complete"} keeps
+          a dated snapshot in My Files that you can download or go back to later.
+        </p>
+      )}
     </div>
   );
 }

@@ -1,6 +1,12 @@
 import type { SheetData, WorksheetDef } from "../types";
 import { asNumber } from "../profile";
 
+const addDays = (iso: string, days: number) => {
+  const t = new Date(`${iso}T00:00:00Z`);
+  t.setUTCDate(t.getUTCDate() + days);
+  return t.toISOString().slice(0, 10);
+};
+
 const rows = (d: SheetData, k: string) => (Array.isArray(d[k]) ? (d[k] as Record<string, unknown>[]) : []);
 
 export const hiddenAssetsInventory: WorksheetDef = {
@@ -11,6 +17,7 @@ export const hiddenAssetsInventory: WorksheetDef = {
     {
       title: "1 · Experience",
       intro: "Five skills, each with an outcome you can put a number or a result on.",
+      screenNote: "Example: \"Supplier negotiation: cut costs 18% in year one.\" If a skill has no number yet, name the result someone saw. The judgment underneath each skill goes in section 4.",
       blocks: [
         {
           kind: "table",
@@ -40,6 +47,7 @@ export const hiddenAssetsInventory: WorksheetDef = {
             columns: [
               { key: "name", label: "Name", type: "text", width: 1.2 },
               { key: "source", label: "Where you know them from", type: "text", width: 1.6 },
+              { key: "could", label: "How they help", type: "select", options: ["Refer", "Buy", "Advise", "Introduce", "Vouch"], width: 0.9 },
             ],
           },
         },
@@ -65,8 +73,22 @@ export const hiddenAssetsInventory: WorksheetDef = {
         {
           kind: "fields",
           fields: [
-            { key: "runway_months", label: "Runway in months", type: "number", width: "half" },
-            { key: "financial_standing", label: "Available financial standing ($)", type: "money", width: "half" },
+            {
+              key: "runway_months", label: "Runway in months", type: "number", width: "third",
+              screenHint: "How many months you could cover your living costs with no new income.",
+            },
+            {
+              key: "financial_standing", label: "Available financial standing ($)", type: "money", width: "third",
+              screenHint: "Money you could put into the business without risking the essentials.",
+            },
+            {
+              key: "launch_minimum", label: "Smallest amount to launch ($)", type: "money", width: "third",
+              screenHint: "The least you need to run a first real test. Often much less than you think.",
+            },
+            {
+              key: "capital_kinds", label: "Kinds of capital you could use", type: "text",
+              placeholder: "Savings, severance, a partner, customer pre-sales, a small loan…",
+            },
           ],
         },
       ],
@@ -83,6 +105,7 @@ export const hiddenAssetsInventory: WorksheetDef = {
               type: "textarea",
               lines: 3,
               placeholder: "What do you see coming before other people in your field do?",
+              screenHint: "What you can judge that others can't. For example: \"I can tell a realistic plan from a wishful one.\"",
             },
           ],
         },
@@ -98,6 +121,8 @@ export const hiddenAssetsInventory: WorksheetDef = {
         top_five: rows(d, "top_five").filter((r) => r.name),
         runway_months: asNumber(d.runway_months),
         financial_standing: asNumber(d.financial_standing),
+        launch_minimum: asNumber(d.launch_minimum),
+        capital_kinds: d.capital_kinds ?? "",
         judgment: d.judgment ?? "",
       }),
     },
@@ -107,17 +132,36 @@ export const hiddenAssetsInventory: WorksheetDef = {
 export const ninetyDayCommitment: WorksheetDef = {
   assetId: "ninety-day-commitment",
   exports: ["pdf", "docx"],
-  reads: ["origin_story", "journal_entries"],
+  reads: ["origin_story", "journal_entries", "ninety_day_target"],
   initial: (p) => ({ origin_story: typeof p.origin_story === "string" ? p.origin_story : "" }),
+  // The end date follows the start date by 90 days, and can never sit before it.
+  derive: (changed, d) => {
+    const start = typeof d.start_date === "string" ? d.start_date : "";
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(start)) return {};
+    const end = typeof d.end_date === "string" ? d.end_date : "";
+    if (changed === "start_date" || (changed === "end_date" && end && end < start)) return { end_date: addDays(start, 90) };
+    return {};
+  },
   sections: [
     {
       title: "The commitment",
       blocks: [
         {
+          kind: "computed",
+          key: "target",
+          label: "Your 90-day target, from the Founder Diagnostic",
+          compute: (_d, p) => (typeof p.ninety_day_target === "string" && p.ninety_day_target.trim() ? p.ninety_day_target : "Not set yet. Your Founder Diagnostic sets it."),
+        },
+        {
+          kind: "callout",
+          tone: "note",
+          text: "This worksheet is how you reach that target: the daily action is what you do every day, and the enough number is the result on day 90 that tells you it worked.",
+        },
+        {
           kind: "fields",
           fields: [
             { key: "start_date", label: "Start date", type: "date", width: "half" },
-            { key: "end_date", label: "End date", type: "date", width: "half" },
+            { key: "end_date", label: "End date", type: "date", width: "half", screenHint: "Fills in as 90 days after your start date." },
             {
               key: "daily_action",
               label: "Minimum daily founder action",

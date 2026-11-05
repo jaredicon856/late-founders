@@ -7,13 +7,13 @@ export const COURSES: CourseDef[] = [
   {
     number: 1,
     title: "Start Here: The Founder Diagnostic",
-    pillar: "Foundations",
+    pillar: "Foundational",
     assets: ["founder-diagnostic", "personal-roadmap"],
   },
   {
     number: 2,
     title: "The Late Advantage",
-    pillar: "Foundations",
+    pillar: "Foundational",
     assets: ["hidden-assets-inventory", "reframing-journal", "ninety-day-commitment"],
   },
   {
@@ -45,7 +45,7 @@ export const COURSES: CourseDef[] = [
   {
     number: 12,
     title: "Get Out of Your Own Business",
-    pillar: "Pillar 3 · Scale & Exit",
+    pillar: "Pillar 3 · Legacy & Exit",
     assets: [
       "owners-audit",
       "task-sort",
@@ -58,13 +58,13 @@ export const COURSES: CourseDef[] = [
   {
     number: 13,
     title: "The 10-Year Build-to-Sell Plan",
-    pillar: "Pillar 3 · Scale & Exit",
+    pillar: "Pillar 3 · Legacy & Exit",
     assets: ["sellability-scorecard", "valuation-estimator", "roadmap-builder", "data-room"],
   },
   {
     number: 14,
     title: "Hire & Delegate",
-    pillar: "Pillar 3 · Scale & Exit",
+    pillar: "Pillar 3 · Legacy & Exit",
     assets: [
       "role-scorecard",
       "lane-decision-guide",

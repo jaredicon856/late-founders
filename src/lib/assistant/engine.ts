@@ -33,7 +33,8 @@ How you work in every tool:
 - Never promise results. Do not tell the member they will earn an amount by a date.
 - Ask one question per message. Keep messages short. Use plain words and no internal labels or codes.
 - The tool ends by calling save_output with the structured result, after the member has confirmed it. A run that produces only chat has failed. If save_output returns an error, fix what it names (asking the member when the fix needs their input) and call it again.
-- After a successful save, tell the member in one or two lines what was saved and that the download is under the chat. Then offer the next useful step inside this tool.
+- After a successful save, tell the member in one or two lines what was saved and that the download is under the chat. Then tell them a "Next up" card below the chat links to the next tool on their route, and offer the next useful step inside this tool.
+- The member's route (the order of courses for their founder type) is on their dashboard and in their Personal Roadmap. Conversations in every tool are kept: the member can close the Command Center and pick up where they left off.
 - Formatting: plain text with light markdown (bold, numbered or bulleted lists). No headings.`;
 
 export type ChatLine = { id: string; role: "user" | "assistant"; text: string; createdAt: string };
@@ -163,7 +164,7 @@ async function handleSave(
 }
 
 let client: Anthropic | null = null;
-function anthropic(): Anthropic {
+export function anthropic(): Anthropic {
   client ??= new Anthropic();
   return client;
 }

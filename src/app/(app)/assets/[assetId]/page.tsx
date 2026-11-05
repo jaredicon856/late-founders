@@ -6,8 +6,10 @@ import Chat from "@/components/Chat";
 import SopLibrary from "@/components/SopLibrary";
 import SweepTool from "@/components/SweepTool";
 import VersionList from "@/components/VersionList";
+import NextUp from "@/components/NextUp";
 import WorksheetForm from "@/components/WorksheetForm";
-import { loadSheet } from "@/lib/assets";
+import WorksheetHelp from "@/components/WorksheetHelp";
+import { getStatuses, loadSheet } from "@/lib/assets";
 import { aiConfigured, currentRun, getTranscript } from "@/lib/assistant/engine";
 import { requireUser } from "@/lib/auth";
 import { db } from "@/lib/db";
@@ -19,7 +21,8 @@ export default async function AssetPage({ params }: { params: Promise<{ assetId:
   const asset = getAsset(assetId);
   if (!asset) notFound();
   const user = await requireUser();
-  const profile = await getProfile(user.id);
+  const [profile, statuses] = await Promise.all([getProfile(user.id), getStatuses(user.id)]);
+  const nextUp = statuses[assetId]?.status === "complete" ? <NextUp profile={profile} statuses={statuses} /> : null;
 
   const head = (
     <>
@@ -66,6 +69,7 @@ export default async function AssetPage({ params }: { params: Promise<{ assetId:
           uploads={assetId === "sop-generator"}
         />
         <VersionList assetId={assetId} versions={versions} formats={["pdf", "docx"]} />
+        {nextUp}
         <div className="note-bar" style={{ marginTop: 18 }}>
           Same assistant throughout the community. Opening a different tool switches its mode, its instructions and which part of your record it can read and write.
         </div>
@@ -79,6 +83,7 @@ export default async function AssetPage({ params }: { params: Promise<{ assetId:
         {head}
         <SweepTool initialNames={Array.isArray(profile.name_candidates) ? (profile.name_candidates as string[]) : []} />
         <VersionList assetId={assetId} versions={versions} formats={["pdf", "xlsx"]} />
+        {nextUp}
       </>
     );
   }
@@ -90,6 +95,7 @@ export default async function AssetPage({ params }: { params: Promise<{ assetId:
       <>
         {head}
         <SopLibrary initialSops={sops} initialRoles={roles} />
+        {nextUp}
       </>
     );
   }
@@ -101,6 +107,7 @@ export default async function AssetPage({ params }: { params: Promise<{ assetId:
     <>
       {head}
       <p className="lede">{asset.summary}</p>
+      {aiConfigured() && <WorksheetHelp assetId={assetId} title={asset.title} />}
       <WorksheetForm
         assetId={assetId}
         initialData={sheet.data}
@@ -109,6 +116,7 @@ export default async function AssetPage({ params }: { params: Promise<{ assetId:
         readOnly={!!def.readOnly}
       />
       <VersionList assetId={assetId} versions={versions} formats={def.exports} current={!!def.readOnly} canExportCurrent />
+      {nextUp}
     </>
   );
 }

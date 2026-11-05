@@ -30,7 +30,7 @@ export default function LoginForm({ needsCode, next }: { needsCode: boolean; nex
           <div className="field"><label htmlFor="email2">Email</label><input className="input" id="email2" name="email" type="email" autoComplete="email" required /></div>
           <div className="field"><label htmlFor="password2">Password</label><input className="input" id="password2" name="password" type="password" autoComplete="new-password" minLength={10} required /></div>
           {needsCode && (
-            <div className="field"><label htmlFor="code">Member code</label><input className="input" id="code" name="code" required /><span className="hint">From the Start Here lesson in Skool.</span></div>
+            <div className="field"><label htmlFor="code">Member code</label><input className="input" id="code" name="code" required /><span className="hint">From the Homeroom welcome in Skool.</span></div>
           )}
           {error && <p className="err">{error}</p>}
           <button className="btn-primary" disabled={signingUp}>{signingUp ? "Creating…" : "Create account"}</button>

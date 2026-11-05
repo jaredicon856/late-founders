@@ -241,6 +241,9 @@ export default function Chat({
             {persistent ? "Start a separate conversation" : "Start a fresh run"}
           </button>
         </div>
+        <p className="muted small" style={{ margin: "12px 0 0" }}>
+          This conversation is saved. Close the Command Center whenever you like and pick up here next time.
+        </p>
       </div>
     </>
   );

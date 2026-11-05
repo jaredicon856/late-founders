@@ -9,6 +9,8 @@ import { SaveError, str, objArray } from "./util";
 //   prompt_set: "Layoff reframe" | "Rut as signal" | "Perfectly timed";
 //   factual: string;         // the member's factual account, in their words
 //   first_decision: string;  // the first deliberate decision they made afterward
+//   time_now: string;        // how they spend their working time now (Lesson 3.2)
+//   time_wanted: string;     // how they want to spend it instead
 //   reframed: string;        // the same events with the member as the actor
 //   spoken_sentence: string; // the one-sentence, said-aloud version
 // }[]
@@ -38,8 +40,9 @@ You may suggest the set that fits their founder type, but the member chooses.
 Steps, in order:
 1. Factual account. Ask the member to write what happened, plainly, as facts: what, when, who, what they did. No interpretation yet. Let them write at length; do not rewrite it for them.
 2. Follow-ups. Ask one question at a time to find the first deliberate decision they made afterward: the first thing they chose to do rather than had done to them (a call they made, a course they signed up for, a no they said, a plan they started). Keep asking until that decision is specific and in their words. If they cannot name one, help them look at the days and weeks after, but never supply one for them.
-3. Reframe. Write the same account again with the member as the actor: same events, same order, told from that first decision forward. Use only events and details the member described. Do not invent conversations, feelings, outcomes, dates or people. Do not exaggerate. Keep their voice; first person; plain words. Show it to them and revise until they say it is true.
-4. Spoken sentence. Compress the reframe into one sentence they could say aloud when someone asks "So what made you start this?" Under ${MAX_SENTENCE_WORDS} words, first person, no jargon. Ask them to say it out loud and tell you if it sounds like them. Revise until it does. Tell them this sentence becomes their origin story, used on their 90-Day Commitment Worksheet, and replaces any previous one.
+3. Time gap (Lesson 3.2). Ask how they spend a typical working week now, then how they want to spend it instead. Keep both in their words and concrete (hours, tasks, people), not slogans. The gap between the two is what the business has to close; say so in one line.
+4. Reframe. Write the same account again with the member as the actor: same events, same order, told from that first decision forward. Use only events and details the member described. Do not invent conversations, feelings, outcomes, dates or people. Do not exaggerate. Keep their voice; first person; plain words. Show it to them and revise until they say it is true.
+5. Spoken sentence. Compress the reframe into one sentence they could say aloud when someone asks "So what made you start this?" Under ${MAX_SENTENCE_WORDS} words, first person, no jargon. Ask them to say it out loud and tell you if it sounds like them. Revise until it does. Tell them this sentence becomes their origin story, used on their 90-Day Commitment Worksheet, and replaces any previous one.
 
 Save only after the member approves both the reframe and the sentence. "factual" must be the member's own account as they wrote it (you may join multiple messages, but do not rewrite it).`,
   opener: (p: ProfileData) => {
@@ -54,18 +57,26 @@ Save only after the member approves both the reframe and the sentence. "factual"
       type === "First-Timer" ? " As a First-Timer, rut as signal is a good place to begin." :
       type === "Buried Founder" ? " As a Buried Founder, perfectly timed is a good place to begin." : "";
     lines.push(
-      `Pick one to work on today: the layoff reframe, rut as signal, or perfectly timed.${suggestion}`,
+      [
+        "There are three ways in. Pick the one that fits the chapter you want to work on:",
+        "- **The layoff reframe**: a job that ended, a layoff, a restructure, or being pushed out.",
+        "- **Rut as signal**: a stretch of feeling stuck, bored or passed over, read as a sign of what you wanted next.",
+        "- **Perfectly timed**: why starting now, later in your career, is the right moment and not a late one.",
+      ].join("\n"),
+      `Which one do you want to work on today?${suggestion}`,
     );
     return lines.join("\n\n");
   },
   outputSchema: {
     type: "object",
     additionalProperties: false,
-    required: ["prompt_set", "factual", "first_decision", "reframed", "spoken_sentence"],
+    required: ["prompt_set", "factual", "first_decision", "time_now", "time_wanted", "reframed", "spoken_sentence"],
     properties: {
       prompt_set: { type: "string", enum: [...PROMPT_SETS] },
       factual: { type: "string", description: "The member's factual account, in their own words." },
       first_decision: { type: "string", description: "The first deliberate decision they made afterward, as they described it." },
+      time_now: { type: "string", description: "How the member spends a typical working week now, in their words." },
+      time_wanted: { type: "string", description: "How the member wants to spend it instead, in their words." },
       reframed: { type: "string", description: "The approved reframe, with the member as the actor. Only events they described." },
       spoken_sentence: { type: "string", description: "One sentence to say aloud, approved by the member." },
     },
@@ -77,6 +88,9 @@ Save only after the member approves both the reframe and the sentence. "factual"
     if (!factual) throw new SaveError("factual is empty. Save the member's own factual account.");
     const decision = str(o.first_decision);
     if (!decision) throw new SaveError("first_decision is empty. Keep asking until the member names the first deliberate decision they made.");
+    const timeNow = str(o.time_now);
+    const timeWanted = str(o.time_wanted);
+    if (!timeNow || !timeWanted) throw new SaveError("time_now and time_wanted are required. Ask the member how they spend a typical week now and how they want to spend it.");
     const reframed = str(o.reframed);
     if (!reframed) throw new SaveError("reframed is empty.");
     const sentence = str(o.spoken_sentence).replace(/\s+/g, " ");
@@ -93,6 +107,8 @@ Save only after the member approves both the reframe and the sentence. "factual"
       prompt_set: promptSet,
       factual,
       first_decision: decision,
+      time_now: timeNow,
+      time_wanted: timeWanted,
       reframed,
       spoken_sentence: sentence,
     };
@@ -112,6 +128,10 @@ Save only after the member approves both the reframe and the sentence. "factual"
       },
       { type: "heading", text: "Your first deliberate decision" },
       { type: "paragraph", text: decision },
+      {
+        type: "table",
+        table: { headers: ["How you spend your time now", "How you want to spend it"], widths: [1, 1], rows: [[timeNow, timeWanted]] },
+      },
       { type: "big", label: "Say it out loud", value: sentence, note: "Your origin story, in one sentence." },
     ];
     if (earlier.length) {

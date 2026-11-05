@@ -27,6 +27,7 @@ export interface FieldDef {
   label: string;
   type: FieldType;
   hint?: string;
+  screenHint?: string; // shown under the field on screen only, never printed
   placeholder?: string;
   options?: string[]; // for select
   lines?: number; // textarea height, also paper height
@@ -79,6 +80,7 @@ export type Block =
 export interface Section {
   title: string;
   intro?: string;
+  screenNote?: string; // guidance shown on screen only, never printed
   blocks: Block[];
   pageBreakBefore?: boolean;
 }
@@ -96,6 +98,9 @@ export interface WorksheetDef {
   // Member record fields written when the member saves/completes.
   writes?: { key: string; from: (data: SheetData, profile: ProfileData) => unknown }[];
   exports: ("pdf" | "xlsx" | "docx" | "zip")[];
+  // Fills in other fields after the member changes one (e.g. an end date from
+  // a start date). Returns only the fields to overwrite. Runs in the browser.
+  derive?: (changed: string, data: SheetData) => SheetData;
   // Tighter print layout for sheets the spec says must fit one page.
   dense?: boolean;
   // Guides have nothing to fill; the member marks them read.

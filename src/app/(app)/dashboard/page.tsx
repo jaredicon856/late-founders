@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ASSETS, FOUNDER_TYPE_COPY, courseLabel, getAsset } from "@/content/catalog";
 import { asNumber, money } from "@/content/profile";
+import DailyAction from "@/components/DailyAction";
 import FirstFive from "@/components/FirstFive";
 import Greeting from "@/components/Greeting";
 import { getStatuses, nextAsset, routeFor } from "@/lib/assets";
@@ -21,6 +22,9 @@ export default async function Dashboard() {
   const done = Array.isArray(profile.first_five_done) ? (profile.first_five_done as boolean[]) : [];
   const next = nextAsset(profile, statuses);
   const route = routeFor(profile);
+  const commitment = (profile.commitment ?? {}) as { daily_action?: unknown };
+  const dailyAction = typeof commitment.daily_action === "string" ? commitment.daily_action.trim() : "";
+  const dailyLog = Array.isArray(profile.daily_action_log) ? (profile.daily_action_log as string[]) : [];
 
   // Latest version per asset for the completed list.
   const latest = new Map<string, (typeof versions)[number]>();
@@ -96,6 +100,20 @@ export default async function Dashboard() {
         </div>
       </div>
 
+      {type && (
+        <div className="card" style={{ marginBottom: 18 }}>
+          <div className="eyebrow">Your daily founder action</div>
+          {dailyAction ? (
+            <DailyAction action={dailyAction} log={dailyLog} />
+          ) : (
+            <p className="muted" style={{ marginBottom: 0 }}>
+              Set your minimum daily action on the{" "}
+              <Link className="link" href="/assets/ninety-day-commitment">90 Day Commitment Worksheet</Link>, then check it off here each day.
+            </p>
+          )}
+        </div>
+      )}
+
       <div className="card" style={{ marginBottom: 18 }}>
         <div className="eyebrow" style={{ marginBottom: 10 }}>What you have completed</div>
         {latest.size ? (
@@ -125,7 +143,8 @@ export default async function Dashboard() {
 
       <div className="note-bar">
         Every tool reads this profile. Your route through the courses: {route.map((n) => courseLabel(n)).join(" → ")}.{" "}
-        {Object.values(statuses).filter((s) => s.status === "complete").length} of {ASSETS.length} assets complete.
+        {Object.values(statuses).filter((s) => s.status === "complete").length} of {ASSETS.length} Command Center tools complete (the
+        Command Center counts its tools and worksheets, not every lesson in Skool).
       </div>
     </>
   );
