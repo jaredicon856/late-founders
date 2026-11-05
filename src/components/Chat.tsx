@@ -84,7 +84,6 @@ export default function Chat({
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState("");
   const [saved, setSaved] = useState<Saved | null>(null);
-  const endRef = useRef<HTMLDivElement>(null);
   const draftKey = `lf-draft-${assetId}`;
 
   // Keep an unsent draft across reloads.
@@ -100,8 +99,16 @@ export default function Chat({
       else localStorage.removeItem(draftKey);
     } catch {}
   }, [draft, draftKey]);
+  // Keep the message box in view as the conversation grows, scrolling only as
+  // far as needed. Not on first load: the page opens at the top.
+  const composerRef = useRef<HTMLDivElement>(null);
+  const mounted = useRef(false);
   useEffect(() => {
-    endRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
+    if (!mounted.current) {
+      mounted.current = true;
+      return;
+    }
+    composerRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
   }, [lines.length, busy]);
 
   async function send() {
@@ -204,8 +211,7 @@ export default function Chat({
           </div>
         )}
         {notice && <p className="err" role="status">{notice}</p>}
-        <div ref={endRef} />
-        <div className="composer">
+        <div className="composer" ref={composerRef}>
           <textarea
             aria-label="Message the Assistant"
             placeholder={persistent ? "Pick up where you left off, or log something new…" : "Type your answer…"}
