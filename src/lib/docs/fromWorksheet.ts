@@ -126,6 +126,19 @@ export function blockToDoc(block: Block, data: SheetData, profile: ProfileData):
     }
     case "callout":
       return [{ type: "callout", tone: block.tone, title: block.title, text: block.text }];
+    case "library": {
+      const out: DocBlock[] = [];
+      for (const cat of block.categories) {
+        const entries = block.entries.filter((e) => e.category === cat);
+        if (!entries.length) continue;
+        out.push({ type: "subheading", text: cat });
+        for (const e of entries) {
+          out.push({ type: "paragraph", text: e.title, tone: "accent" });
+          for (const part of e.parts) out.push({ type: "paragraph", text: `${part.label}: ${part.text}` });
+        }
+      }
+      return out;
+    }
     case "computed":
       return computedBlocks(block.label, safeCompute(block, data, profile), block.big);
   }

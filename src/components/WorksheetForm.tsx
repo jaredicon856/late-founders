@@ -5,6 +5,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { getWorksheet } from "@/content/registry";
 import type { Block, ColumnDef, Computed, FieldDef, FieldType, ProfileData, SheetData, TableRow } from "@/content/types";
 import { safeCompute } from "@/lib/docs/fromWorksheet";
+import LibraryView from "./LibraryView";
 
 type SaveState = "idle" | "saving" | "saved" | "error";
 
@@ -89,6 +90,7 @@ export default function WorksheetForm({
   const [savedAt, setSavedAt] = useState<string>("");
   const [completing, setCompleting] = useState(false);
   const [message, setMessage] = useState("");
+  const [messageIsError, setMessageIsError] = useState(false);
   const dirty = useRef(false);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const latest = useRef(data);
@@ -101,7 +103,10 @@ export default function WorksheetForm({
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ data: latest.current, complete }),
       });
-      if (!res.ok) throw new Error(await res.text());
+      if (!res.ok) {
+        const b = (await res.json().catch(() => ({}))) as { error?: string };
+        throw new Error(res.status === 422 && b.error ? b.error : "That didn't save. Check your connection and try again.");
+      }
       return (await res.json()) as { status: string; version: number | null };
     },
     [assetId],
@@ -152,6 +157,7 @@ export default function WorksheetForm({
   async function complete() {
     setCompleting(true);
     setMessage("");
+    setMessageIsError(false);
     try {
       if (timer.current) clearTimeout(timer.current);
       dirty.current = false;
@@ -160,8 +166,12 @@ export default function WorksheetForm({
       setSave("saved");
       setMessage(readOnly ? "Marked as read." : `Saved as version ${r.version}. Downloads are below.`);
       router.refresh();
-    } catch {
-      setMessage("That didn't save. Check your connection and try again.");
+    } catch (e) {
+      setMessage(e instanceof Error ? e.message : "That didn't save. Check your connection and try again.");
+      setMessageIsError(true);
+      // The completion was refused or failed; make sure the typed data still saves.
+      dirty.current = true;
+      void flush();
     } finally {
       setCompleting(false);
     }
@@ -297,6 +307,8 @@ export default function WorksheetForm({
             {b.text}
           </div>
         );
+      case "library":
+        return <LibraryView key={i} block={b} profile={profile} />;
       case "computed":
         return <ComputedView key={i} label={b.label} big={b.big} value={safeCompute(b, data, profile)} />;
     }
@@ -321,7 +333,7 @@ export default function WorksheetForm({
             {save === "saving" ? "Saving…" : save === "saved" ? `All changes saved ${savedAt}` : save === "error" ? "Not saved. Retrying when you type again." : "Changes save automatically"}
           </span>
         )}
-        {message && <span className="status" style={{ color: "var(--mint)" }}>{message}</span>}
+        {message && <span className="status" role="status" style={{ color: messageIsError ? "var(--danger)" : "var(--mint)" }}>{message}</span>}
       </div>
       {!readOnly && (
         <p className="muted small" style={{ margin: "10px 0 0" }}>

@@ -32,6 +32,7 @@ export function outline(def: WorksheetDef): string {
       else if (b.kind === "callout") out.push(`- Note: ${b.text}`);
       else if (b.kind === "prose") out.push(`- Text: ${[...(b.paragraphs ?? []), ...(b.bullets ?? []), ...(b.numbered ?? [])].join(" ")}`);
       else if (b.kind === "computed") out.push(`- Calculated: ${b.label}`);
+      else if (b.kind === "library") out.push(`- Library entries: ${b.entries.map((e) => `${e.title} (${e.category})`).join("; ")}`);
     }
   }
   return out.join("\n");

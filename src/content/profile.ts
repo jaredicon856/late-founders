@@ -22,6 +22,11 @@ export const PROFILE_FIELDS: Record<string, string> = {
   open_risk_count: "Open risks",
   risk_items: "Open risk items",
   quit_decision: "Quit or Stay decision",
+
+  angle_statement: "Angle statement",
+  audit_top_three: "Top three automation targets",
+  repurposed_pieces: "Repurposed content",
+  hours_saved: "Hours saved",
   daily_action_log: "Daily action check-ins",
 
   problem_statement: "Problem statement",

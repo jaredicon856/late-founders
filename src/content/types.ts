@@ -54,6 +54,14 @@ export interface TableDef {
   twoUp?: boolean; // print as two side-by-side halves to save paper height
 }
 
+// One entry in a browsable library (workflows, hooks, templates). Parts are
+// shown in order; a part marked copy gets a copy-to-clipboard button.
+export interface LibraryEntry {
+  category: string;
+  title: string;
+  parts: { label: string; text: string; copy?: boolean }[];
+}
+
 export type Computed = string | number | { headers: string[]; rows: string[][] } | null;
 
 export type Block =
@@ -68,6 +76,13 @@ export type Block =
     }
   | { kind: "prose"; heading?: string; paragraphs?: string[]; bullets?: string[]; numbered?: string[] }
   | { kind: "callout"; tone: "note" | "warning" | "legal"; title?: string; text: string }
+  | {
+      kind: "library";
+      categories: string[];
+      entries: LibraryEntry[];
+      // Categories to open on for this member (e.g. their top audit targets).
+      forYou?: (profile: ProfileData) => string[];
+    }
   | {
       kind: "computed";
       key: string;
@@ -98,6 +113,9 @@ export interface WorksheetDef {
   // Member record fields written when the member saves/completes.
   writes?: { key: string; from: (data: SheetData, profile: ProfileData) => unknown }[];
   exports: ("pdf" | "xlsx" | "docx" | "zip")[];
+  // Blocks "Mark complete" with a message when something required is missing.
+  // Checked on the server; autosave is never blocked.
+  completeCheck?: (data: SheetData, profile: ProfileData) => string | null;
   // Fills in other fields after the member changes one (e.g. an end date from
   // a start date). Returns only the fields to overwrite. Runs in the browser.
   derive?: (changed: string, data: SheetData) => SheetData;

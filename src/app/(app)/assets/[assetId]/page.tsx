@@ -88,7 +88,7 @@ export default async function AssetPage({ params }: { params: Promise<{ assetId:
     );
   }
 
-  if (asset.kind === "library") {
+  if (asset.kind === "library" && !getWorksheet(assetId)) {
     const sops = await listSops(user.id);
     const roles = Array.isArray(profile.sop_roles) ? (profile.sop_roles as string[]) : [];
     return (

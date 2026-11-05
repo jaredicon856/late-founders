@@ -49,6 +49,12 @@ export const COURSES: CourseDef[] = [
     assets: ["runway-calculator", "risk-inventory", "decision-engine", "contract-review-checklist"],
   },
   {
+    number: 11,
+    title: "AI for Founders",
+    pillar: "Pillar 2",
+    assets: ["ai-audit-tracker", "workflow-library", "repurposing-engine", "hours-saved-tracker"],
+  },
+  {
     number: 12,
     title: "Get Out of Your Own Business",
     pillar: "Pillar 3 · Legacy & Exit",
@@ -139,6 +145,16 @@ export const ASSETS: AssetDef[] = [
   { id: "contract-review-checklist", code: "06.4", course: 6, kind: "checklist", title: "Employment Contract Review Checklist",
     summary: "What to look for in IP, non-compete and moonlighting clauses before you build on the side." },
 
+  // Course 11
+  { id: "ai-audit-tracker", code: "11.1", course: 11, kind: "worksheet", title: "AI Audit Tracker",
+    summary: "Five days of tasks, sorted and ranked by hours a month, to find your top three automation targets." },
+  { id: "workflow-library", code: "11.2", course: 11, kind: "library", title: "Workflow Library",
+    summary: "Ready-to-run AI workflows with the inputs each one needs, opening on your top targets." },
+  { id: "repurposing-engine", code: "11.3", course: 11, kind: "ai", title: "Repurposing Engine",
+    summary: "One real idea in; a LinkedIn post, a short video script and a line for your next call out." },
+  { id: "hours-saved-tracker", code: "11.5", course: 11, kind: "worksheet", title: "Hours-Saved Tracker",
+    summary: "Totals the hours your running workflows give back, and makes you decide where they go." },
+
   // Course 12
   { id: "owners-audit", code: "12.1", course: 12, kind: "worksheet", title: "Owner's Audit Worksheet",
     summary: "Five days of every task you do, logged as you switch." },
@@ -198,9 +214,9 @@ export function eyebrowFor(asset: AssetDef): string {
 // Founder type -> course order. Fresh Start and First-Timer validate an idea
 // first; a Buried Founder already runs a business and needs out of it first.
 export const ROUTES: Record<string, number[]> = {
-  "Fresh Start": [1, 2, 3, 4, 5, 6, 12, 13, 14],
-  "First-Timer": [1, 2, 3, 4, 5, 6, 12, 13, 14],
-  "Buried Founder": [1, 2, 12, 14, 13, 3, 4, 5, 6],
+  "Fresh Start": [1, 2, 3, 4, 5, 6, 11, 12, 13, 14],
+  "First-Timer": [1, 2, 3, 4, 5, 6, 11, 12, 13, 14],
+  "Buried Founder": [1, 2, 12, 11, 14, 13, 3, 4, 5, 6],
 };
 export const DEFAULT_ROUTE = ROUTES["Fresh Start"];
 

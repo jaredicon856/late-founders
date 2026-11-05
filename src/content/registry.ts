@@ -10,6 +10,7 @@ import { course03Worksheets } from "./worksheets/c03";
 import { course04Worksheets } from "./worksheets/c04";
 import { course05Worksheets } from "./worksheets/c05";
 import { course06Worksheets } from "./worksheets/c06";
+import { course11Worksheets } from "./worksheets/c11";
 import { course12Worksheets } from "./worksheets/c12";
 import { course13Worksheets } from "./worksheets/c13";
 import { course14Worksheets } from "./worksheets/c14";
@@ -20,6 +21,7 @@ import { course03Modes } from "./modes/c03";
 import { course04Modes } from "./modes/c04";
 import { course05Modes } from "./modes/c05";
 import { course06Modes } from "./modes/c06";
+import { course11Modes } from "./modes/c11";
 import { course12Modes } from "./modes/c12";
 import { course13Modes } from "./modes/c13";
 
@@ -30,6 +32,7 @@ const WORKSHEETS: WorksheetDef[] = [
   ...course04Worksheets,
   ...course05Worksheets,
   ...course06Worksheets,
+  ...course11Worksheets,
   ...course12Worksheets,
   ...course13Worksheets,
   ...course14Worksheets,
@@ -43,6 +46,7 @@ const MODES: ModeDef[] = [
   ...course04Modes,
   ...course05Modes,
   ...course06Modes,
+  ...course11Modes,
   ...course12Modes,
   ...course13Modes,
 ];
@@ -62,7 +66,8 @@ export function getMode(id: string): ModeDef | undefined {
 export function missingImplementations(): string[] {
   return ASSETS.filter((a) => {
     if (a.kind === "ai") return !modeById.has(a.id);
-    if (a.kind === "tool" || a.kind === "library") return false;
+    if (a.kind === "tool") return false;
+    if (a.kind === "library") return a.id !== "sop-library" && !worksheetById.has(a.id);
     return !worksheetById.has(a.id);
   }).map((a) => a.id);
 }
