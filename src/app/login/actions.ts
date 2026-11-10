@@ -18,6 +18,7 @@ export async function login(_: AuthState, form: FormData): Promise<AuthState> {
   if (!user || !(await verifyPassword(password, user.passwordHash))) {
     return { error: "That email and password don't match." };
   }
+  if (user.disabled) return { error: "This account has been turned off. Contact Late Founders if you think that's a mistake." };
   await createSession(user.id);
   redirect(safeNext(form.get("next")) ?? "/dashboard");
 }

@@ -9,11 +9,12 @@ const LINKS = [
   { href: "/files", label: "My Files" },
 ];
 
-export default function Nav({ logout }: { logout: () => Promise<void> }) {
+export default function Nav({ logout, isAdmin }: { logout: () => Promise<void>; isAdmin?: boolean }) {
   const path = usePathname();
+  const links = isAdmin ? [...LINKS, { href: "/admin", label: "Admin" }] : LINKS;
   return (
     <nav className="nav">
-      {LINKS.map((l) => (
+      {links.map((l) => (
         <Link key={l.href} href={l.href} className={`pill ${path.startsWith(l.href) ? "active" : ""}`}>
           {l.label}
         </Link>

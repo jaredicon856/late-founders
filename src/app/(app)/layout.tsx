@@ -12,7 +12,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
           <img src="/brand/lf_horizontal_bright_transparent.png" alt="Late Founders" />
           <span className="cc">Command Center</span>
         </Link>
-        <Nav logout={logout} />
+        <Nav logout={logout} isAdmin={user.isAdmin} />
       </header>
       {!user.lastName && (
         <form action={saveLastName} className="name-prompt">

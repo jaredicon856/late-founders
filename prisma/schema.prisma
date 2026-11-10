@@ -21,6 +21,9 @@ model User {
   name         String // first name, used in greetings
   lastName     String   @default("")
   passwordHash String
+  role         String    @default("member") // member | admin; admins are added by another admin, never at sign-up
+  disabled     Boolean   @default(false) // turned off by an admin: cannot log in
+  lastSeenAt   DateTime? // refreshed at most hourly while they use the app
   createdAt    DateTime @default(now())
 
   sessions      Session[]

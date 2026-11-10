@@ -229,3 +229,23 @@ table.tbl { width: 100%; border-collapse: collapse; font-size: 14px; }
 /* Tappable quick replies under the Assistant's latest question */
 .quick-replies { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
 .quick-replies .pill { text-transform: none; letter-spacing: 0; font-size: 14px; }
+
+/* Admin area */
+.admin-tabs { margin: 6px 0 22px; flex-wrap: wrap; }
+.bar { display: block; height: 6px; border-radius: 999px; background: var(--line); overflow: hidden; }
+.bar > span { display: block; height: 100%; background: var(--grad); border-radius: 999px; }
+.admin-list { list-style: none; margin: 8px 0 0; padding: 0; }
+.admin-list li { padding: 8px 0; border-bottom: 1px solid var(--line); }
+.admin-list li:last-child { border-bottom: 0; }
+.admin-course { margin: 16px 0 6px; }
+.admin-course .lbl { margin-bottom: 8px; }
+.prow { display: block; padding: 6px 0; }
+.prow-top { display: flex; justify-content: space-between; gap: 12px; margin-bottom: 4px; font-size: 14px; }
+.prow:hover .prow-top span:first-child { color: var(--mint); }
+.admin-search { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-bottom: 16px; }
+.admin-search .input { flex: 1 1 260px; }
+.admin-action { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; margin: 10px 0; }
+.badge { display: inline-block; margin-left: 8px; padding: 1px 8px; border-radius: 999px; border: 1px solid var(--line-strong); font-size: 11px; font-weight: 700; color: var(--muted); vertical-align: middle; }
+.badge.off { border-color: var(--danger); color: var(--danger); }
+.btn-danger { color: var(--danger); }
+.pw-code { font-size: 15px; font-weight: 700; padding: 2px 8px; border-radius: 6px; background: var(--black); border: 1px solid var(--line-strong); color: var(--mint); }

@@ -44,16 +44,28 @@ export async function destroySession() {
 }
 
 // name is the first name (greetings); fullName is for documents and admin.
-export type CurrentUser = { id: string; email: string; name: string; lastName: string; fullName: string };
+export type CurrentUser = { id: string; email: string; name: string; lastName: string; fullName: string; isAdmin: boolean };
+
+const HOUR = 3_600_000;
 
 export async function getUser(): Promise<CurrentUser | null> {
   const jar = await cookies();
   const id = jar.get(COOKIE)?.value;
   if (!id) return null;
   const s = await db.session.findUnique({ where: { id }, include: { user: true } });
-  if (!s || s.expiresAt < new Date()) return null;
-  const { id: uid, email, name, lastName } = s.user;
-  return { id: uid, email, name, lastName, fullName: [name, lastName].filter(Boolean).join(" ") };
+  if (!s || s.expiresAt < new Date() || s.user.disabled) return null;
+  const { id: uid, email, name, lastName, role, lastSeenAt } = s.user;
+  // "Last active" for the admin pages, written at most once an hour.
+  if (!lastSeenAt || Date.now() - lastSeenAt.getTime() > HOUR) {
+    await db.user.update({ where: { id: uid }, data: { lastSeenAt: new Date() } }).catch(() => {});
+  }
+  return { id: uid, email, name, lastName, fullName: [name, lastName].filter(Boolean).join(" "), isAdmin: role === "admin" };
+}
+
+export async function requireAdmin(): Promise<CurrentUser> {
+  const u = await requireUser();
+  if (!u.isAdmin) redirect("/dashboard");
+  return u;
 }
 
 export async function requireUser(): Promise<CurrentUser> {

@@ -16,3 +16,13 @@ describe("login return path", () => {
     expect(safeNext("/login?next=/x")).toBeNull();
   });
 });
+
+import { isTestEmail } from "@/lib/admin";
+
+describe("admin test-account detection", () => {
+  it("flags example.com addresses only", () => {
+    expect(isTestEmail("qa+123@example.com")).toBe(true);
+    expect(isTestEmail("albino@projecticon.io")).toBe(false);
+    expect(isTestEmail("someone@example.co.uk")).toBe(false);
+  });
+});
