@@ -166,6 +166,7 @@ model Course {
 model Material {
   id          String   @id @default(cuid())
   courseKey   String   @default("")
+  place       String   @default("") // built-in courses: "top", a tool's asset id (shown right after it), or "" for the end
   title       String
   description String   @default("")
   kind        String // file | link | note

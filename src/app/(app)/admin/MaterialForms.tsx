@@ -5,7 +5,9 @@ import { useActionState, useEffect, useRef, useState } from "react";
 import { addMaterial, createCourse, postNotice, type FormState } from "./actions";
 
 // Adds a file, link or note to a course (or to Resources when courseKey is "").
-export function AddMaterial({ courseKey, notifyDefault = true }: { courseKey: string; notifyDefault?: boolean }) {
+export type Place = { value: string; label: string };
+
+export function AddMaterial({ courseKey, notifyDefault = true, places }: { courseKey: string; notifyDefault?: boolean; places?: Place[] }) {
   const [kind, setKind] = useState<"file" | "link" | "note">("file");
   const [state, action, pending] = useActionState<FormState, FormData>(addMaterial, {});
   const ref = useRef<HTMLFormElement>(null);
@@ -23,6 +25,15 @@ export function AddMaterial({ courseKey, notifyDefault = true }: { courseKey: st
           </button>
         ))}
       </div>
+      {places && (
+        <div className="field">
+          <label htmlFor={`p-${courseKey}`}>Where should it go in the course?</label>
+          <select className="select" id={`p-${courseKey}`} name="place" defaultValue="">
+            {places.map((p) => <option key={p.value || "end"} value={p.value}>{p.label}</option>)}
+          </select>
+          <span className="hint">See it placed in “What members see” on the right after you add it. You can move it later.</span>
+        </div>
+      )}
       <div className="field"><label htmlFor={`t-${courseKey}`}>Title</label><input className="input" id={`t-${courseKey}`} name="title" required maxLength={160} /></div>
       <div className="field"><label htmlFor={`d-${courseKey}`}>Short description (optional)</label><input className="input" id={`d-${courseKey}`} name="description" maxLength={1000} /></div>
       {kind === "file" && (

@@ -15,3 +15,13 @@ describe("quick replies", () => {
     expect(splitReplies("Pick one.\n[[a | b | c | d | e]]").replies).toHaveLength(4);
   });
 });
+
+import { arrange } from "@/lib/materials";
+
+describe("placing team materials in a course", () => {
+  it("puts items at the top, after a chosen tool, or at the end", () => {
+    const m = (id: string, place: string) => ({ id, place });
+    const out = arrange(["a", "b"], [m("end", ""), m("afterA", "a"), m("top", "top"), m("gone", "deleted-tool")]);
+    expect(out.map((e) => (e.type === "tool" ? e.assetId : e.material.id))).toEqual(["top", "a", "afterA", "b", "end", "gone"]);
+  });
+});

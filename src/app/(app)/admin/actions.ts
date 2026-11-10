@@ -6,6 +6,7 @@ import { redirect } from "next/navigation";
 import { isTestEmail } from "@/lib/admin";
 import { hashPassword, requireAdmin, verifyPassword } from "@/lib/auth";
 import { db } from "@/lib/db";
+import { COURSES } from "@/content/catalog";
 import { MAX_FILE, courseName, sizeText } from "@/lib/materials";
 import { addNotice } from "@/lib/notices";
 
@@ -145,6 +146,7 @@ export async function addMaterial(_: FormState, form: FormData): Promise<FormSta
   if (!title) return { error: "Give it a title." };
   const where = courseKey ? (await courseName(courseKey)) : "Resources";
   if (!where) return { error: "That course no longer exists." };
+  const place = validPlace(courseKey, str(form.get("place")));
 
   if (kind === "file") {
     if (!(file instanceof File) || file.size === 0) return { error: "Choose a file to upload." };
@@ -152,16 +154,16 @@ export async function addMaterial(_: FormState, form: FormData): Promise<FormSta
     const mimeType = file.type || "application/octet-stream";
     if (!ALLOWED.test(mimeType)) return { error: "Upload a PDF, image, Word, Excel, PowerPoint, text, CSV or zip file." };
     await db.material.create({
-      data: { courseKey, title, description, kind, fileName: file.name, mimeType, data: Buffer.from(await file.arrayBuffer()), sizeBytes: file.size },
+      data: { courseKey, place, title, description, kind, fileName: file.name, mimeType, data: Buffer.from(await file.arrayBuffer()), sizeBytes: file.size },
     });
   } else if (kind === "link") {
     const url = str(form.get("url"));
     if (!/^https:\/\/\S+$/.test(url)) return { error: "Paste a link that starts with https://." };
-    await db.material.create({ data: { courseKey, title, description, kind, url } });
+    await db.material.create({ data: { courseKey, place, title, description, kind, url } });
   } else if (kind === "note") {
     const body = str(form.get("body")).slice(0, 5000);
     if (!body) return { error: "Write the note." };
-    await db.material.create({ data: { courseKey, title, description, kind, body } });
+    await db.material.create({ data: { courseKey, place, title, description, kind, body } });
   } else return { error: "Choose file, link or note." };
 
   if (form.get("notify") === "on") {
@@ -169,6 +171,23 @@ export async function addMaterial(_: FormState, form: FormData): Promise<FormSta
   }
   revalidateMaterials();
   return { ok: `Added “${title}”${form.get("notify") === "on" ? " and announced it" : ""}.` };
+}
+
+// Where an item sits in a built-in course: "top", right after one of its
+// tools, or "" (the end). Anything else falls back to the end.
+function validPlace(courseKey: string, place: string): string {
+  const m = /^c(\d+)$/.exec(courseKey);
+  const course = m ? COURSES.find((c) => c.number === Number(m[1])) : undefined;
+  if (!course) return "";
+  return place === "top" || course.assets.includes(place) ? place : "";
+}
+
+export async function moveMaterial(form: FormData) {
+  await requireAdmin();
+  const id = str(form.get("id"));
+  const m = await db.material.findUnique({ where: { id }, select: { courseKey: true } });
+  if (m) await db.material.update({ where: { id }, data: { place: validPlace(m.courseKey, str(form.get("place"))) } });
+  revalidateMaterials();
 }
 
 export async function toggleMaterial(form: FormData) {

@@ -339,3 +339,14 @@ a.notice:hover { border-color: rgba(109,254,215,.5); }
 .step.current { border-color: rgba(234,255,114,.6); }
 .step.current .step-n { border-color: var(--lime); color: var(--lime); }
 .danger-zone { border-color: rgba(255,122,107,.35); }
+.preview-list { border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; }
+.preview-row { display: flex; gap: 12px; align-items: center; padding: 12px 14px; border-bottom: 1px solid var(--line); flex-wrap: wrap; }
+.preview-row:last-child { border-bottom: 0; }
+.preview-row.team { background: rgba(109,254,215,.06); border-left: 3px solid var(--mint); }
+.preview-main { display: flex; gap: 12px; align-items: center; flex: 1 1 220px; min-width: 0; }
+.preview-title { display: flex; flex-direction: column; font-size: 14px; font-weight: 600; flex: 1; min-width: 0; }
+.preview-title .small { font-weight: 400; }
+.preview-actions { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+.preview-actions .btn-ghost { padding: 6px 12px; font-size: 12px; }
+.move-form { display: flex; gap: 6px; align-items: center; }
+.move-form .select { padding: 6px 10px; font-size: 12px; max-width: 200px; }

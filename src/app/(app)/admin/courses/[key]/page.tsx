@@ -7,6 +7,7 @@ import { db } from "@/lib/db";
 import { listMaterials } from "@/lib/materials";
 import { deleteCourse, updateCourse } from "../../actions";
 import { AddMaterial } from "../../MaterialForms";
+import CoursePreview from "../../CoursePreview";
 import MaterialList from "../../MaterialList";
 
 export default async function AdminCourse({ params }: { params: Promise<{ key: string }> }) {
@@ -17,6 +18,13 @@ export default async function AdminCourse({ params }: { params: Promise<{ key: s
   const custom = builtIn ? null : await db.course.findUnique({ where: { id: key } });
   if (!course && !custom) notFound();
   const items = await listMaterials({ courseKey: key });
+  const places = course
+    ? [
+        { value: "", label: "At the end of the course" },
+        { value: "top", label: "At the top, before the tools" },
+        ...course.assets.map((a) => ({ value: a, label: `Right after ${getAsset(a)?.title ?? a}` })),
+      ]
+    : undefined;
 
   return (
     <>
@@ -41,29 +49,22 @@ export default async function AdminCourse({ params }: { params: Promise<{ key: s
 
       {course && (
         <p className="shelf-note" style={{ margin: "0 0 18px" }}>
-          Anything you add here appears on members' Courses page under {courseLabel(course.number)}, after its built-in tools.
+          What you add here shows up for members on their <strong>Courses</strong> page, inside <strong>{courseLabel(course.number)} · {course.title}</strong>, in the
+          spot you choose: at the top, right after one of its tools, or at the end. The right-hand side shows it exactly as members will see it.
         </p>
       )}
 
       <div className="grid grid-2" style={{ alignItems: "start", marginBottom: 18 }}>
         <div className="card">
-          <h3 style={{ marginTop: 0 }}>{custom ? "Step 2 · " : ""}Add a file, link or note</h3>
-          <AddMaterial courseKey={key} notifyDefault={!custom || custom.published} />
+          <h3 style={{ marginTop: 0 }}>{custom ? "Step 2 · Add a file, link or note" : "Add something to this course"}</h3>
+          <AddMaterial courseKey={key} notifyDefault={!custom || custom.published} places={places} />
         </div>
         <div className="card">
-          <h3 style={{ marginTop: 0 }}>In this course</h3>
-          {course && (
-            <>
-              <div className="lbl" style={{ margin: "4px 0 6px" }}>Built-in tools</div>
-              <ul className="admin-list" style={{ marginBottom: 14 }}>
-                {course.assets.map((a) => (
-                  <li key={a}>{getAsset(a)?.title} <a className="link small" href={`/assets/${a}`} target="_blank" rel="noopener noreferrer">Preview</a></li>
-                ))}
-              </ul>
-              <div className="lbl" style={{ margin: "4px 0 6px" }}>Added by the team</div>
-            </>
-          )}
-          <MaterialList items={items} />
+          <h3 style={{ marginTop: 0 }}>What members see</h3>
+          <p className="muted small" style={{ marginTop: 0 }}>
+            {course ? "This course on members' Courses page, top to bottom. Your items are highlighted." : "This course's items, in order. Members see them once it's published."}
+          </p>
+          {course && places ? <CoursePreview assetIds={course.assets} items={items} places={places} /> : <MaterialList items={items} />}
         </div>
       </div>
 

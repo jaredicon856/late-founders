@@ -5,7 +5,7 @@ import { courseStatus, getStatuses, routeFor } from "@/lib/assets";
 import { requireUser } from "@/lib/auth";
 import MaterialItems from "@/components/MaterialItems";
 import { db } from "@/lib/db";
-import { builtInKey, listMaterials } from "@/lib/materials";
+import { arrange, builtInKey, listMaterials } from "@/lib/materials";
 import { getProfile } from "@/lib/record";
 
 const KIND_TAG: Record<AssetKind, string> = {
@@ -69,8 +69,9 @@ export default async function Courses() {
                 </div>
               )}
               <div className="shelf-body">
-                <MaterialItems items={extras(builtInKey(course.number))} />
-                {course.assets.map((id) => {
+                {arrange(course.assets, extras(builtInKey(course.number))).map((e) => {
+                  if (e.type === "material") return <MaterialItems key={e.material.id} items={[e.material]} />;
+                  const id = e.assetId;
                   const a = getAsset(id);
                   if (!a) return null;
                   const s = statuses[id]?.status ?? "not_started";
