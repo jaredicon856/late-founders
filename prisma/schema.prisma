@@ -16,15 +16,16 @@ datasource db {
 }
 
 model User {
-  id           String   @id @default(cuid())
-  email        String   @unique
-  name         String // first name, used in greetings
-  lastName     String   @default("")
-  passwordHash String
-  role         String    @default("member") // member | admin; admins are added by another admin, never at sign-up
-  disabled     Boolean   @default(false) // turned off by an admin: cannot log in
-  lastSeenAt   DateTime? // refreshed at most hourly while they use the app
-  createdAt    DateTime @default(now())
+  id            String    @id @default(cuid())
+  email         String    @unique
+  name          String // first name, used in greetings
+  lastName      String    @default("")
+  passwordHash  String
+  role          String    @default("member") // member | admin; admins are added by another admin, never at sign-up
+  disabled      Boolean   @default(false) // turned off by an admin: cannot log in
+  lastSeenAt    DateTime? // refreshed at most hourly while they use the app
+  noticesSeenAt DateTime? // when they last opened Notifications; newer notices light the bell
+  createdAt     DateTime  @default(now())
 
   sessions      Session[]
   resets        PasswordReset[]
@@ -147,4 +148,46 @@ model SopVersion {
   sop         Sop      @relation(fields: [sopId], references: [id], onDelete: Cascade)
 
   @@unique([sopId, version])
+}
+
+// Courses the team builds in the Admin area, shown after the built-in ones.
+model Course {
+  id        String   @id @default(cuid())
+  title     String
+  pillar    String   @default("")
+  summary   String   @default("")
+  published Boolean  @default(false)
+  createdAt DateTime @default(now())
+}
+
+// Anything the team adds for members: a file (stored here, up to 4 MB), a link
+// or a short note. courseKey is "c3" for built-in Course 03, a Course id for a
+// team-built course, or "" for the general Resources library.
+model Material {
+  id          String   @id @default(cuid())
+  courseKey   String   @default("")
+  title       String
+  description String   @default("")
+  kind        String // file | link | note
+  url         String   @default("")
+  body        String   @default("")
+  fileName    String   @default("")
+  mimeType    String   @default("")
+  data        Bytes?
+  sizeBytes   Int      @default(0)
+  published   Boolean  @default(true)
+  createdAt   DateTime @default(now())
+
+  @@index([courseKey, createdAt])
+}
+
+// Announcements from the team to every member (the notification bell).
+model Notice {
+  id        String   @id @default(cuid())
+  title     String
+  body      String   @default("")
+  link      String   @default("")
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
 }

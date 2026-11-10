@@ -3,6 +3,9 @@ import { COURSES, getAsset } from "@/content/catalog";
 import type { AssetKind } from "@/content/types";
 import { courseStatus, getStatuses, routeFor } from "@/lib/assets";
 import { requireUser } from "@/lib/auth";
+import MaterialItems from "@/components/MaterialItems";
+import { db } from "@/lib/db";
+import { builtInKey, listMaterials } from "@/lib/materials";
 import { getProfile } from "@/lib/record";
 
 const KIND_TAG: Record<AssetKind, string> = {
@@ -21,7 +24,13 @@ const STATUS_TEXT = { complete: "Complete", in_progress: "In progress", not_star
 
 export default async function Courses() {
   const user = await requireUser();
-  const [profile, statuses] = await Promise.all([getProfile(user.id), getStatuses(user.id)]);
+  const [profile, statuses, materials, custom] = await Promise.all([
+    getProfile(user.id),
+    getStatuses(user.id),
+    listMaterials({ published: true }),
+    db.course.findMany({ where: { published: true }, orderBy: { createdAt: "asc" } }),
+  ]);
+  const extras = (key: string) => materials.filter((m) => m.courseKey === key);
   const route = routeFor(profile);
   const ordered = [...COURSES].sort((a, b) => route.indexOf(a.number) - route.indexOf(b.number));
 
@@ -60,6 +69,7 @@ export default async function Courses() {
                 </div>
               )}
               <div className="shelf-body">
+                <MaterialItems items={extras(builtInKey(course.number))} />
                 {course.assets.map((id) => {
                   const a = getAsset(id);
                   if (!a) return null;
@@ -81,6 +91,21 @@ export default async function Courses() {
           </div>
         );
       })}
+      {custom.length > 0 && <div className="pillar">More from the Late Founders team</div>}
+      {custom.map((c) => (
+        <section key={c.id} className="shelf">
+          <div className="shelf-head">
+            <span className="num">+</span>
+            <div>
+              <div className="name">{c.title}</div>
+              <div className="meta">{c.pillar ? `${c.pillar} · ` : ""}{c.summary || `${extras(c.id).length} items`}</div>
+            </div>
+          </div>
+          <div className="shelf-body">
+            {extras(c.id).length ? <MaterialItems items={extras(c.id)} /> : <p className="muted small">Materials are on their way.</p>}
+          </div>
+        </section>
+      ))}
     </>
   );
 }

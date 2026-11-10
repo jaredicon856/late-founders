@@ -82,7 +82,8 @@ export async function exportAsset(owner: { id: string; fullName: string }, asset
   return new NextResponse(Buffer.from(bytes), {
     headers: {
       "content-type": TYPES[format],
-      "content-disposition": `attachment; filename="${fileName(title, version, format)}"`,
+      // ?inline=1 opens a PDF in the browser instead of saving it.
+      "content-disposition": `${format === "pdf" && url.searchParams.get("inline") === "1" ? "inline" : "attachment"}; filename="${fileName(title, version, format)}"`,
       "cache-control": "private, no-store",
     },
   });

@@ -79,3 +79,17 @@ export const day = (d: Date | null | undefined) =>
   d ? new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric", year: "numeric", timeZone: "America/New_York" }).format(d) : "";
 
 export const TOTAL_TOOLS = ASSETS.length;
+
+// Named slices of the member list, shared by the Overview widgets (each
+// widget links to its slice) and the Members page filter.
+export const FILTERS = {
+  new: { label: "Joined in the last 7 days", test: (r: MemberRow) => r.createdAt.getTime() > Date.now() - 7 * DAY },
+  active: { label: "Active in the last 7 days", test: (r: MemberRow) => !!r.lastSeenAt && r.lastSeenAt.getTime() > Date.now() - 7 * DAY },
+  diagnosed: { label: "Finished the Diagnostic", test: (r: MemberRow) => !!r.founderType },
+  nodiag: { label: "Haven't done the Diagnostic", test: (r: MemberRow) => !r.founderType },
+  stuck: { label: "Joined 2+ days ago, no Diagnostic", test: (r: MemberRow) => !r.founderType && r.createdAt.getTime() < Date.now() - 2 * DAY },
+  quiet: { label: "Gone quiet: not back in 14 days", test: (r: MemberRow) => !!r.founderType && (!r.lastSeenAt || r.lastSeenAt.getTime() < Date.now() - 14 * DAY) },
+  today: { label: "Used the Assistant in the last 24 hours", test: (r: MemberRow) => r.messagesToday > 0 },
+  off: { label: "Turned off", test: (r: MemberRow) => r.disabled },
+} as const;
+export type FilterKey = keyof typeof FILTERS;

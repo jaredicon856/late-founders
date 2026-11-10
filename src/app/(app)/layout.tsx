@@ -1,6 +1,7 @@
 import Link from "next/link";
 import Nav from "@/components/Nav";
 import { requireUser } from "@/lib/auth";
+import { unreadCount } from "@/lib/notices";
 import { logout, saveLastName } from "../login/actions";
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
@@ -8,11 +9,11 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   return (
     <div className="wrap">
       <header className="topbar">
-        <Link href="/dashboard" className="brand">
+        <Link href={user.isAdmin ? "/admin" : "/dashboard"} className="brand">
           <img src="/brand/lf_horizontal_bright_transparent.png" alt="Late Founders" />
           <span className="cc">Command Center</span>
         </Link>
-        <Nav logout={logout} isAdmin={user.isAdmin} />
+        <Nav logout={logout} isAdmin={user.isAdmin} unread={user.isAdmin ? 0 : await unreadCount(user.id)} />
       </header>
       {!user.lastName && (
         <form action={saveLastName} className="name-prompt">

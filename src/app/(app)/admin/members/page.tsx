@@ -1,17 +1,20 @@
 import Link from "next/link";
 import { getAsset } from "@/content/catalog";
-import { TOTAL_TOOLS, day, memberRows, when } from "@/lib/admin";
+import { FILTERS, TOTAL_TOOLS, day, memberRows, when, type FilterKey } from "@/lib/admin";
 import { requireAdmin } from "@/lib/auth";
 
-export default async function AdminMembers({ searchParams }: { searchParams: Promise<{ q?: string; missing?: string; tests?: string }> }) {
+export default async function AdminMembers({ searchParams }: { searchParams: Promise<{ q?: string; missing?: string; tests?: string; show?: string; sort?: string }> }) {
   await requireAdmin();
-  const { q = "", missing = "", tests = "" } = await searchParams;
+  const { q = "", missing = "", tests = "", show = "", sort = "" } = await searchParams;
+  const filter = show in FILTERS ? FILTERS[show as FilterKey] : undefined;
   const missingAsset = missing ? getAsset(missing) : undefined;
   const needle = q.trim().toLowerCase();
   const rows = (await memberRows())
     .filter((r) => tests === "1" || !r.test)
     .filter((r) => !needle || r.name.toLowerCase().includes(needle) || r.email.toLowerCase().includes(needle))
-    .filter((r) => !missingAsset || (r.role !== "admin" && !r.doneIds.has(missingAsset.id)));
+    .filter((r) => !missingAsset || (r.role !== "admin" && !r.doneIds.has(missingAsset.id)))
+    .filter((r) => !filter || (r.role !== "admin" && filter.test(r)))
+    .sort((a, b) => (sort === "progress" ? b.done - a.done : 0));
 
   return (
     <>
@@ -20,10 +23,19 @@ export default async function AdminMembers({ searchParams }: { searchParams: Pro
       <form className="admin-search" action="/admin/members">
         <input className="input" name="q" defaultValue={q} placeholder="Search by name or email" />
         {missing && <input type="hidden" name="missing" value={missing} />}
+        <select className="select" name="show" defaultValue={show} style={{ maxWidth: 280 }}>
+          <option value="">Everyone</option>
+          {Object.entries(FILTERS).map(([k, f]) => <option key={k} value={k}>{f.label}</option>)}
+        </select>
         <label className="small muted"><input type="checkbox" name="tests" value="1" defaultChecked={tests === "1"} /> Show test accounts</label>
         <button className="btn-primary">Search</button>
         <a className="btn-ghost" href={`/api/admin/export${tests === "1" ? "?tests=1" : ""}`}>Download CSV</a>
       </form>
+      {filter && (
+        <p className="shelf-note" style={{ margin: "0 0 16px" }}>
+          Showing: <strong>{filter.label}</strong>. <Link className="link" href="/admin/members">Show everyone</Link>
+        </p>
+      )}
       {missingAsset && (
         <p className="shelf-note" style={{ margin: "0 0 16px" }}>
           Showing members who haven't completed <strong>{missingAsset.title}</strong>. <Link className="link" href="/admin/members">Show everyone</Link>

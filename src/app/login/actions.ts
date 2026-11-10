@@ -20,7 +20,7 @@ export async function login(_: AuthState, form: FormData): Promise<AuthState> {
   }
   if (user.disabled) return { error: "This account has been turned off. Contact Late Founders if you think that's a mistake." };
   await createSession(user.id);
-  redirect(safeNext(form.get("next")) ?? "/dashboard");
+  redirect(safeNext(form.get("next")) ?? (user.role === "admin" ? "/admin" : "/dashboard"));
 }
 
 export async function signup(_: AuthState, form: FormData): Promise<AuthState> {

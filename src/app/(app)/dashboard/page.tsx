@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { ASSETS, FOUNDER_TYPE_COPY, courseLabel, getAsset } from "@/content/catalog";
 import { asNumber, money } from "@/content/profile";
 import DailyAction from "@/components/DailyAction";
@@ -11,6 +12,7 @@ import { getProfile } from "@/lib/record";
 
 export default async function Dashboard() {
   const user = await requireUser();
+  if (user.isAdmin) redirect("/admin");
   const [profile, statuses, versions] = await Promise.all([
     getProfile(user.id),
     getStatuses(user.id),
