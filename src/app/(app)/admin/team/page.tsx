@@ -1,7 +1,7 @@
 import { isTestEmail } from "@/lib/admin";
 import { requireAdmin } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { AddAdmin, RemoveAdmin, RemoveTests } from "./TeamForms";
+import { AddAdmin, ChangePassword, RemoveAdmin, RemoveTests } from "./TeamForms";
 
 export default async function AdminTeam() {
   const me = await requireAdmin();
@@ -38,6 +38,11 @@ export default async function AdminTeam() {
           from this page, never at sign-up, because sign-up doesn't check that someone owns the email they type.
         </p>
         <AddAdmin />
+      </div>
+      <div className="card" style={{ marginBottom: 18 }}>
+        <h3>Your password</h3>
+        <p className="muted small">Signed in as {me.email}.</p>
+        <ChangePassword />
       </div>
       <div className="card">
         <h3>Test accounts</h3>

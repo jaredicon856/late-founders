@@ -3,7 +3,7 @@
 import { randomBytes } from "node:crypto";
 import { revalidatePath } from "next/cache";
 import { isTestEmail } from "@/lib/admin";
-import { hashPassword, requireAdmin } from "@/lib/auth";
+import { hashPassword, requireAdmin, verifyPassword } from "@/lib/auth";
 import { db } from "@/lib/db";
 
 const str = (v: FormDataEntryValue | null) => (typeof v === "string" ? v.trim() : "");
@@ -48,6 +48,19 @@ export async function setAdmin(_: TeamState, form: FormData): Promise<TeamState>
   await db.user.update({ where: { id: user.id }, data: { role: make ? "admin" : "member" } });
   revalidatePath("/admin", "layout");
   return { ok: make ? `${user.name} is now an admin.` : `${user.name} is no longer an admin.` };
+}
+
+// An admin changing their own password (the first admin's starts as a shared one).
+export async function changeOwnPassword(_: TeamState, form: FormData): Promise<TeamState> {
+  const me = await requireAdmin();
+  const current = str(form.get("current"));
+  const next = str(form.get("next"));
+  const user = await db.user.findUnique({ where: { id: me.id }, select: { passwordHash: true } });
+  if (!user || !(await verifyPassword(current, user.passwordHash))) return { error: "Your current password isn't right." };
+  if (next.length < 10) return { error: "Use at least 10 characters." };
+  if (next === current) return { error: "Choose a different password." };
+  await db.user.update({ where: { id: me.id }, data: { passwordHash: await hashPassword(next) } });
+  return { ok: "Password changed." };
 }
 
 // Deletes accounts on test email domains (e.g. qa+…@example.com) and all their work.

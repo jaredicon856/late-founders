@@ -16,7 +16,7 @@ function PasswordInput({ id, autoComplete, minLength }: { id: string; autoComple
   );
 }
 
-export default function LoginForm({ needsCode, next }: { needsCode: boolean; next: string | null }) {
+export default function LoginForm({ needsCode, next, adminOnly }: { needsCode: boolean; next: string | null; adminOnly?: boolean }) {
   const [mode, setMode] = useState<"login" | "signup">("login");
   const [loginState, loginAction, loggingIn] = useActionState<AuthState, FormData>(login, {});
   const [signupState, signupAction, signingUp] = useActionState<AuthState, FormData>(signup, {});
@@ -24,11 +24,11 @@ export default function LoginForm({ needsCode, next }: { needsCode: boolean; nex
 
   return (
     <>
-      <div className="tabs">
+      {!adminOnly && <div className="tabs">
         <button type="button" className={`pill ${mode === "login" ? "active" : ""}`} onClick={() => setMode("login")}>Log in</button>
         <button type="button" className={`pill ${mode === "signup" ? "active" : ""}`} onClick={() => setMode("signup")}>Create account</button>
-      </div>
-      {mode === "login" ? (
+      </div>}
+      {mode === "login" || adminOnly ? (
         <form action={loginAction}>
           {next && <input type="hidden" name="next" value={next} />}
           <div className="field"><label htmlFor="email">Email</label><input className="input" id="email" name="email" type="email" autoComplete="email" required /></div>

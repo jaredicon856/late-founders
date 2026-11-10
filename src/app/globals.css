@@ -249,3 +249,6 @@ table.tbl { width: 100%; border-collapse: collapse; font-size: 14px; }
 .badge.off { border-color: var(--danger); color: var(--danger); }
 .btn-danger { color: var(--danger); }
 .pw-code { font-size: 15px; font-weight: 700; padding: 2px 8px; border-radius: 6px; background: var(--black); border: 1px solid var(--line-strong); color: var(--mint); }
+.admin-switch { margin: 18px 0 0; text-align: center; font-size: 13px; }
+.admin-switch a { color: var(--muted); text-decoration: underline; text-underline-offset: 3px; }
+.admin-switch a:hover { color: var(--mint); }
