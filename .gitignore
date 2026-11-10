@@ -10,3 +10,6 @@ prisma/*.db
 prisma/*.db-journal
 uploads/
 .DS_Store
+
+# Installs resolve fresh on Vercel; a local npm install must not pin versions.
+package-lock.json
