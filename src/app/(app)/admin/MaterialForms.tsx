@@ -63,7 +63,7 @@ export function NewCourse() {
       <div className="field"><label htmlFor="nc-summary">One-line summary (optional)</label><input className="input" id="nc-summary" name="summary" maxLength={500} /></div>
       <div className="admin-action">
         <button className="btn-primary" disabled={pending}>{pending ? "Creating…" : "Create course"}</button>
-        <span className="muted small">It stays hidden from members until you publish it.</span>
+        <span className="muted small">Next you'll add its materials. Members don't see it until you publish.</span>
         {state.error && <span className="err">{state.error}</span>}
       </div>
     </form>

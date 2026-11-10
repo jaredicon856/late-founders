@@ -2,6 +2,7 @@
 
 import { randomBytes } from "node:crypto";
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 import { isTestEmail } from "@/lib/admin";
 import { hashPassword, requireAdmin, verifyPassword } from "@/lib/auth";
 import { db } from "@/lib/db";
@@ -126,8 +127,10 @@ export async function updateCourse(form: FormData) {
 export async function deleteCourse(form: FormData) {
   await requireAdmin();
   const id = str(form.get("id"));
-  await db.$transaction([db.material.deleteMany({ where: { courseKey: id } }), db.course.delete({ where: { id } })]);
+  await db.$transaction([db.material.deleteMany({ where: { courseKey: id } }), db.course.deleteMany({ where: { id } })]);
   revalidateMaterials();
+  // The course page no longer exists, so go back to the list.
+  redirect("/admin/courses?deleted=1");
 }
 
 // A file (up to 4 MB), a link or a short note, added to a course or to the

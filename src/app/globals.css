@@ -329,3 +329,13 @@ a.notice:hover { border-color: rgba(109,254,215,.5); }
 .moves-mini { margin: 6px 0 0; padding-left: 18px; font-size: 14px; }
 .moves-mini li { margin-bottom: 6px; }
 .moves-mini li.done { color: var(--muted); text-decoration: line-through; }
+.steps { margin: 0 0 18px; padding-left: 20px; display: grid; gap: 6px; }
+.step-track { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin-bottom: 18px; }
+@media (max-width: 700px) { .step-track { grid-template-columns: 1fr; } }
+.step { display: flex; gap: 12px; align-items: center; padding: 14px 16px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); }
+.step > span:last-child { display: flex; flex-direction: column; }
+.step-n { width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center; font-weight: 900; border: 2px solid var(--line-strong); color: var(--muted); flex: 0 0 auto; }
+.step.done .step-n { background: var(--mint); border-color: var(--mint); color: var(--black); }
+.step.current { border-color: rgba(234,255,114,.6); }
+.step.current .step-n { border-color: var(--lime); color: var(--lime); }
+.danger-zone { border-color: rgba(255,122,107,.35); }
