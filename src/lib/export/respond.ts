@@ -1,3 +1,4 @@
+import { dayLabel, memberTz } from "@/lib/tz";
 import { NextResponse } from "next/server";
 import { getAsset } from "@/content/catalog";
 import { getWorksheet } from "@/content/registry";
@@ -61,7 +62,7 @@ export async function exportAsset(owner: { id: string; fullName: string }, asset
     ...doc,
     meta: {
       member: doc.template === "neutral" ? undefined : owner.fullName,
-      completedAt: completedAt?.toLocaleDateString("en-US", { dateStyle: "medium" }),
+      completedAt: completedAt ? dayLabel(completedAt, await memberTz()) : undefined,
       version: version ?? undefined,
     },
   };

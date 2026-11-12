@@ -29,7 +29,7 @@ First five moves: five specific, ordered actions that fit their type, hours and 
 
 90-day target: one measurable outcome they would be able to say yes or no to on day 90.
 
-When all five stages are covered, summarise what you heard in a few lines and ask the member to confirm or correct it. Only after they confirm, call save_output.`,
+When all five stages are covered, summarize what you heard in a few lines and ask the member to confirm or correct it. Only after they confirm, call save_output.`,
   opener: () =>
     "Welcome to Late Founders. This first conversation takes 15 to 20 minutes, and everything else in the Command Center builds on it, so you will only do it once.\n\nWe will go through five things: your situation, money and runway, the hours you have, what is in the way, and what you already bring. One question at a time.\n\nStage 1, your situation. What is going on in your working life right now, and what changed to bring you here?",
   outputSchema: {

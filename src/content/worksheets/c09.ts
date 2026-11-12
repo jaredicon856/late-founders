@@ -9,10 +9,10 @@ const state = (d: SheetData, k: string) =>
 
 export const WEEKEND_STEPS = [
   { key: "login", label: "Log in to your Late Founders GHL workspace", detail: "Use the link on the Course 09 shelf. Change the password and turn on two-factor sign-in." },
-  { key: "profile", label: "Business profile filled in", detail: "Business name, address, time zone, logo and brand colours from your Brand Sheet." },
+  { key: "profile", label: "Business profile filled in", detail: "Business name, address, time zone, logo and brand colors from your Brand Sheet." },
   { key: "domain", label: "Domain connected", detail: "The domain from your Availability Sweep, pointed at your site." },
   { key: "pipeline", label: "Pipeline reviewed", detail: "Rename the stages to match how you actually sell; delete any you will not use." },
-  { key: "site", label: "Homepage and landing page customised", detail: "Your words from the One-Page Offer, not the template's." },
+  { key: "site", label: "Homepage and landing page customized", detail: "Your words from the One-Page Offer, not the template's." },
   { key: "calendar", label: "Booking calendar set up", detail: "Your real availability, a buffer between calls, confirmation and reminder messages on." },
   { key: "sequences", label: "Welcome and nurture emails rewritten in your voice", detail: "Read each one aloud. If it does not sound like you, rewrite it." },
   { key: "payments", label: "Payments connected", detail: "Your processor linked and your real price on the offer." },

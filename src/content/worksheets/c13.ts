@@ -1,4 +1,4 @@
-import { asNumber, money } from "../profile";
+import { asNumber, money, today } from "../profile";
 import type { Computed, ProfileData, SheetData, TableRow, WorksheetDef } from "../types";
 
 // Member-record shapes written here (agreed):
@@ -18,7 +18,7 @@ import type { Computed, ProfileData, SheetData, TableRow, WorksheetDef } from ".
 const rows = (d: SheetData, k: string): TableRow[] =>
   Array.isArray(d[k]) ? (d[k] as TableRow[]).filter((r) => r && typeof r === "object") : [];
 const text = (v: unknown): string => (typeof v === "string" ? v.trim() : v == null ? "" : String(v).trim());
-const today = () => new Date().toISOString().slice(0, 10);
+
 
 // ---------------------------------------------------------------------------
 // Sellability Scorecard

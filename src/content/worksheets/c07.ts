@@ -54,7 +54,7 @@ export const HOOKS: LibraryEntry[] = [
     ["Lessons", "Authority"]),
   entry("Hook patterns", "Specific-pain question", "Ever [very specific painful moment your buyer knows]?",
     "Struggling with growth?",
-    "Ever opened your accounting software on the 28th and realised payroll is bigger than the bank balance?",
+    "Ever opened your accounting software on the 28th and realized payroll is bigger than the bank balance?",
     ["Clarity", "AI"]),
 
   entry("Post formats", "Framework or list", "Hook. One line on why it matters. Three to five numbered points, one sentence each. A closing line that asks which one they would add.",

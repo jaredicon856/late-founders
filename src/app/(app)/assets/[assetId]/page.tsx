@@ -1,3 +1,4 @@
+import { memberTz, withTz } from "@/lib/tz";
 import { notFound } from "next/navigation";
 import { courseLabel, getAsset } from "@/content/catalog";
 import { PROFILE_FIELDS } from "@/content/profile";
@@ -21,6 +22,7 @@ export default async function AssetPage({ params }: { params: Promise<{ assetId:
   const asset = getAsset(assetId);
   if (!asset) notFound();
   const user = await requireUser();
+  const tz = await memberTz();
   const [profile, statuses] = await Promise.all([getProfile(user.id), getStatuses(user.id)]);
   // A read-only guide is done once it has been opened.
   if (getWorksheet(assetId)?.readOnly && statuses[assetId]?.status !== "complete") {
@@ -73,7 +75,7 @@ export default async function AssetPage({ params }: { params: Promise<{ assetId:
           name={user.fullName}
           uploads={assetId === "sop-generator"}
         />
-        <VersionList assetId={assetId} versions={versions} formats={["pdf", "docx"]} />
+        <VersionList tz={tz} assetId={assetId} versions={versions} formats={["pdf", "docx"]} />
         {nextUp}
         <div className="note-bar" style={{ marginTop: 18 }}>
           Same assistant throughout the community. Opening a different tool switches its mode, its instructions and which part of your record it can read and write.
@@ -87,7 +89,7 @@ export default async function AssetPage({ params }: { params: Promise<{ assetId:
       <>
         {head}
         <SweepTool initialNames={Array.isArray(profile.name_candidates) ? (profile.name_candidates as string[]) : []} />
-        <VersionList assetId={assetId} versions={versions} formats={["pdf", "xlsx"]} />
+        <VersionList tz={tz} assetId={assetId} versions={versions} formats={["pdf", "xlsx"]} />
         {nextUp}
       </>
     );
@@ -105,7 +107,7 @@ export default async function AssetPage({ params }: { params: Promise<{ assetId:
     );
   }
 
-  const sheet = await loadSheet(user.id, assetId);
+  const sheet = await withTz(() => loadSheet(user.id, assetId));
   const def = getWorksheet(assetId);
   if (!sheet || !def) notFound();
   return (
@@ -120,7 +122,7 @@ export default async function AssetPage({ params }: { params: Promise<{ assetId:
         status={sheet.status}
         readOnly={!!def.readOnly}
       />
-      <VersionList assetId={assetId} versions={versions} formats={def.exports} current={!!def.readOnly} canExportCurrent />
+      <VersionList tz={tz} assetId={assetId} versions={versions} formats={def.exports} current={!!def.readOnly} canExportCurrent />
       {nextUp}
     </>
   );

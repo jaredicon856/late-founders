@@ -120,7 +120,7 @@ export const trademarkTriageGuide: WorksheetDef = {
           ],
           bullets: [
             "Dealbreaker: you plan bookkeeping services under \"Ledgerline\" and the hit is \"Ledgerline\" accounting software. Software and services for the same job are adjacent: customers expect a software firm to offer setup and support.",
-            "Coincidence: you plan a landscape design studio called \"Fern & Stone\" and the hit is \"Fern & Stone\" for jewellery. Different class, different buyer, no reasonable expansion that brings them together.",
+            "Coincidence: you plan a landscape design studio called \"Fern & Stone\" and the hit is \"Fern & Stone\" for jewelry. Different class, different buyer, no reasonable expansion that brings them together.",
           ],
         },
       ],

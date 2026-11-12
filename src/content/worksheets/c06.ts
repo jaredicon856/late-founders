@@ -453,7 +453,7 @@ export const contractChecklist: WorksheetDef = {
           mode: "check",
           notes: true,
           items: [
-            { key: "equipment", label: "Own equipment", detail: "Never use the work laptop, phone or software licence for the business." },
+            { key: "equipment", label: "Own equipment", detail: "Never use the work laptop, phone or software license for the business." },
             { key: "accounts", label: "Own accounts", detail: "Personal email, cloud storage and AI accounts only. Nothing on the employer's systems." },
             { key: "time", label: "Own time", detail: "No business work during paid hours, including calls and messages." },
             { key: "crossover", label: "No client or coworker crossover", detail: "Do not pitch the employer's clients or recruit colleagues while you are employed." },

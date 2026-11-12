@@ -57,3 +57,13 @@ describe("Earlier work carried forward", () => {
     expect(d.workflows).toEqual([{ name: "Invoices: Inbox triage and replies", source: "AI Audit Tracker", hours_week: 2, running: "" }]);
   });
 });
+
+describe("Local dates", () => {
+  it("dates an evening save in the member's own day, not UTC", async () => {
+    const { dayIn } = await import("@/lib/tz");
+    const evening = new Date("2026-11-11T23:40:00-05:00"); // 11:40 PM in New York is already Nov 12 in UTC
+    expect(evening.toISOString().slice(0, 10)).toBe("2026-11-12");
+    expect(dayIn("America/New_York", evening)).toBe("2026-11-11");
+    expect(dayIn("America/Los_Angeles", new Date("2026-11-12T02:40:00Z"))).toBe("2026-11-11");
+  });
+});

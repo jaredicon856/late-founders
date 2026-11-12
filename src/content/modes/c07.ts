@@ -1,3 +1,4 @@
+import { today } from "../profile";
 import type { ModeDef, ProfileData } from "../types";
 import { SaveError, obj, str } from "./util";
 
@@ -131,7 +132,7 @@ Use only facts the member gives. If their record has an angle statement or an of
     const pool = scored.length ? scored : sections;
     const lowest = pool.reduce((a, b) => (b.score < a.score ? b : a));
     const total = sections.reduce((t, x) => t + x.score, 0);
-    const date = new Date().toISOString().slice(0, 10);
+    const date = today();
 
     const blocks: DocBlock[] = [
       { type: "big", label: "Fix this first", value: lowest.section, note: lowest.issue },

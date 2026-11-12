@@ -1,3 +1,4 @@
+import { withTz } from "@/lib/tz";
 import { NextResponse } from "next/server";
 import { getMode } from "@/content/registry";
 import { runTurn } from "@/lib/assistant/engine";
@@ -17,5 +18,5 @@ export async function POST(req: Request, { params }: { params: Promise<{ assetId
   if (message.length > 50_000) return NextResponse.json({ error: "That message is too long. Split it up." }, { status: 413 });
   const capped = await overDailyLimit(g.user.id);
   if (capped) return NextResponse.json({ error: capped }, { status: 429 });
-  return NextResponse.json(await runTurn(g.user.id, assetId, message));
+  return NextResponse.json(await withTz(() => runTurn(g.user.id, assetId, message)));
 }

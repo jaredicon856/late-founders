@@ -104,7 +104,7 @@ export const roleScorecard: WorksheetDef = {
     {
       title: "3 · Traits the work requires",
       intro:
-        "Two or three. Avoid generic traits like \"hard-working\" or \"team player\": everyone claims them and you cannot test for them. Name what this work punishes if it is missing, such as \"comfortable chasing late payments without apologising\".",
+        "Two or three. Avoid generic traits like \"hard-working\" or \"team player\": everyone claims them and you cannot test for them. Name what this work punishes if it is missing, such as \"comfortable chasing late payments without apologizing\".",
       blocks: [
         {
           kind: "table",
@@ -233,7 +233,7 @@ export const laneDecisionGuide: WorksheetDef = {
           paragraphs: [
             "Picture a stranger receiving the task by email. Could they deliver the right result without a call? If yes, the task is defined. If you would need to explain, correct and re-explain, it is not defined yet, and no lane will fix that. Write the SOP or the brief first, then come back to this question.",
             "Example: \"Build a five-page site in our existing template using this copy\" is defined. \"Sort out our marketing\" is not.",
-            "Well-defined and repeatable points toward AI. Well-defined but specialised points toward a contractor.",
+            "Well-defined and repeatable points toward AI. Well-defined but specialized points toward a contractor.",
           ],
         },
         {
@@ -264,7 +264,7 @@ export const laneDecisionGuide: WorksheetDef = {
                 "Writing the rules, checking the output weekly, handling every exception",
               ],
               [
-                "Specialised and bounded",
+                "Specialized and bounded",
                 "Contractor",
                 "Brand identity, website build, annual accounts, a legal review, a one-off ad campaign",
                 "A clear brief, the deadline, accepting or rejecting the deliverable",
@@ -298,7 +298,7 @@ export const laneDecisionGuide: WorksheetDef = {
           kind: "callout",
           tone: "legal",
           title: "Employment classification is a legal question",
-          text: "Whether someone is a contractor or an employee is governed by local labour law, and the tests vary by jurisdiction. Ongoing, embedded work under your direction can make a \"contractor\" an employee in law, whatever the contract calls them, with back taxes, benefits and penalties at stake. Confirm the classification with a local employment lawyer or accountant before you finalise any ongoing contractor arrangement. This guide is general guidance, not legal advice.",
+          text: "Whether someone is a contractor or an employee is governed by local labor law, and the tests vary by jurisdiction. Ongoing, embedded work under your direction can make a \"contractor\" an employee in law, whatever the contract calls them, with back taxes, benefits and penalties at stake. Confirm the classification with a local employment lawyer or accountant before you finalise any ongoing contractor arrangement. This guide is general guidance, not legal advice.",
         },
       ],
     },

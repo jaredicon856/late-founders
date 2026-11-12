@@ -1,3 +1,4 @@
+import { today } from "../profile";
 import type { ModeDef, ProfileData } from "../types";
 import { SaveError, obj, str } from "./util";
 
@@ -80,7 +81,7 @@ Use the ICP paragraph, and the member's offer and angle statement when they are 
     if (delays.some((x) => !(x >= 3 && x <= 5))) throw new SaveError("Each delay between unanswered steps must be 3 to 5 days.");
 
     const steps = STEPS.map((s, i) => ({ step: s.label, job: s.job, message: msgs[s.key], delay_days: i === 0 ? 0 : delays[i - 1] }));
-    const date = new Date().toISOString().slice(0, 10);
+    const date = today();
     const blocks: DocBlock[] = [{ type: "kv", items: [{ label: "Written for", value: str(profile.icp_paragraph) }] }];
     for (const s of steps) {
       blocks.push(

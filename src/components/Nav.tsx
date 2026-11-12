@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useEffect } from "react";
 
 const MEMBER = [
   { href: "/dashboard", label: "Dashboard" },
@@ -22,6 +23,13 @@ const ADMIN = [
 ];
 
 export default function Nav({ logout, isAdmin, unread }: { logout: () => Promise<void>; isAdmin?: boolean; unread?: number }) {
+  // Saves the device's time zone so the server dates saves in the member's day.
+  useEffect(() => {
+    try {
+      const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+      if (tz) document.cookie = `tz=${encodeURIComponent(tz)}; path=/; max-age=31536000; samesite=lax`;
+    } catch {}
+  }, []);
   const path = usePathname();
   const links = isAdmin ? ADMIN : MEMBER;
   const active = (l: { href: string; exact?: boolean }) => (l.exact ? path === l.href : path.startsWith(l.href));

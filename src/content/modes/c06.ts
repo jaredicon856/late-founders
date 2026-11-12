@@ -1,4 +1,4 @@
-import { asNumber, money } from "../profile";
+import { asNumber, money, today } from "../profile";
 import { BANDS, decide, decisionInputs } from "../quit";
 import type { ModeDef, ProfileData } from "../types";
 import { SaveError, obj, objArray, str } from "./util";
@@ -87,7 +87,7 @@ The band is not the product. The named gaps are. Your job:
 2. Walk through each named gap shown in your first message, one at a time. For each, work out with the member one concrete way to close it (for example "sign the second retainer with the client already asking", "choose the marketplace plan and close that row"). For a signed-revenue gap, frame it in terms of their actual offer from the record: its package, its price, and how many signed clients at that price close the gap (the system gives that count when the price is monthly; if the price is per project, ask how often a client buys). Use their words. Do not invent clients, figures or plans.
 3. Before triggers, ask once: "Is there anything else making you hesitate that isn't on this list?" Add anything real they name as a gap.
 4. Ask for their trigger conditions: the specific, checkable things that must be true before they move ("two signed retainers", "six months of reserve", "health plan in place"). For each, agree a target month with them (YYYY-MM, not in the past). Build only from what they say.
-5. Summarise the band, the gaps with how to close each, and the dated triggers, and ask them to confirm. Then call save_output with the band exactly as shown.`,
+5. Summarize the band, the gaps with how to close each, and the dated triggers, and ask them to confirm. Then call save_output with the band exactly as shown.`,
   opener: (p) => {
     const { inputs, missing } = decisionInputs(p);
     if (!inputs) {
@@ -156,7 +156,7 @@ The band is not the product. The named gaps are. Your job:
     const named = namedGaps(profile, d.gaps);
     if (gaps.length < named.length) throw new SaveError(`There are ${named.length} named gaps. Give each one a concrete way to close it.`);
     if (gaps.some((g) => !g.how_to_close)) throw new SaveError("Every gap needs a concrete way to close it, agreed with the member.");
-    const thisMonth = new Date().toISOString().slice(0, 7);
+    const thisMonth = today().slice(0, 7);
     const triggers = objArray(o.triggers).map((t) => ({ condition: str(t.condition), target_month: str(t.target_month) }));
     if (!triggers.length) throw new SaveError("Ask the member for at least one trigger condition with a target month.");
     for (const t of triggers) {
@@ -165,7 +165,7 @@ The band is not the product. The named gaps are. Your job:
       if (t.target_month < thisMonth) throw new SaveError(`${t.target_month} is in the past. Agree a future month with the member.`);
     }
     triggers.sort((a, b) => (a.target_month < b.target_month ? -1 : 1));
-    const date = new Date().toISOString().slice(0, 10);
+    const date = today();
     const freedom = asNumber(profile.freedom_number);
     const blocks: DocBlock[] = [
       { type: "big", label: "Recommendation", value: band, note: DISCLAIMER },

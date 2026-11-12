@@ -1,4 +1,4 @@
-import { asNumber, money } from "../profile";
+import { asNumber, money, today } from "../profile";
 import type { ModeDef, ProfileData } from "../types";
 import { SaveError, str, strArray, obj, objArray } from "./util";
 
@@ -30,7 +30,7 @@ import { SaveError, str, strArray, obj, objArray } from "./util";
 type DocBlock = ReturnType<ModeDef["onSave"]>["doc"]["blocks"][number];
 
 const EYEBROW = "COURSE 04 · NAME, BRAND & LEGAL BASICS";
-const today = () => new Date().toISOString().slice(0, 10);
+
 const text = (v: unknown) => (typeof v === "string" ? v.trim() : "");
 
 // ---------------------------------------------------------------------------
@@ -82,7 +82,7 @@ Report three "see a professional" triggers, each true or false with a reason:
 - trademark_conflict: an unresolved trademark conflict exists on the name they will use.
 Do not decide the overall flag; the system raises it if any trigger is true.
 
-Before saving, summarise the four inputs and your recommendation and ask the member to confirm.`,
+Before saving, summarize the four inputs and your recommendation and ask the member to confirm.`,
   opener: (p: ProfileData) => {
     const lines = ["This tool recommends a business structure: LLC, S-Corp election, C-Corp or Nonprofit, with the reasons for and against each."];
     const name = text(p.business_name);
@@ -248,7 +248,7 @@ const colour = {
   additionalProperties: false,
   required: ["hex", "use"],
   properties: {
-    hex: { type: "string", description: "Six-digit hex code, e.g. #1F3A5F. Never a colour name." },
+    hex: { type: "string", description: "Six-digit hex code, e.g. #1F3A5F. Never a color name." },
     use: { type: "string", description: "Where it is used: backgrounds, headings, buttons, accents." },
   },
 };
@@ -263,20 +263,20 @@ Inputs. Use what is in the member record and ask only for what is missing, one a
 - Chosen business name. If the record holds name candidates but no chosen name, ask which one they chose.
 - Business category (what they sell, in a phrase).
 - Audience (who buys).
-- Existing assets: any logo, colours, fonts, photos or copy they already have and want to keep. "None" is a valid answer.
+- Existing assets: any logo, colors, fonts, photos or copy they already have and want to keep. "None" is a valid answer.
 Then ask one or two questions about the feel they want (three adjectives a client would use about them, and a brand they admire outside their field).
 
-The sheet carries the MEMBER's brand, not Late Founders'. Never use Late Founders colours (#0B0B0D, #73FED2, #E8FF74), Montserrat as a default, or Late Founders wording in the sheet. Write the content in a neutral, practical tone a freelancer can follow.
+The sheet carries the MEMBER's brand, not Late Founders'. Never use Late Founders colors (#0B0B0D, #73FED2, #E8FF74), Montserrat as a default, or Late Founders wording in the sheet. Write the content in a neutral, practical tone a freelancer can follow.
 
 The sheet must contain:
 1. Logo usage notes: a minimum size (in px for screen and mm or inches for print), clear space (stated as a multiple of a logo element, e.g. the height of the first letter), and three to five do or don't notes. If they have no logo yet, write these as the brief for the designer.
-2. Colours as six-digit hex codes only, never colour names: one or two primary colours and one to three secondary colours, each with where it is used. Check that body text colour on the background has strong contrast. Keep any existing colours the member wants.
+2. Colors as six-digit hex codes only, never color names: one or two primary colors and one to three secondary colors, each with where it is used. Check that body text color on the background has strong contrast. Keep any existing colors the member wants.
 3. One or two typefaces from widely licensable families (free under the SIL Open Font License or Apache License, for example from Google Fonts), each assigned to headline, body, or both, with a common system fallback.
 4. Voice: three to five specific descriptors (not "professional" or "friendly" alone), each with one example sentence to write and one to avoid, written for this member's audience.
 
 Show the member a draft of the whole sheet, take their edits, and save only once they approve it.`,
   opener: (p: ProfileData) => {
-    const lines = ["This builds a one-page brand sheet for your business: logo rules, colours as hex codes, typefaces and voice. It is yours to hand to any designer or writer."];
+    const lines = ["This builds a one-page brand sheet for your business: logo rules, colors as hex codes, typefaces and voice. It is yours to hand to any designer or writer."];
     const name = text(p.business_name);
     const candidates = Array.isArray(p.name_candidates) ? (p.name_candidates as unknown[]).map(text).filter(Boolean) : [];
     const audience = text(p.audience);
@@ -366,7 +366,7 @@ Show the member a draft of the whole sheet, take their edits, and save only once
       const list = objArray(c[k]).map((x) => ({ hex: str(x.hex).toUpperCase(), use: str(x.use) }));
       if (list.length < min || list.length > max) throw new SaveError(`colours.${k} must have ${min} to ${max} entries; got ${list.length}.`);
       const bad = list.filter((x) => !HEX.test(x.hex)).map((x) => x.hex || "(empty)");
-      if (bad.length) throw new SaveError(`colours.${k} has values that are not six-digit hex codes: ${bad.join(", ")}. Use codes like #1F3A5F, never colour names.`);
+      if (bad.length) throw new SaveError(`colours.${k} has values that are not six-digit hex codes: ${bad.join(", ")}. Use codes like #1F3A5F, never color names.`);
       return list;
     };
     const primary = readColours("primary", 1, 2);
@@ -408,7 +408,7 @@ Show the member a draft of the whole sheet, take their edits, and save only once
         { type: "heading", text: "Logo" },
         { type: "kv", items: [{ label: "Minimum size", value: minSize }, { label: "Clear space", value: clearSpace }] },
         { type: "bullets", items: logoNotes },
-        { type: "heading", text: "Colours" },
+        { type: "heading", text: "Colors" },
         {
           type: "table",
           table: {
@@ -421,7 +421,7 @@ Show the member a draft of the whole sheet, take their edits, and save only once
         {
           type: "table",
           table: {
-            headers: ["Typeface", "Used for", "Licence", "Fallback"],
+            headers: ["Typeface", "Used for", "License", "Fallback"],
             widths: [1.2, 1, 1.3, 1.2],
             rows: typefaces.map((t) => [t.family, t.role[0].toUpperCase() + t.role.slice(1), t.licence, t.fallback]),
           },
@@ -440,7 +440,7 @@ Show the member a draft of the whole sheet, take their edits, and save only once
 
     return {
       profile: { brand_sheet: sheet, business_name: name },
-      summary: `Brand sheet for ${name} · ${primary.length + secondary.length} colours, ${typefaces.length} typeface${typefaces.length > 1 ? "s" : ""}, ${voice.length} voice descriptors`,
+      summary: `Brand sheet for ${name} · ${primary.length + secondary.length} colors, ${typefaces.length} typeface${typefaces.length > 1 ? "s" : ""}, ${voice.length} voice descriptors`,
       doc,
     };
   },

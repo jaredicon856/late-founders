@@ -3,8 +3,9 @@ type V = { version: number; label: string; createdAt: string };
 const LABEL: Record<string, string> = { pdf: "PDF", docx: "Word", xlsx: "Excel", zip: "Zip" };
 
 export default function VersionList({
-  assetId, versions, formats, current, canExportCurrent,
+  assetId, versions, formats, current, canExportCurrent, tz,
 }: {
+  tz?: string; // the member's time zone, so an evening save keeps its own date
   assetId: string;
   versions: V[];
   formats: string[];
@@ -30,7 +31,7 @@ export default function VersionList({
             {versions.map((v, i) => (
               <tr key={v.version}>
                 <td>v{v.version}{i === 0 && <span className="tag-current">Current</span>}</td>
-                <td className="muted">{new Date(v.createdAt).toLocaleDateString("en-US", { dateStyle: "medium" })}</td>
+                <td className="muted">{new Date(v.createdAt).toLocaleDateString("en-US", { dateStyle: "medium", timeZone: tz })}</td>
                 <td className="muted">{v.label}</td>
                 <td className="dl">
                   {formats.map((f) => (

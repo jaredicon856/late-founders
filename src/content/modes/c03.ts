@@ -65,7 +65,7 @@ export const interviewScriptGenerator: ModeDef = {
   systemPrompt: `You run the Buyer-Interview Script Generator for Course 03. You build, and over later sessions re-sharpen, the script the member uses to interview potential buyers. Every save creates a new version; all earlier versions are kept.
 
 INPUTS
-- A problem statement that is solution-free: it describes the buyer's problem and its cost to them, and does not mention the member's product, service or idea. If the member's statement names a solution ("an app that...", "a coaching programme for..."), point that out and help them rewrite it as the problem alone.
+- A problem statement that is solution-free: it describes the buyer's problem and its cost to them, and does not mention the member's product, service or idea. If the member's statement names a solution ("an app that...", "a coaching program for..."), point that out and help them rewrite it as the problem alone.
 - An audience description: who has the problem, specifically enough that the member could name ten of them.
 - Whether these are warm interviews (referrals, people who know the member) or cold ones (LinkedIn, communities). The opener differs.
 - Optional context the member adds in later sessions: painkiller score, market floor, personal fit notes, price objections heard. Use any that are present to sharpen the questions. Carry forward context from the latest saved version unless the member changes it.
@@ -75,7 +75,7 @@ If the problem statement is too vague to produce specific questions (no clear wh
 
 THE SCRIPT
 1. Opener: about one minute spoken (roughly 120 to 160 words). Who the member is, why they are calling, that they are not selling anything, and permission to ask about the buyer's experience. Warm: reference the person who connected them. Cold: one line on why this person was chosen.
-2. Exactly nine core questions. Every question asks about actual past behaviour or current and prior spend: the last time the problem happened, what it cost, what they tried, what they paid for, who else was involved, what they use now. Never ask about hypothetical willingness to buy or future intent: no "would you pay", "would you use", "how much would", "are you interested in", "imagine if". Each question gets a follow-up probe and a note on what to listen for.
+2. Exactly nine core questions. Every question asks about actual past behavior or current and prior spend: the last time the problem happened, what it cost, what they tried, what they paid for, who else was involved, what they use now. Never ask about hypothetical willingness to buy or future intent: no "would you pay", "would you use", "how much would", "are you interested in", "imagine if". Each question gets a follow-up probe and a note on what to listen for.
 3. Close: about two minutes spoken (roughly 250 to 320 words). Thank them, ask whether there is anything you should have asked, ask for two or three referrals to others with the same problem, and agree how to follow up.
 
 When you regenerate, say in one or two lines what changed from the previous version and why.
@@ -116,7 +116,7 @@ Show the full draft script in the chat, ask the member to confirm or correct it,
       opener: { type: "string", description: "About one minute spoken, roughly 120 to 160 words." },
       questions: {
         type: "array",
-        description: "Exactly nine. Past behaviour and prior spend only. Never hypothetical willingness to buy.",
+        description: "Exactly nine. Past behavior and prior spend only. Never hypothetical willingness to buy.",
         items: {
           type: "object",
           additionalProperties: false,
@@ -172,7 +172,7 @@ Show the full draft script in the chat, ask the member to confirm or correct it,
       const hit = HYPOTHETICAL.find((re) => re.test(text));
       if (hit)
         throw new SaveError(
-          `Question ${i + 1} asks about hypothetical future behaviour ("${text.match(hit)?.[0]}"). Rewrite it to ask what the buyer actually did or spent in the past.`,
+          `Question ${i + 1} asks about hypothetical future behavior ("${text.match(hit)?.[0]}"). Rewrite it to ask what the buyer actually did or spent in the past.`,
         );
     });
 
@@ -254,7 +254,7 @@ Show the full draft script in the chat, ask the member to confirm or correct it,
       doc: {
         title: "Buyer-Interview Script",
         eyebrow: EYEBROW,
-        purpose: `Version ${version}: an opener, nine past-behaviour questions and a referral close for your buyer interviews.`,
+        purpose: `Version ${version}: an opener, nine past-behavior questions and a referral close for your buyer interviews.`,
         blocks,
         meta: { version, completedAt: created_at },
       },

@@ -1,3 +1,4 @@
+import { withTz } from "@/lib/tz";
 import { NextResponse } from "next/server";
 import { getAsset } from "@/content/catalog";
 import { getWorksheet } from "@/content/registry";
@@ -28,6 +29,6 @@ export async function POST(req: Request, { params }: { params: Promise<{ assetId
     const problem = def.completeCheck(data, await getProfile(user.id));
     if (problem) return NextResponse.json({ error: problem }, { status: 422 });
   }
-  const result = await saveSheet(user.id, assetId, data, body.complete === true);
+  const result = await withTz(() => saveSheet(user.id, assetId, data, body.complete === true));
   return NextResponse.json(result);
 }

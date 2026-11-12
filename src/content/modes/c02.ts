@@ -1,3 +1,4 @@
+import { today } from "../profile";
 import type { ModeDef, ProfileData } from "../types";
 import { SaveError, str, objArray } from "./util";
 
@@ -107,7 +108,7 @@ Save only after the member approves both the reframe and the sentence. "factual"
     const now = new Date();
     const entry = {
       id: `je-${now.getTime()}`,
-      date: now.toISOString().slice(0, 10),
+      date: today(),
       prompt_set: promptSet,
       factual,
       first_decision: decision,

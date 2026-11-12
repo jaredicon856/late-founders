@@ -72,7 +72,7 @@ export const icpWorksheet: WorksheetDef = {
               label: "4 · The specific pain, in the buyer's own words",
               type: "textarea",
               lines: 2,
-              hint: "How they would say it to a peer, not your category language. \"We keep shipping the wrong pallets\" beats \"fulfilment inefficiency\".",
+              hint: "How they would say it to a peer, not your category language. \"We keep shipping the wrong pallets\" beats \"fulfillment inefficiency\".",
             },
           ],
         },
@@ -108,7 +108,7 @@ export const icpWorksheet: WorksheetDef = {
 // are not targets to hit.
 export const METRICS = [
   { key: "acceptance", label: "Connection acceptance", benchmark: 30, fix: "Low acceptance points at the list or the connection request. Re-check the list against your ICP, and make the request reference their trigger condition with no pitch." },
-  { key: "reply_opener", label: "Reply to the opener", benchmark: 10, fix: "Low replies to the opener mean it is not specific enough. It should prove you looked at their profile: one observation only they would recognise." },
+  { key: "reply_opener", label: "Reply to the opener", benchmark: 10, fix: "Low replies to the opener mean it is not specific enough. It should prove you looked at their profile: one observation only they would recognize." },
   { key: "reply_value", label: "Reply to the value message", benchmark: 8, fix: "Low replies to the value message mean it fails the still-worth-receiving test. Would it be useful if they never replied? If not, it is a teaser. Replace it with something genuinely useful." },
   { key: "reply_cta", label: "Reply to the soft CTA", benchmark: 8, fix: "Low replies to the soft CTA: make it a question, not an instruction, tie it to the value message, and give an explicit easy out." },
   { key: "booking", label: "Calls booked from replies", benchmark: 25, fix: "Low booking with healthy replies means the leak is in how you handle replies, not the sequence. Answer fast, ask one question back, and suggest a time rather than sending a link." },

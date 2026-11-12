@@ -68,7 +68,7 @@ export const discoverySheet: WorksheetDef = {
               label: "The gap, in one line",
               type: "textarea",
               lines: 2,
-              hint: "From Now to Wanted, in the prospect's vocabulary, not yours. If they said \"the trucks leave wrong\", do not write \"fulfilment accuracy\".",
+              hint: "From Now to Wanted, in the prospect's vocabulary, not yours. If they said \"the trucks leave wrong\", do not write \"fulfillment accuracy\".",
             },
           ],
         },

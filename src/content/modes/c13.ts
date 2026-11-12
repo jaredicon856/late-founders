@@ -1,4 +1,4 @@
-import { asNumber } from "../profile";
+import { asNumber, today as localToday } from "../profile";
 import type { ModeDef, ProfileData } from "../types";
 import { SaveError, str, strArray, obj, objArray } from "./util";
 
@@ -55,7 +55,7 @@ export function phaseFor(offset: number, horizon: number): string {
   const f = offset / horizon;
   if (f < 0.34) return "Early: transferability baseline and first documentation";
   if (f < 0.67) return "Middle: recurring revenue conversion and systems maturity";
-  return "Late: full data room review and practised absences";
+  return "Late: full data room review and practiced absences";
 }
 
 function labelFor(offset: number, horizon: number): string {
@@ -105,7 +105,7 @@ Steps, one question at a time:
 4. Work backward. Checkpoints run from the target year, then year 8, 6, 4 and 2, then this year (skip any that fall on or after the target year). For each, write what must be true by then: two to four concrete, checkable statements. Map the curriculum phases onto them:
    - Early years: transferability baseline and first documentation (Owner's Audit, task sort, first SOPs, dashboard, Sellability Scorecard).
    - Middle years: recurring revenue conversion and systems maturity (retainers and contracts, full SOP Library, a team that runs the dashboard, delegation).
-   - Late years: full data room review and practised absences (the One-Week-Away Test stretched to a month, a clean data room, clean financial history).
+   - Late years: full data room review and practiced absences (the One-Week-Away Test stretched to a month, a clean data room, clean financial history).
 5. Pull in the scorecard gaps. The member's two lowest value drivers must be addressed in this year's checkpoint and named in its gaps_addressed, and any other driver scored 1 or 2 should appear in an early checkpoint. Use the driver names exactly as listed in the record. If there is no scorecard yet, say so and suggest completing the Sellability Scorecard first; you may continue without it.
 6. Give each checkpoint a target for the four metrics: recurring revenue %, owner-dependence score (1 to 5), data room completeness %, and earnings trend. Targets should improve steadily toward the target year.
 7. The target year carries a decision checkpoint: sell or step back. It is open. Do not ask the member to decide it now and do not recommend one. Write the question as it will be asked then, and the inputs they will review.
@@ -182,7 +182,7 @@ Before saving, show the roadmap from this year forward in a few lines and ask th
   onSave: (o, p) => {
     const now = new Date();
     const thisYear = now.getUTCFullYear();
-    const today = iso(now);
+    const today = localToday();
 
     const outcome = str(o.target_outcome);
     if (!(OUTCOMES as readonly string[]).includes(outcome)) throw new SaveError("target_outcome must be Full sale, Partial sale or Step-back.");

@@ -1,4 +1,4 @@
-import { asNumber } from "../profile";
+import { asNumber, today } from "../profile";
 import type { LibraryEntry, ProfileData, SheetData, TableRow, WorksheetDef } from "../types";
 
 // Member-record fields written here:
@@ -203,7 +203,7 @@ export const WORKFLOWS: LibraryEntry[] = [
     "Pre-call brief",
     "The prospect's LinkedIn About and Experience text, their website's About page, and your notes from any earlier contact.",
     "One page you read in two minutes before the call: who they are, what they likely care about, three questions to ask.",
-    "I have a discovery call with the person below. Using only this material, write a brief: who they are in two lines, what their business seems to prioritise right now, anything that suggests a problem I solve, and three open questions to ask. Do not guess at facts not in the material.\n\nMaterial:\n[paste]",
+    "I have a discovery call with the person below. Using only this material, write a brief: who they are in two lines, what their business seems to prioritize right now, anything that suggests a problem I solve, and three open questions to ask. Do not guess at facts not in the material.\n\nMaterial:\n[paste]",
     "A brief with specific, checkable details from their own words and questions that could not be asked of anyone else.",
   ),
   wf(
@@ -315,7 +315,7 @@ export const hoursSavedTracker: WorksheetDef = {
         running: "",
       };
     });
-    return { audited_on: new Date().toISOString().slice(0, 10), ...(workflows.length ? { workflows } : {}) };
+    return { audited_on: today(), ...(workflows.length ? { workflows } : {}) };
   },
   sections: [
     {

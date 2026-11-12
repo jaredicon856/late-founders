@@ -1,3 +1,4 @@
+import { today } from "../profile";
 import type { ModeDef, ProfileData } from "../types";
 import { SaveError, str } from "./util";
 
@@ -62,7 +63,7 @@ Use only what the member gave you. Do not invent results, numbers, clients or qu
     if (words(line) > 40) throw new SaveError("The conversational line is too long to say naturally. One sentence, under 40 words.");
 
     const now = new Date();
-    const entry = { id: `rp-${now.getTime()}`, date: now.toISOString().slice(0, 10), material, post, video_script: script, line };
+    const entry = { id: `rp-${now.getTime()}`, date: today(), material, post, video_script: script, line };
     const angle = str(profile.angle_statement);
     return {
       profile: { repurposed_pieces: [...pieces(profile), entry].slice(-50) },

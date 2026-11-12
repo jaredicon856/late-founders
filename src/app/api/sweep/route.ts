@@ -1,3 +1,4 @@
+import { dayIn, memberTz } from "@/lib/tz";
 import { NextResponse } from "next/server";
 import { getAsset, eyebrowFor } from "@/content/catalog";
 import { createVersion, setStatus } from "@/lib/assets";
@@ -69,7 +70,7 @@ export async function POST(req: Request) {
 
   const results = await Promise.all(names.map((n) => sweepName(n, category)));
   const doc = toDoc(results, category);
-  await writeProfile(g.user.id, { sweep_results: { date: new Date().toISOString().slice(0, 10), category, results } }, "availability-sweep");
+  await writeProfile(g.user.id, { sweep_results: { date: dayIn(await memberTz()), category, results } }, "availability-sweep");
   const version = await createVersion(g.user.id, "availability-sweep", { names, category, results }, doc, names.join(", "));
   await setStatus(g.user.id, "availability-sweep", "complete");
   return NextResponse.json({ results, version });

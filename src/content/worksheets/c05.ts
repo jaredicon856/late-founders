@@ -106,7 +106,7 @@ export const onePageOffer: WorksheetDef = {
     },
     {
       title: "5 · Guarantee",
-      intro: "What happens if it does not work, and the condition attached. Fails when it is vague (\"satisfaction guaranteed\") or one you could not afford to honour.",
+      intro: "What happens if it does not work, and the condition attached. Fails when it is vague (\"satisfaction guaranteed\") or one you could not afford to honor.",
       blocks: [{ kind: "fields", fields: [{ key: "guarantee", label: "Guarantee", type: "textarea", lines: 2 }] }],
     },
     {

@@ -1,3 +1,4 @@
+import { today } from "../profile";
 import type { ModeDef } from "../types";
 import { SaveError, str, objArray } from "./util";
 
@@ -115,7 +116,7 @@ Then show the steps and the "What to do if" list briefly and ask if anything is 
     if (!owner) throw new SaveError("owner is empty. Ask the member who keeps this SOP current.");
     const nextReview = str(o.next_review);
     if (!validDate(nextReview)) throw new SaveError("next_review must be a real date written YYYY-MM-DD. Confirm it with the member.");
-    if (nextReview <= new Date().toISOString().slice(0, 10))
+    if (nextReview <= today())
       throw new SaveError("next_review must be in the future. Ask the member for a review date, for example three or six months from today.");
 
     const steps = objArray(o.steps)

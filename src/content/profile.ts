@@ -86,3 +86,13 @@ export function money(n: number | null | undefined): string {
   if (n === null || n === undefined || !Number.isFinite(n)) return "";
   return "$" + Math.round(n).toLocaleString("en-US");
 }
+
+// Today's date (YYYY-MM-DD) in the member's own time zone. On the server the
+// request sets the zone (src/lib/tz.ts); in the browser it is the device's.
+// Never toISOString(): that is UTC, so an evening save showed tomorrow.
+export function today(): string {
+  const hook = (globalThis as { __lfToday?: () => string }).__lfToday;
+  if (hook) return hook();
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+}
