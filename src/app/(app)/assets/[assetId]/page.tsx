@@ -9,7 +9,7 @@ import VersionList from "@/components/VersionList";
 import NextUp from "@/components/NextUp";
 import WorksheetForm from "@/components/WorksheetForm";
 import WorksheetHelp from "@/components/WorksheetHelp";
-import { getStatuses, loadSheet } from "@/lib/assets";
+import { getStatuses, loadSheet, setStatus } from "@/lib/assets";
 import { aiConfigured, currentRun, getTranscript } from "@/lib/assistant/engine";
 import { requireUser } from "@/lib/auth";
 import { db } from "@/lib/db";
@@ -22,6 +22,11 @@ export default async function AssetPage({ params }: { params: Promise<{ assetId:
   if (!asset) notFound();
   const user = await requireUser();
   const [profile, statuses] = await Promise.all([getProfile(user.id), getStatuses(user.id)]);
+  // A read-only guide is done once it has been opened.
+  if (getWorksheet(assetId)?.readOnly && statuses[assetId]?.status !== "complete") {
+    await setStatus(user.id, assetId, "complete");
+    statuses[assetId] = { status: "complete", updatedAt: new Date() };
+  }
   const nextUp = statuses[assetId]?.status === "complete" ? <NextUp profile={profile} statuses={statuses} /> : null;
 
   const head = (

@@ -47,7 +47,7 @@ export const onePageOffer: WorksheetDef = {
     },
     {
       title: "3 · Proof",
-      intro: "Specific results with numbers, from your own track record. Fails when it is adjectives, credentials or a list of years served.",
+      intro: "Client results with numbers if you have them. If not, how you work, your own history with the problem, and relevant experience. Fails when it is vague or cannot be backed up.",
       blocks: [{ kind: "fields", fields: [{ key: "proof", label: "Proof", type: "textarea", lines: 4 }] }],
     },
     {

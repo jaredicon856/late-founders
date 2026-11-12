@@ -17,6 +17,26 @@ function previous(p: ProfileData) {
   return str(d.band) ? d : null;
 }
 
+// The monthly figure in a price such as "$2,490 setup + $249/mo": only the
+// number written next to the monthly marker counts, never digits from the rest.
+export function monthlyPrice(price: string): number | null {
+  const m = price.match(/\$?\s*(\d[\d,]*(?:\.\d+)?)\s*(k)?\s*(?:\/\s*mo(?:nth)?\b|per\s+month|a\s+month|monthly|\/\s*month)/i);
+  if (!m) return null;
+  const n = Number(m[1].replace(/,/g, "")) * (m[2] ? 1000 : 1);
+  return n > 0 ? n : null;
+}
+
+// Every open item on the Risk Inventory is a gap of its own: risk resolution
+// is one of the four inputs in Lesson 5.1, whatever band the numbers give.
+export function namedGaps(p: ProfileData, gaps: string[]): string[] {
+  const items = Array.isArray(p.risk_items) ? p.risk_items.filter((x): x is string => typeof x === "string" && !!x.trim()) : [];
+  const count = asNumber(p.open_risk_count) ?? 0;
+  const out = gaps.filter((g) => !(items.length && /open risks? on your Risk Inventory/.test(g)));
+  if (items.length) out.push(...items.map((x) => `Open risk: ${x.trim()}`));
+  else if (count > 0 && !out.some((g) => /open risk/.test(g))) out.push(`${count} open risk${count === 1 ? "" : "s"} on your Risk Inventory still to close.`);
+  return out;
+}
+
 // The member's offer from Course 05, so gaps on signed revenue can be closed
 // in terms of their real package. A price counts as monthly only when it says so.
 export function offerSummary(p: ProfileData): { name: string; price: string; monthly: number | null; clientsToMvi: number | null } | null {
@@ -25,8 +45,7 @@ export function offerSummary(p: ProfileData): { name: string; price: string; mon
   const name = str(pkg.name) || str(o.headline);
   const price = str(pkg.price);
   if (!name && !price) return null;
-  const n = Number(price.replace(/[^0-9.]/g, ""));
-  const monthly = /\/\s*mo|month/i.test(price) && n > 0 ? n : null;
+  const monthly = monthlyPrice(price);
   const mvi = asNumber(p.mvi);
   const committed = asNumber(p.committed_revenue) ?? 0;
   const clientsToMvi = monthly && mvi ? Math.max(0, Math.ceil((mvi - committed) / monthly)) : null;
@@ -64,10 +83,11 @@ export const decisionEngine: ModeDef = {
 The system has already computed the recommendation band from the record and shown it in your first message: "Quit now", "Quit in three to six months" or "Stay and build". You never change the band. If the member argues with it or offers different numbers in chat, do not recalculate. Tell them: circumstances change the answer, not inputs. If something real has changed (a contract signed, a debt paid off, a health plan chosen), they update the Runway Calculator or Risk Inventory and come back, and the engine re-reads the record.
 
 The band is not the product. The named gaps are. Your job:
-1. Explain the band in two or three plain sentences, using the member's founder type: for a Fresh Start founder "quit" means committing full time instead of taking bridge work; for a First-Timer it means leaving the job; for a Buried Founder it means stepping back from what pays them now.
+1. Explain the band in two or three plain sentences, using the member's founder type: for a Fresh Start founder "quit" means committing full time to the business; for a First-Timer it means leaving the job; for a Buried Founder it means stepping back from what pays them now. Never assume how the member earns now (bridge work, consulting, a pension): if it matters, ask.
 2. Walk through each named gap shown in your first message, one at a time. For each, work out with the member one concrete way to close it (for example "sign the second retainer with the client already asking", "choose the marketplace plan and close that row"). For a signed-revenue gap, frame it in terms of their actual offer from the record: its package, its price, and how many signed clients at that price close the gap (the system gives that count when the price is monthly; if the price is per project, ask how often a client buys). Use their words. Do not invent clients, figures or plans.
-3. Ask for their trigger conditions: the specific, checkable things that must be true before they move ("two signed retainers", "six months of reserve", "health plan in place"). For each, agree a target month with them (YYYY-MM, not in the past). Build only from what they say.
-4. Summarise the band, the gaps with how to close each, and the dated triggers, and ask them to confirm. Then call save_output with the band exactly as shown.`,
+3. Before triggers, ask once: "Is there anything else making you hesitate that isn't on this list?" Add anything real they name as a gap.
+4. Ask for their trigger conditions: the specific, checkable things that must be true before they move ("two signed retainers", "six months of reserve", "health plan in place"). For each, agree a target month with them (YYYY-MM, not in the past). Build only from what they say.
+5. Summarise the band, the gaps with how to close each, and the dated triggers, and ask them to confirm. Then call save_output with the band exactly as shown.`,
   opener: (p) => {
     const { inputs, missing } = decisionInputs(p);
     if (!inputs) {
@@ -81,10 +101,11 @@ The band is not the product. The named gaps are. Your job:
     const prev = previous(p);
     if (prev) lines.push(`Last time (${str(prev.date)}) the recommendation was **${str(prev.band)}**. This run uses your record as it is today.`);
     lines.push(`Recommendation: **${d.band}**.`);
-    if (d.gaps.length) lines.push(["What stands between you and the next band:", ...d.gaps.map((g) => `- ${g}`)].join("\n"));
+    const gaps = namedGaps(p, d.gaps);
+    if (gaps.length) lines.push(["What stands between you and the move:", ...gaps.map((g) => `- ${g}`)].join("\n"));
     else lines.push("Nothing on your record stands in the way of this band.");
     lines.push(
-      d.gaps.length
+      gaps.length
         ? "Let's take the gaps one at a time and find a concrete way to close each. Starting with the first: what is already in motion that could close it?"
         : "Let's turn this into dates. What has to be true before you make the move, and when?",
     );
@@ -99,7 +120,7 @@ The band is not the product. The named gaps are. Your job:
       explanation: { type: "string", description: "Two or three plain sentences on why this band, for this founder type." },
       gaps: {
         type: "array",
-        description: "One entry per named gap shown in your first message, in the same order.",
+        description: "One entry per named gap shown in your first message, in the same order, then any the member added.",
         items: {
           type: "object",
           additionalProperties: false,
@@ -132,7 +153,8 @@ The band is not the product. The named gaps are. Your job:
     const band = str(o.band);
     if (band !== d.band) throw new SaveError(`The band from the record is "${d.band}". Save exactly that band; it is not negotiable in chat.`);
     const gaps = objArray(o.gaps).map((g) => ({ gap: str(g.gap), how_to_close: str(g.how_to_close) }));
-    if (gaps.length < d.gaps.length) throw new SaveError(`There are ${d.gaps.length} named gaps. Give each one a concrete way to close it.`);
+    const named = namedGaps(profile, d.gaps);
+    if (gaps.length < named.length) throw new SaveError(`There are ${named.length} named gaps. Give each one a concrete way to close it.`);
     if (gaps.some((g) => !g.how_to_close)) throw new SaveError("Every gap needs a concrete way to close it, agreed with the member.");
     const thisMonth = new Date().toISOString().slice(0, 7);
     const triggers = objArray(o.triggers).map((t) => ({ condition: str(t.condition), target_month: str(t.target_month) }));

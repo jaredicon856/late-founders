@@ -76,3 +76,25 @@ describe("Decision Engine reads the offer", () => {
     expect(offerSummary({})).toBeNull();
   });
 });
+
+describe("Decision Engine first message", () => {
+  it("reads only the monthly figure from a mixed price", async () => {
+    const { monthlyPrice, offerSummary } = await import("@/content/modes/c06");
+    expect(monthlyPrice("$2,490 setup + $249/mo")).toBe(249);
+    expect(monthlyPrice("$249 per month, 3 month minimum")).toBe(249);
+    expect(monthlyPrice("$1.5k monthly")).toBe(1500);
+    expect(monthlyPrice("$4,500 one-off")).toBeNull();
+    const p = { mvi: 4467, committed_revenue: 0, offer_record: { package: { name: "Care Plan", price: "$2,490 setup + $249/mo" } } };
+    expect(offerSummary(p)?.clientsToMvi).toBe(18);
+  });
+
+  it("lists every open risk as a gap", async () => {
+    const { namedGaps } = await import("@/content/modes/c06");
+    expect(namedGaps({ risk_items: ["Health coverage not settled"], open_risk_count: 1 }, ["Reserve gap"])).toEqual([
+      "Reserve gap",
+      "Open risk: Health coverage not settled",
+    ]);
+    expect(namedGaps({ open_risk_count: 2 }, [])).toEqual(["2 open risks on your Risk Inventory still to close."]);
+    expect(namedGaps({ open_risk_count: 0 }, [])).toEqual([]);
+  });
+});

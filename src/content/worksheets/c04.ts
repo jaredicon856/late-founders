@@ -88,8 +88,9 @@ export const trademarkTriageGuide: WorksheetDef = {
         {
           kind: "prose",
           paragraphs: [
-            "A trademark search almost always returns hits. Most of them are coincidences: another business, in another line of work, that happens to share a word with you. A few are dealbreakers. Your job is to sort them fast, before you spend money on a domain, a logo or signage.",
-            "Run every hit through the three questions below, in order. If a hit clears all three, it is a coincidence. If it fails any one, treat it as a real conflict and either drop the name or get an attorney's view before you go further.",
+            "A trademark search almost always returns hits. Most of them are coincidences: another business, in another line of work, that happens to share a word with you. A few are dealbreakers. Your job is to sort them fast, before you spend real money on a logo, signage or a trademark filing.",
+            "Questions 1 and 2 are a quick screen. A hit passes the screen when the name is clearly different, or the category is unrelated: that is a coincidence, so move on. A hit fails the screen when the name is similar and the category is the same or adjacent. Only those hits go to Question 3, and Question 3 decides: if a reasonable customer would be confused, it is a real conflict, so drop the name or get an attorney's view. If they would not, it is a coincidence. If you cannot tell, that is the attorney call.",
+            "Domains are the exception to waiting. Register the domain the same day you pick the name, as Lesson 2.3 says: it costs little and you can let it go if triage rules the name out.",
           ],
         },
       ],
@@ -131,7 +132,7 @@ export const trademarkTriageGuide: WorksheetDef = {
         {
           kind: "prose",
           paragraphs: [
-            "This is the question the law actually turns on, so it is the one to answer last and most honestly. Picture an ordinary buyer, not an expert, who is in a hurry. Would they think your business is the other one, or connected to it, or endorsed by it? Shared customers, shared marketing channels and shared geography all push the answer towards yes.",
+            "This is the question the law actually turns on, so it decides every hit that failed the screen. Answer it last and most honestly. Picture an ordinary buyer, not an expert, who is in a hurry. Would they think your business is the other one, or connected to it, or endorsed by it? Shared customers, shared marketing channels and shared geography all push the answer towards yes.",
           ],
           bullets: [
             "Dealbreaker: your \"Northstar Fitness\" coaching would sell to the same local gym-goers as an established \"North Star Fitness\" studio three miles away. Same buyers, same town, same search results. Confusion is close to certain.",
@@ -147,7 +148,7 @@ export const trademarkTriageGuide: WorksheetDef = {
           kind: "prose",
           paragraphs: ["Triage handles most hits. These three situations need a professional before you commit to the name:"],
           numbered: [
-            "A hit passes question 1 or 2 but you are not sure about question 3. A close call on confusion is exactly what an attorney is for, and an hour of their time costs less than a rebrand.",
+            "A hit failed the screen (similar name, same or adjacent category) and you are not sure about question 3. A close call on confusion is exactly what an attorney is for, and an hour of their time costs less than a rebrand.",
             "You have received a cease-and-desist letter, a demand or any contact from another business about your name. Do not reply on your own.",
             "You are about to spend real money on the name: registering your own trademark, printing signage or packaging, or raising investment. Clear it properly first.",
           ],

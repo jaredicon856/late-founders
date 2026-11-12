@@ -77,9 +77,22 @@ export async function currentRun(userId: string, assetId: string): Promise<numbe
 
 // Starts the run's history: a hidden "opened" turn, the record, and the
 // opener the member sees. Built without an API call.
+// Until the member has written anything, the seed is rebuilt from the current
+// record on every load, so the opener never describes an older record (for
+// example "no offer saved yet" after the offer was saved).
 async function ensureStarted(userId: string, assetId: string, run: number, mode: ModeDef, profile: ProfileData) {
   const count = await db.message.count({ where: { userId, assetId, run } });
-  if (count) return;
+  if (count) {
+    const spoke = await db.message.count({ where: { userId, assetId, run, role: "user", hidden: false } });
+    if (spoke) return;
+    const opener = mode.opener(profile);
+    const seed = await db.message.findMany({ where: { userId, assetId, run }, select: { role: true, text: true, contentJson: true } });
+    const shown = seed.find((m) => m.role === "assistant" && m.text)?.text;
+    const record = seed.find((m) => m.role === "system")?.contentJson;
+    const fresh = JSON.stringify([{ type: "text", text: recordMessage(mode, profile) }]);
+    if (count === 3 && shown === opener && record === fresh) return;
+    await db.message.deleteMany({ where: { userId, assetId, run } });
+  }
   const opener = mode.opener(profile);
   const seed: { role: string; content: Anthropic.Beta.BetaContentBlockParam[]; hidden: boolean; text: string }[] = [
     { role: "user", content: [{ type: "text", text: "[The member opened this tool.]" }], hidden: true, text: "" },
