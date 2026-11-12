@@ -255,7 +255,7 @@ const colour = {
 
 export const brandSheetGenerator: ModeDef = {
   assetId: "brand-sheet-generator",
-  reads: ["business_name", "name_candidates", "audience", "problem_statement", "sweep_results"],
+  reads: ["business_name", "name_candidates", "audience", "problem_statement", "sweep_results", "hidden_assets"],
   writes: ["brand_sheet", "business_name"],
   systemPrompt: `You are the Brand-Sheet Generator. You build a one-page brand sheet the member can hand to a freelance designer or writer.
 
@@ -273,6 +273,7 @@ The sheet must contain:
 2. Colors as six-digit hex codes only, never color names: one or two primary colors and one to three secondary colors, each with where it is used. Check that body text color on the background has strong contrast. Keep any existing colors the member wants.
 3. One or two typefaces from widely licensable families (free under the SIL Open Font License or Apache License, for example from Google Fonts), each assigned to headline, body, or both, with a common system fallback.
 4. Voice: three to five specific descriptors (not "professional" or "friendly" alone), each with one example sentence to write and one to avoid, written for this member's audience.
+5. A core bio: two or three sentences in that voice, third person, that say who the member helps, with what, and why they are credible. Use only facts from the member and their record (their Hidden Assets Inventory, audience and problem statement); ask for anything missing. It is the bio they paste into LinkedIn, a podcast pitch or a website footer.
 
 Show the member a draft of the whole sheet, take their edits, and save only once they approve it.`,
   opener: (p: ProfileData) => {
@@ -291,12 +292,13 @@ Show the member a draft of the whole sheet, take their edits, and save only once
   outputSchema: {
     type: "object",
     additionalProperties: false,
-    required: ["business_name", "category", "audience", "existing_assets", "logo", "colours", "typefaces", "voice"],
+    required: ["business_name", "category", "audience", "existing_assets", "logo", "colours", "typefaces", "voice", "core_bio"],
     properties: {
       business_name: { type: "string" },
       category: { type: "string" },
       audience: { type: "string" },
       existing_assets: { type: "string", description: "What the member already has, or \"None\"." },
+      core_bio: { type: "string", description: "Two or three sentences, third person, in the brand voice, facts from the member only. Approved by the member." },
       logo: {
         type: "object",
         additionalProperties: false,
@@ -393,6 +395,7 @@ Show the member a draft of the whole sheet, take their edits, and save only once
       colours: { primary, secondary },
       typefaces,
       voice,
+      core_bio: str(o.core_bio),
       date: today(),
     };
 
@@ -435,6 +438,7 @@ Show the member a draft of the whole sheet, take their edits, and save only once
             rows: voice.map((v) => [v.descriptor, v.do, v.dont]),
           },
         },
+        ...(str(o.core_bio) ? [{ type: "heading", text: "Core bio" }, { type: "paragraph", text: str(o.core_bio) }] : []),
       ] as DocBlock[],
     };
 
