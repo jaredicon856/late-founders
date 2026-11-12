@@ -104,6 +104,7 @@ export interface Section {
   title: string;
   intro?: string;
   screenNote?: string; // guidance shown on screen only, never printed
+  screenOnly?: boolean; // the whole section stays on screen, out of downloads (keeps one-page sheets to one page)
   blocks: Block[];
   pageBreakBefore?: boolean;
 }

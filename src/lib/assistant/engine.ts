@@ -286,7 +286,7 @@ export async function runTurn(userId: string, assetId: string, userText: string)
       if (r.ok) {
         saved = { version: r.version, summary: r.summary };
         profile = await getProfile(userId);
-        results.push({ type: "tool_result", tool_use_id: block.id, content: `Saved as version ${r.version}. The download is ready under the chat.` });
+        results.push({ type: "tool_result", tool_use_id: block.id, content: `Saved as version ${r.version}: ${r.summary}. The download is ready under the chat.` });
       } else {
         results.push({ type: "tool_result", tool_use_id: block.id, is_error: true, content: r.error });
       }

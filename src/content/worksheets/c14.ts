@@ -48,6 +48,14 @@ function latestScorecard(p: ProfileData): Scorecard | null {
 // Role Scorecard
 // ---------------------------------------------------------------------------
 
+const READINESS = [
+  { key: "cover", label: "You can cover the cost for three to six months", detail: "Check it in the Course 06 Runway Calculator, with this role's cost added." },
+  { key: "repeats", label: "The work repeats every week", detail: "Enough of it to fill the hours you are hiring for." },
+  { key: "sops", label: "SOPs exist for its top three tasks", detail: "From your SOP Library, so training is not all in your head." },
+  { key: "outcome", label: "You can state the outcome in one sentence", detail: "Section 1 above, written so someone else could check it." },
+  { key: "time", label: "You have time to train them in the first two weeks", detail: "Blocked in your calendar, not squeezed in." },
+];
+
 export const roleScorecard: WorksheetDef = {
   assetId: "role-scorecard",
   exports: ["pdf", "docx"],
@@ -163,8 +171,38 @@ export const roleScorecard: WorksheetDef = {
         },
       ],
     },
+    {
+      title: "Ready to hire for this role?",
+      screenOnly: true,
+      intro: "Tick what is true today. Anything unticked is what to fix before you post the role.",
+      blocks: [
+        {
+          kind: "checklist",
+          key: "readiness",
+          mode: "check",
+          items: READINESS,
+        },
+        {
+          kind: "computed",
+          key: "readiness_score",
+          label: "Readiness",
+          compute: (d) => {
+            const c = d.readiness && typeof d.readiness === "object" ? (d.readiness as Record<string, { done?: boolean }>) : {};
+            const missing = READINESS.filter((i) => !c[i.key]?.done).map((i) => i.label);
+            return missing.length ? `${READINESS.length - missing.length} of ${READINESS.length}. Still missing: ${missing.join("; ")}.` : `${READINESS.length} of ${READINESS.length}: ready to hire.`;
+          },
+        },
+      ],
+    },
   ],
   writes: [
+    {
+      key: "scorecard_traits",
+      from: (d) => {
+        const t = rows(d, "traits").map((r) => s(r.trait)).filter(Boolean);
+        return t.length ? t : null;
+      },
+    },
     {
       key: "role_scorecards",
       from: (d, p) => {
@@ -312,7 +350,7 @@ export const laneDecisionGuide: WorksheetDef = {
 export const interviewPeopleGuide: WorksheetDef = {
   assetId: "interview-people-guide",
   exports: ["pdf", "docx"],
-  readOnly: true,
+  reads: ["scorecard_traits"],
   sections: [
     {
       title: "How to use this guide",
@@ -436,6 +474,48 @@ export const interviewPeopleGuide: WorksheetDef = {
         },
       ],
     },
+    {
+      title: "Candidate sheet",
+      intro: "One row per trait per candidate, filled in during or straight after the call. Score only what you saw evidence for; a read you have not tested yet goes in the notes as a question to ask.",
+      blocks: [
+        {
+          kind: "table",
+          table: {
+            key: "candidates",
+            minRows: 6,
+            maxRows: 60,
+            addable: true,
+            columns: [
+              { key: "candidate", label: "Candidate", type: "text", width: 1.2 },
+              { key: "trait", label: "Scorecard trait", type: "text", optionsProfile: "scorecard_traits", width: 1.4 },
+              { key: "score", label: "Score (1 to 5)", type: "select", options: ["1", "2", "3", "4", "5"], width: 0.7 },
+              { key: "evidence", label: "Evidence seen, or the question still to ask", type: "text", width: 3 },
+            ],
+          },
+        },
+        {
+          kind: "computed",
+          key: "compare",
+          label: "Candidates side by side",
+          compute: (d) => {
+            const by = new Map<string, number[]>();
+            for (const r of rows(d, "candidates")) {
+              const c = s(r.candidate);
+              const n = asNumber(r.score);
+              if (!c || n === null) continue;
+              by.set(c, [...(by.get(c) ?? []), n]);
+            }
+            if (!by.size) return null;
+            return {
+              headers: ["Candidate", "Traits scored", "Average"],
+              rows: [...by.entries()]
+                .map(([c, n]) => [c, String(n.length), (Math.round((n.reduce((a, b) => a + b, 0) / n.length) * 10) / 10).toString()])
+                .sort((a, b) => Number(b[2]) - Number(a[2])),
+            };
+          },
+        },
+      ],
+    },
   ],
 };
 
@@ -473,6 +553,33 @@ export const onboarding306090: WorksheetDef = {
               type: "textarea",
               lines: 2,
             },
+          ],
+        },
+      ],
+    },
+    {
+      title: "The first two weeks",
+      intro: "Hard in week two is expected, not a sign they are failing. Plan the order of their first tasks, one early win you will name out loud, and the question you will ask to catch confusion before it sets in.",
+      blocks: [
+        {
+          kind: "table",
+          table: {
+            key: "first_two_weeks",
+            minRows: 5,
+            maxRows: 15,
+            addable: true,
+            columns: [
+              { key: "when", label: "Day", type: "text", width: 0.7 },
+              { key: "task", label: "Task, in order", type: "text", width: 3 },
+              { key: "sop", label: "SOP or support", type: "text", width: 1.5 },
+            ],
+          },
+        },
+        {
+          kind: "fields",
+          fields: [
+            { key: "planned_win", label: "The planned win by the end of week two", type: "text", placeholder: "e.g. First client onboarded start to finish, with you watching only" },
+            { key: "confusion_question", label: "Your check-in question for confusion", type: "text", placeholder: "e.g. What has been harder than you expected?", hint: "No questions is a signal, not reassurance. Ask this at the end of each of the first ten days." },
           ],
         },
       ],
@@ -587,13 +694,13 @@ export const onboarding306090: WorksheetDef = {
 // Delegation Check-In Tracker
 // ---------------------------------------------------------------------------
 
+// Worked out from the result and the target. An older manual answer only
+// counts when there is no result to check.
 function weekMet(r: Row, target: number | null, higherBetter: boolean): boolean | null {
-  const flag = s(r.on_target);
-  if (flag === "yes") return true;
-  if (flag === "no") return false;
   const result = asNumber(r.result);
-  if (result === null || target === null) return null;
-  return higherBetter ? result >= target : result <= target;
+  if (result !== null && target !== null) return higherBetter ? result >= target : result <= target;
+  const flag = s(r.on_target);
+  return flag === "yes" ? true : flag === "no" ? false : null;
 }
 
 export const delegationTracker: WorksheetDef = {
@@ -697,9 +804,26 @@ export const delegationTracker: WorksheetDef = {
             columns: [
               { key: "week", label: "Week of", type: "date", width: 1 },
               { key: "result", label: "Result", type: "number", width: 1 },
-              { key: "on_target", label: "On target?", type: "yesno", width: 0.8 },
               { key: "notes", label: "Notes", type: "text", width: 3 },
             ],
+          },
+        },
+        {
+          kind: "computed",
+          key: "by_week",
+          label: "On target, week by week (worked out from the target)",
+          compute: (d) => {
+            const target = asNumber(d.metric_target);
+            const higherBetter = s(d.direction) !== "At or below target";
+            const logged = rows(d, "weekly").filter((r) => s(r.week) || asNumber(r.result) !== null);
+            if (!logged.length) return null;
+            return {
+              headers: ["Week of", "Result", "On target?"],
+              rows: logged.map((r) => {
+                const m = weekMet(r, target, higherBetter);
+                return [s(r.week), asNumber(r.result) === null ? "" : String(asNumber(r.result)), m === null ? (target === null ? "Set a target" : "Add the result") : m ? "Yes" : "No"];
+              }),
+            };
           },
         },
         {
@@ -716,7 +840,7 @@ export const delegationTracker: WorksheetDef = {
             const met = lastFour.filter((m) => m === true).length;
             const unknown = lastFour.filter((m) => m === null).length;
             if (logged.length < 4) return `${met} of ${logged.length} weeks on target so far. Four weeks needed.`;
-            if (unknown > 0) return `${met} of 4 on target. ${unknown} week(s) need a result and a target, or an on-target answer.`;
+            if (unknown > 0) return `${met} of 4 on target. ${unknown} week(s) need a result, and the target needs to be set.`;
             if (met === 4) return "4 of 4 on target. A steady month: you can space check-ins further out.";
             return `${met} of 4 on target. Keep the current check-in cadence.`;
           },

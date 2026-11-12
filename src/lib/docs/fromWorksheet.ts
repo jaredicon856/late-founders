@@ -164,6 +164,7 @@ export function worksheetToDoc(
 ): RenderDoc {
   const blocks: DocBlock[] = [];
   for (const section of def.sections) {
+    if (section.screenOnly) continue;
     if (section.pageBreakBefore) blocks.push({ type: "pageBreak" });
     blocks.push({ type: "heading", text: section.title });
     if (section.intro) blocks.push({ type: "paragraph", text: section.intro, tone: "muted" });

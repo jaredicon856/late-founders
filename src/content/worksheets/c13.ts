@@ -396,7 +396,10 @@ export function sensitivity(i: ValuationInputs): SensitivityRow[] {
 function inputsFrom(d: SheetData): ValuationInputs | null {
   const basis = d.basis === "EBITDA" ? "EBITDA" : d.basis === "SDE" ? "SDE" : null;
   const earnings = asNumber(d.earnings);
-  const contractPct = asNumber(d.contract_pct);
+  const contracted = asNumber(d.contract_pct);
+  const repeat = Math.max(0, asNumber(d.repeat_pct) ?? 0);
+  // Repeat revenue without a contract counts at half weight in the recurring share.
+  const contractPct = contracted === null ? null : Math.min(100, contracted + repeat / 2);
   const owner = asNumber(d.owner_dependence);
   const conc = asNumber(d.concentration_pct);
   if (!basis || earnings === null || contractPct === null || owner === null || conc === null) return null;
@@ -444,7 +447,14 @@ export const valuationEstimator: WorksheetDef = {
               label: "Revenue under contract or subscription",
               type: "percent",
               width: "half",
-              hint: "The rest is one-off or project work.",
+              hint: "Signed retainers, subscriptions and contracts only.",
+            },
+            {
+              key: "repeat_pct",
+              label: "Revenue from repeat clients, no contract",
+              type: "percent",
+              width: "half",
+              hint: "Clients who keep coming back without a contract. Buyers count it at half the weight of contracted revenue. The rest is one-off or project work.",
             },
             {
               key: "concentration_pct",

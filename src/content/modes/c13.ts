@@ -59,7 +59,7 @@ export function phaseFor(offset: number, horizon: number): string {
 }
 
 function labelFor(offset: number, horizon: number): string {
-  if (offset === 0) return "This year";
+  if (offset === 0) return "Next 12 months";
   if (offset === horizon) return "Target year";
   return `Year ${offset}`;
 }
@@ -96,23 +96,23 @@ export const roadmapBuilder: ModeDef = {
   persistent: true,
   reads: ["transferability_scores", "valuation_range", "roadmap"],
   writes: ["roadmap"],
-  systemPrompt: `You are the 10-Year Roadmap Builder: a long-horizon planner that works backward from the member's exit to what must be true this year. This workspace is kept across sessions and years; when a roadmap already exists, you are running its annual review, so start from it and update it rather than starting again.
+  systemPrompt: `You are the 10-Year Roadmap Builder: a long-horizon planner that works backward from the member's exit to what must be true in the next twelve months. This workspace is kept across sessions and years; when a roadmap already exists, you are running its annual review, so start from it and update it rather than starting again.
 
 Steps, one question at a time:
 1. Target outcome: full sale, partial sale, or step-back (the member keeps ownership but stops running it). Explain the three briefly if they are unsure.
 2. Target year: a calendar year in the future. Ten years out is typical; accept what they choose.
 3. Baseline for the four annual metrics: recurring revenue % today, owner-dependence score (take it from the Sellability Scorecard when present, do not ask again), data room completeness % today (how much of the Financial, Legal, Operational, IP and HR folders is filled), and the earnings trend over the last three years. If the member does not know a figure, record it as unknown (null); never estimate it.
-4. Work backward. Checkpoints run from the target year, then year 8, 6, 4 and 2, then this year (skip any that fall on or after the target year). For each, write what must be true by then: two to four concrete, checkable statements. Map the curriculum phases onto them:
+4. Work backward. Checkpoints run from the target year, then year 8, 6, 4 and 2, then the next twelve months (skip any that fall on or after the target year). For each, write what must be true by then: two to four concrete, checkable statements. Map the curriculum phases onto them:
    - Early years: transferability baseline and first documentation (Owner's Audit, task sort, first SOPs, dashboard, Sellability Scorecard).
    - Middle years: recurring revenue conversion and systems maturity (retainers and contracts, full SOP Library, a team that runs the dashboard, delegation).
    - Late years: full data room review and practiced absences (the One-Week-Away Test stretched to a month, a clean data room, clean financial history).
-5. Pull in the scorecard gaps. The member's two lowest value drivers must be addressed in this year's checkpoint and named in its gaps_addressed, and any other driver scored 1 or 2 should appear in an early checkpoint. Use the driver names exactly as listed in the record. If there is no scorecard yet, say so and suggest completing the Sellability Scorecard first; you may continue without it.
+5. Pull in the scorecard gaps. The member's two lowest value drivers must be addressed in the next-twelve-months checkpoint and named in its gaps_addressed, and any other driver scored 1 or 2 should appear in an early checkpoint. Use the driver names exactly as listed in the record. If there is no scorecard yet, say so and suggest completing the Sellability Scorecard first; you may continue without it.
 6. Give each checkpoint a target for the four metrics: recurring revenue %, owner-dependence score (1 to 5), data room completeness %, and earnings trend. Targets should improve steadily toward the target year.
 7. The target year carries a decision checkpoint: sell or step back. It is open. Do not ask the member to decide it now and do not recommend one. Write the question as it will be asked then, and the inputs they will review.
 
-Do not promise a sale price, a buyer or a result. The system schedules the first annual review twelve months from today; tell the member that date only after saving.
+Do not promise a sale price, a buyer or a result. The system schedules the first annual review twelve months from today; after saving, the save result gives the review date: tell the member that date.
 
-Before saving, show the roadmap from this year forward in a few lines and ask the member to confirm or change it.`,
+Before saving, show the roadmap from the next twelve months forward in a few lines and ask the member to confirm or change it.`,
   opener: (p) => {
     const sc = scorecardSummary(p);
     const existing = obj(p.roadmap);
@@ -122,7 +122,7 @@ Before saving, show the roadmap from this year forward in a few lines and ask th
         `Welcome back. Your roadmap targets a ${str(existing.target_outcome).toLowerCase() || "exit"} in ${str(existing.target_year)}${existing.next_review ? `, with an annual review due ${str(existing.next_review)}` : ""}.`,
       );
     } else {
-      lines.push("This is your 10-year roadmap. We start at the end, the year you sell or step back, and work back to what has to be true this year.");
+      lines.push("This is your 10-year roadmap. We start at the end, the year you sell or step back, and work back to what has to be true in the next twelve months.");
     }
     if (sc.present) {
       const bits = [`I have your Sellability Scorecard${sc.date ? ` from ${sc.date}` : ""}`];
@@ -132,7 +132,7 @@ Before saving, show the roadmap from this year forward in a few lines and ask th
       lines.push(bits.join(", ") + ". Your early checkpoints will be built around those gaps.");
     } else {
       lines.push(
-        "I don't have a Sellability Scorecard for you yet. The roadmap is much sharper with one, because your lowest scores set this year's work. You can complete the scorecard first, or we can start now and add it later.",
+        "I don't have a Sellability Scorecard for you yet. The roadmap is much sharper with one, because your lowest scores set the next twelve months' work. You can complete the scorecard first, or we can start now and add it later.",
       );
     }
     lines.push(
@@ -162,13 +162,13 @@ Before saving, show the roadmap from this year forward in a few lines and ask th
       },
       checkpoints: {
         type: "array",
-        description: "One per checkpoint: target year, years 8, 6, 4, 2 (those before the target year), and this year (0).",
+        description: "One per checkpoint: target year, years 8, 6, 4, 2 (those before the target year), and the next twelve months (0).",
         items: {
           type: "object",
           additionalProperties: false,
           required: ["years_from_now", "must_be_true", "gaps_addressed", "metrics"],
           properties: {
-            years_from_now: { type: "number", description: "0 for this year; the target year's offset for the final checkpoint." },
+            years_from_now: { type: "number", description: "0 for the next twelve months; the target year's offset for the final checkpoint." },
             must_be_true: { type: "array", items: { type: "string" } },
             gaps_addressed: { type: "array", items: { type: "string" }, description: "Scorecard value-driver names this checkpoint closes." },
             metrics: metricSchema,
@@ -232,14 +232,14 @@ Before saving, show the roadmap from this year forward in a few lines and ask th
       };
     });
 
-    // This year's checkpoint must address the scorecard's two lowest drivers.
+    // The next-12-months checkpoint must address the scorecard's two lowest drivers.
     if (sc.lowest.length) {
       const first = checkpoints[checkpoints.length - 1];
       const addressed = first.gaps_addressed.map((g) => g.toLowerCase());
       const notAddressed = sc.lowest.filter((g) => !addressed.includes(g.toLowerCase()));
       if (notAddressed.length) {
         throw new SaveError(
-          `This year's checkpoint must address the member's two lowest scorecard drivers. Add ${notAddressed.join(" and ")} to its gaps_addressed with a matching must_be_true statement.`,
+          `The next-12-months checkpoint must address the member's two lowest scorecard drivers. Add ${notAddressed.join(" and ")} to its gaps_addressed with a matching must_be_true statement.`,
         );
       }
     }
@@ -300,9 +300,11 @@ Before saving, show the roadmap from this year forward in a few lines and ask th
         type: "callout",
         tone: "note",
         title: "Built around your scorecard gaps",
-        text: `Your two lowest value drivers, ${sc.lowest.join(" and ")}, are this year's work.`,
+        text: `Your two lowest value drivers, ${sc.lowest.join(" and ")}, are the next twelve months' work.`,
       });
     }
+    const byDate = plusMonths(now, 12).slice(0, 7);
+    const yearText = (c: { years_from_now: number; year: number }) => (c.years_from_now === 0 ? `by ${byDate}` : String(c.year));
     blocks.push(
       { type: "heading", text: "The four numbers you review every year" },
       {
@@ -321,7 +323,7 @@ Before saving, show the roadmap from this year forward in a few lines and ask th
             ],
             ...[...checkpoints].reverse().map((c) => [
               c.label,
-              String(c.year),
+              yearText(c),
               `${c.metrics.recurring_revenue_pct}%`,
               `${c.metrics.owner_dependence} / 5`,
               `${c.metrics.data_room_completeness}%`,
@@ -333,7 +335,7 @@ Before saving, show the roadmap from this year forward in a few lines and ask th
       { type: "heading", text: "Working back from the target year" },
     );
     for (const c of checkpoints) {
-      blocks.push({ type: "subheading", text: `${c.label} · ${c.year}` });
+      blocks.push({ type: "subheading", text: `${c.label} · ${yearText(c)}` });
       blocks.push({ type: "paragraph", text: c.phase, tone: "muted" });
       blocks.push({ type: "bullets", items: c.must_be_true, style: "checkbox" });
       if (c.gaps_addressed.length) blocks.push({ type: "paragraph", text: `Closes: ${c.gaps_addressed.join(", ")}` });

@@ -20,6 +20,7 @@ export const PROFILE_FIELDS: Record<string, string> = {
   reserve_balance: "Reserve",
   health_premium: "Replacement health premium",
   sop_titles: "SOP titles",
+  scorecard_traits: "Role Scorecard traits",
   audit_roles: "Role headings (Owner's Audit)",
   health_cost: "Health cover cost (Risk Inventory)",
   quit_scenarios: "Quit scenarios",
