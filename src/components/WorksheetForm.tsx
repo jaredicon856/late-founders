@@ -149,6 +149,19 @@ export default function WorksheetForm({
     if (timer.current) clearTimeout(timer.current);
     timer.current = setTimeout(flush, 800);
   };
+  const sourceOptions = (src: { table: string; column: string }, current: unknown): string[] | null => {
+    const list = Array.isArray(data[src.table]) ? (data[src.table] as Record<string, unknown>[]) : [];
+    const vals = [...new Set(list.map((x) => (typeof x?.[src.column] === "string" ? (x[src.column] as string).trim() : "")).filter(Boolean))];
+    if (!vals.length) return null;
+    const cur = typeof current === "string" ? current.trim() : "";
+    return cur && !vals.includes(cur) ? [...vals, cur] : vals;
+  };
+  const profileOptions = (key: string, current: unknown): string[] | null => {
+    const vals = Array.isArray(profile[key]) ? (profile[key] as unknown[]).filter((x): x is string => typeof x === "string" && !!x.trim()) : [];
+    if (!vals.length) return null;
+    const cur = typeof current === "string" ? current.trim() : "";
+    return cur && !vals.includes(cur) ? [...vals, cur] : vals;
+  };
   const setField = (key: string, v: unknown) => {
     const merged = { ...latest.current, [key]: v };
     update(def?.derive ? { ...merged, ...def.derive(key, merged) } : merged);
@@ -218,7 +231,12 @@ export default function WorksheetForm({
                   {t.rowLabels && <td className="label">{t.rowLabels[r]}</td>}
                   {t.columns.map((c) => (
                     <td key={c.key} style={c.type === "checkbox" ? { textAlign: "center", verticalAlign: "middle" } : undefined}>
-                      <Input type={c.type} label={`${c.label} row ${r + 1}`} value={row[c.key]} options={c.options} disabled={readOnly} onChange={(v) => setCell(r, c, v)} />
+                      {(() => {
+                        const from = c.optionsFrom ? sourceOptions(c.optionsFrom, row[c.key]) : c.optionsProfile ? profileOptions(c.optionsProfile, row[c.key]) : null;
+                        return (
+                          <Input type={from ? "select" : c.type} label={`${c.label} row ${r + 1}`} value={row[c.key]} options={from ?? c.options} disabled={readOnly} onChange={(v) => setCell(r, c, v)} />
+                        );
+                      })()}
                     </td>
                   ))}
                   {canAdd && (

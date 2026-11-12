@@ -1,3 +1,4 @@
+import { syncSopTitles } from "@/lib/sops";
 // Work a save triggers beyond the member record: generated documents that
 // depend on it, and records that live in their own tables.
 
@@ -36,6 +37,7 @@ export async function afterSave(userId: string, assetId: string, output: Record<
       steps: output.steps ?? [],
       exceptions: output.exceptions ?? [],
       notes: output.notes ?? "",
+      help: output.help ?? "",
       doc,
     });
     // Same title in the same role is a new version of that SOP, not a duplicate.
@@ -52,6 +54,7 @@ export async function afterSave(userId: string, assetId: string, output: Record<
         },
       });
     }
+    await syncSopTitles(userId);
     await setStatus(userId, "sop-library", "in_progress");
   }
 }

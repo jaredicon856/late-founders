@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { guardAsset } from "@/lib/guard";
 import { getProfile, writeProfile } from "@/lib/record";
-import { listSops, toContent } from "@/lib/sops";
+import { listSops, syncSopTitles, toContent } from "@/lib/sops";
 
 const clip = (v: unknown, n = 200) => (typeof v === "string" ? v.trim().slice(0, n) : "");
 const date = (v: unknown) => (typeof v === "string" && /^\d{4}-\d{2}-\d{2}$/.test(v) ? new Date(`${v}T00:00:00Z`) : null);
@@ -43,9 +43,20 @@ export async function POST(req: Request) {
       create: { userId, assetId: "sop-library", status: "complete", completedAt: new Date() },
       update: { status: "complete", completedAt: new Date() },
     });
+  } else if (body.action === "archive" || body.action === "restore" || body.action === "delete") {
+    const sop = typeof body.id === "string" ? await db.sop.findFirst({ where: { id: body.id, userId } }) : null;
+    if (!sop) return NextResponse.json({ error: "Not found" }, { status: 404 });
+    if (body.action === "delete") {
+      // Only an archived SOP can be deleted, so nothing goes in one click.
+      if (!sop.archived) return NextResponse.json({ error: "Archive the SOP before deleting it." }, { status: 400 });
+      await db.sop.delete({ where: { id: sop.id } });
+    } else {
+      await db.sop.update({ where: { id: sop.id }, data: { archived: body.action === "archive" } });
+    }
   } else {
     return NextResponse.json({ error: "Unknown action" }, { status: 400 });
   }
+  await syncSopTitles(userId);
   const p = await getProfile(userId, ["sop_roles"]);
   return NextResponse.json({ sops: await listSops(userId), roles: Array.isArray(p.sop_roles) ? p.sop_roles : [] });
 }

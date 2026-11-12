@@ -15,6 +15,23 @@ const norm = (s: string) => s.toLowerCase().replace(/\s+/g, " ").trim();
 // Owner's Audit Worksheet
 // ---------------------------------------------------------------------------
 
+// Whole-number percentages that always add up to 100 (largest remainder), so
+// a table of shares never totals 101%.
+export function wholeShares(values: number[]): number[] {
+  const total = values.reduce((a, b) => a + b, 0);
+  if (total <= 0) return values.map(() => 0);
+  const raw = values.map((v) => (v / total) * 100);
+  const out = raw.map(Math.floor);
+  let left = 100 - out.reduce((a, b) => a + b, 0);
+  const order = raw.map((v, i) => [v - Math.floor(v), i] as const).sort((a, b) => b[0] - a[0]);
+  for (const [, i] of order) {
+    if (left <= 0) break;
+    out[i] += 1;
+    left -= 1;
+  }
+  return out;
+}
+
 function loggedTasks(d: SheetData) {
   return rows(d, "log")
     .map((r) => ({
@@ -43,7 +60,7 @@ export const ownersAudit: WorksheetDef = {
         {
           kind: "prose",
           paragraphs: [
-            "Write each task as a specific action, not a category. \"Replied to three client emails about invoice dates\" works. \"Admin\" does not. Mark whether you have done this exact task before.",
+            "Write each task as a specific action, not a category. \"Replied to three client emails about invoice dates\" works. \"Admin\" does not. Done before? means: have you done this exact task before, in this business? Yes marks it as repeat work, which is what an SOP or a hire can take off you. No marks a one-off.",
           ],
         },
         {
@@ -57,7 +74,8 @@ export const ownersAudit: WorksheetDef = {
               { key: "task", label: "Task (a specific action)", type: "text", width: 3 },
               { key: "minutes", label: "Minutes", type: "number", width: 0.7 },
               { key: "done_before", label: "Done before?", type: "yesno", width: 0.8 },
-              { key: "role", label: "Role", type: "text", width: 1.3 },
+              { key: "dread", label: "Dread it?", type: "yesno", width: 0.7 },
+              { key: "role", label: "Role", type: "text", optionsFrom: { table: "roles", column: "role" }, width: 1.3 },
             ],
           },
         },
@@ -66,7 +84,7 @@ export const ownersAudit: WorksheetDef = {
     {
       title: "Group your tasks into roles",
       intro:
-        "After the five days, name the roles hiding in your log: eight to twelve of them. Then fill the Role column above with the role each task belongs to.",
+        "After the five days, name the roles hiding in your log: eight to twelve of them. Then pick the role each task belongs to in the Role column above: once you have named your headings, it offers them as choices.",
       pageBreakBefore: true,
       blocks: [
         {
@@ -107,15 +125,16 @@ export const ownersAudit: WorksheetDef = {
             }
             const all = tasks.reduce((s, t) => s + t.minutes, 0);
             const list = [...totals.values()].sort((a, b) => b.minutes - a.minutes);
+            const shares = wholeShares(list.map((r) => r.minutes));
             return {
               headers: ["Role", "Tasks", "Minutes", "Hours", "Share of time"],
               rows: [
-                ...list.map((r) => [
+                ...list.map((r, i) => [
                   r.label,
                   String(r.count),
                   String(Math.round(r.minutes)),
                   hours(r.minutes),
-                  all > 0 ? `${Math.round((r.minutes / all) * 100)}%` : "",
+                  all > 0 ? `${shares[i]}%` : "",
                 ]),
                 ["Total", String(tasks.length), String(Math.round(all)), hours(all), all > 0 ? "100%" : ""],
               ],
@@ -125,7 +144,10 @@ export const ownersAudit: WorksheetDef = {
       ],
     },
   ],
-  writes: [{ key: "owners_audit_tasks", from: (d) => loggedTasks(d) }],
+  writes: [
+    { key: "owners_audit_tasks", from: (d) => loggedTasks(d) },
+    { key: "audit_roles", from: (d) => { const r = [...new Set(rows(d, "roles").map((x) => text(x.role)).filter(Boolean))]; return r.length ? r : null; } },
+  ],
 };
 
 // ---------------------------------------------------------------------------
@@ -153,6 +175,15 @@ function tasksFromAudit(p: ProfileData): TableRow[] {
     byTask.set(k, cur);
   }
   return [...byTask.values()].map((t) => ({ task: t.task, role: t.role, times: t.times, minutes: t.minutes, rate: "" }));
+}
+
+const BRANCHES = ["Keep", "Delete", "Automate", "Delegate"];
+
+export function rankedBottlenecks(d: SheetData) {
+  return rows(d, "bottlenecks")
+    .map((r) => ({ task: text(r.task), waiting: text(r.waiting), per_week: asNumber(r.per_week) ?? 0 }))
+    .filter((r) => r.task)
+    .sort((a, b) => b.per_week - a.per_week);
 }
 
 function sortedTasks(d: SheetData) {
@@ -202,7 +233,7 @@ export const taskSort: WorksheetDef = {
     {
       title: "Sort your tasks",
       intro:
-        "Your tasks come in from your Owner's Audit, with repeats across the five days added together. Choose a column for each one. Add any task the audit missed.",
+        "Your tasks come in from your Owner's Audit, with repeats across the five days added together. Choose a column for each one. Add any task the audit missed. Then, for every task you will not keep, pick its branch in Module 3's order: delete it first if you can, automate it if you cannot delete it, and delegate only what is left. Note why. Who to delegate to and how to hire is Course 14.",
       blocks: [
         {
           kind: "table",
@@ -216,6 +247,8 @@ export const taskSort: WorksheetDef = {
               { key: "times", label: "Times logged", type: "number", width: 0.7 },
               { key: "minutes", label: "Total minutes", type: "number", width: 0.8 },
               { key: "rate", label: "Column", type: "select", options: RATES, width: 1.2 },
+              { key: "branch", label: "Branch", type: "select", options: BRANCHES, width: 0.9 },
+              { key: "why", label: "Why", type: "text", width: 1.6 },
             ],
           },
         },
@@ -269,7 +302,7 @@ export const taskSort: WorksheetDef = {
         {
           kind: "computed",
           key: "targets",
-          label: "Your first delegation targets: the three biggest $10 tasks",
+          label: "Your first targets: the three biggest $10 tasks to delete, automate or delegate",
           compute: (d): Computed => {
             const t = delegationTargets(d);
             if (!t.length) return null;
@@ -282,7 +315,36 @@ export const taskSort: WorksheetDef = {
         {
           kind: "callout",
           tone: "note",
-          text: "Start with these three. Each one is a good first recording for the SOP Generator: do the task once while narrating, and the SOP writes itself.",
+          text: "Start with your number one bottleneck from the map below if you have one; otherwise start with these three. Each is a good first recording for the SOP Generator: do the task once while narrating (your phone's voice memo app, or a free screen recorder such as Loom's free plan), and the SOP writes itself.",
+        },
+      ],
+    },
+    {
+      title: "Bottleneck map",
+      intro: "Where work stops and waits for you. List each place, who or what is waiting, and how often it happens in a normal week. The one at the top is your number one bottleneck, and the first task to take off your plate.",
+      blocks: [
+        {
+          kind: "table",
+          table: {
+            key: "bottlenecks",
+            minRows: 5,
+            maxRows: 20,
+            addable: true,
+            columns: [
+              { key: "task", label: "Where work waits for you", type: "text", width: 2.4 },
+              { key: "waiting", label: "Who or what is waiting", type: "text", width: 1.8 },
+              { key: "per_week", label: "Times a week", type: "number", width: 0.8 },
+            ],
+          },
+        },
+        {
+          kind: "computed",
+          key: "bottleneck_rank",
+          label: "Your bottlenecks, worst first",
+          compute: (d): Computed => {
+            const list = rankedBottlenecks(d);
+            return list.length ? { headers: ["#", "Bottleneck", "Waiting", "Times a week"], rows: list.map((b, i) => [String(i + 1), b.task, b.waiting, String(b.per_week)]) } : null;
+          },
         },
       ],
     },
@@ -292,7 +354,14 @@ export const taskSort: WorksheetDef = {
       key: "task_sort",
       from: (d) => {
         const h = columnHours(d);
-        return { ten: h.ten, hundred: h.hundred, thousand: h.thousand, targets: delegationTargets(d).map((t) => t.task) };
+        return {
+          ten: h.ten,
+          hundred: h.hundred,
+          thousand: h.thousand,
+          targets: delegationTargets(d).map((t) => t.task),
+          bottleneck: rankedBottlenecks(d)[0]?.task ?? "",
+          branches: rows(d, "tasks").filter((r) => text(r.task) && text(r.branch)).map((r) => ({ task: text(r.task), branch: text(r.branch), why: text(r.why) })),
+        };
       },
     },
   ],
@@ -313,6 +382,27 @@ function metricStatus(r: TableRow): string {
   if (cur < lo) return "Outside range (below)";
   if (cur > hi) return "Outside range (above)";
   return "Inside range";
+}
+
+export function metricTrends(d: SheetData): string[][] {
+  const by = new Map<string, { label: string; points: { week: string; value: number }[] }>();
+  for (const r of rows(d, "history")) {
+    const m = text(r.metric);
+    const v = asNumber(r.value);
+    if (!m || v === null) continue;
+    const k = norm(m);
+    const cur = by.get(k) ?? { label: m, points: [] };
+    cur.points.push({ week: text(r.week), value: v });
+    by.set(k, cur);
+  }
+  return [...by.values()].map(({ label, points }) => {
+    const p = points.sort((a, b) => (a.week < b.week ? -1 : 1));
+    const last = p.slice(-3).map((x) => String(x.value));
+    const a = p.length >= 2 ? p[p.length - 2].value : null;
+    const b = p[p.length - 1].value;
+    const dir = a === null ? "Log another week" : b > a ? "Up" : b < a ? "Down" : "Flat";
+    return [label, String(p.length), last.join(" → "), dir];
+  });
 }
 
 export const businessDashboard: WorksheetDef = {
@@ -350,6 +440,51 @@ export const businessDashboard: WorksheetDef = {
               { key: "authority", label: "Who can act while inside the range", type: "text", width: 1.4 },
               { key: "trigger", label: "Trigger that needs the owner", type: "text", width: 1.6 },
             ],
+          },
+        },
+        {
+          kind: "fields",
+          fields: [
+            { key: "cadence", label: "Review cadence", type: "select", options: ["Weekly", "Every two weeks", "Monthly"], width: "third" },
+            { key: "review_day", label: "Review day", type: "select", options: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"], width: "third" },
+            { key: "who_reviews", label: "Who runs the review", type: "text", width: "third" },
+            {
+              key: "emergency",
+              label: "What counts as an emergency",
+              type: "textarea",
+              lines: 2,
+              hint: "Narrow and written down: the few things that justify reaching you at once. Everything else waits for the review. The One-Week-Away Test Plan uses the same definition.",
+            },
+            { key: "emergency_channel", label: "The one emergency channel", type: "text", hint: "For example: a phone call to your mobile. Not email, not chat." },
+          ],
+        },
+      ],
+    },
+    {
+      title: "Weekly history",
+      intro: "At each review, log the week's value for every metric. The trend is what the review is for: one number tells you where you are, three tell you where you are heading.",
+      blocks: [
+        {
+          kind: "table",
+          table: {
+            key: "history",
+            minRows: 5,
+            maxRows: 400,
+            addable: true,
+            columns: [
+              { key: "week", label: "Week of", type: "date", width: 1 },
+              { key: "metric", label: "Metric", type: "text", optionsFrom: { table: "metrics", column: "metric" }, width: 1.6 },
+              { key: "value", label: "Value", type: "number", width: 0.8 },
+            ],
+          },
+        },
+        {
+          kind: "computed",
+          key: "trend",
+          label: "Trend by metric",
+          compute: (d): Computed => {
+            const t = metricTrends(d);
+            return t.length ? { headers: ["Metric", "Weeks logged", "Last three", "Direction"], rows: t } : null;
           },
         },
       ],
@@ -442,7 +577,7 @@ export const oneWeekAway: WorksheetDef = {
             columns: [
               { key: "decision", label: "Decision type", type: "text", width: 2 },
               { key: "owner", label: "Who owns it", type: "text", width: 1.2 },
-              { key: "sop", label: "SOP that covers it", type: "text", width: 1.6 },
+              { key: "sop", label: "SOP that covers it", type: "text", optionsProfile: "sop_titles", width: 1.6 },
             ],
           },
         },

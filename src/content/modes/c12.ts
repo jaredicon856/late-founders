@@ -33,7 +33,7 @@ function validDate(s: string): boolean {
 
 export const sopGenerator: ModeDef = {
   assetId: "sop-generator",
-  reads: ["sop_roles", "task_sort"],
+  reads: ["sop_roles", "audit_roles", "task_sort"],
   writes: [],
   systemPrompt: `You are the SOP Generator. You turn a transcript of the member doing a task while narrating it into a numbered step-by-step SOP that someone else can follow.
 
@@ -48,9 +48,10 @@ How to write the SOP:
 
 Before saving, confirm four things with the member, one question at a time:
 1. The title. It must name the task ("Send the monthly client invoice"), never a date or "Recording 3". Suggest one and ask them to confirm or rename it.
-2. The role it belongs to in their SOP Library (for example Bookkeeper, Client Onboarding). Offer their existing role folders if they have any.
+2. The role it belongs to in their SOP Library. Offer the roles they named in their Owner's Audit (audit_roles) first, then their existing role folders (sop_roles). Only suggest a new role name if neither fits.
 3. The owner: the person responsible for keeping this SOP current.
-4. The next review date (YYYY-MM-DD). Suggest three or six months from today.
+4. The next review date (YYYY-MM-DD). Suggest the dates three and six months from today's date, which the system gives you; never an example in the past.
+5. Where to go for help: who or what the person following the SOP checks when something comes up that it does not cover (a named colleague, a folder, a client file). Never "ask the owner" by default; if the member has no one yet, say so in one line.
 Then show the steps and the "What to do if" list briefly and ask if anything is missing, especially exceptions. Save only after they confirm.`,
   opener: (p) => {
     const roles = Array.isArray(p.sop_roles) ? (p.sop_roles as unknown[]).map(str).filter(Boolean) : [];
@@ -60,15 +61,19 @@ Then show the steps and the "What to do if" list briefly and ask if anything is 
       "Let's turn one of your tasks into an SOP someone else can follow.",
       "Paste a transcript of yourself doing the task while you talk it through, or upload a screen recording or voice note and I will work from the transcript.",
     ];
-    if (targets.length) lines.push(`Your Task-Sort named these as your first delegation targets: ${targets.join("; ")}. Any of them is a good place to start.`);
-    if (roles.length) lines.push(`Your SOP Library already has these role folders: ${roles.join(", ")}.`);
+    if (targets.length) lines.push(`Your Task-Sort named these as your biggest $10 tasks: ${targets.join("; ")}. Any of them is a good place to start.`);
+    const auditRoles = Array.isArray(p.audit_roles) ? (p.audit_roles as unknown[]).map(str).filter(Boolean) : [];
+    const bottleneck = str((ts as { bottleneck?: unknown } | undefined)?.bottleneck);
+    if (bottleneck) lines.push(`Your Bottleneck Map puts this first: ${bottleneck}. Starting there frees the most of your time.`);
+    if (auditRoles.length) lines.push(`I will file it under one of the roles from your Owner's Audit: ${auditRoles.join(", ")}.`);
+    else if (roles.length) lines.push(`Your SOP Library already has these role folders: ${roles.join(", ")}.`);
     lines.push("Which task is this, and do you have the transcript or recording ready?");
     return lines.join("\n\n");
   },
   outputSchema: {
     type: "object",
     additionalProperties: false,
-    required: ["title", "role", "owner", "next_review", "purpose", "steps", "exceptions", "notes"],
+    required: ["title", "role", "owner", "next_review", "purpose", "steps", "exceptions", "notes", "help"],
     properties: {
       title: { type: "string", description: "Named by the task, never by a date. Confirmed by the member." },
       role: { type: "string", description: "The role folder in the SOP Library. Confirmed by the member." },
@@ -101,6 +106,7 @@ Then show the steps and the "What to do if" list briefly and ask if anything is 
         },
       },
       notes: { type: "string" },
+      help: { type: "string", description: "Where to go for help when the SOP does not cover something. Confirmed by the member." },
     },
   },
   onSave: (o) => {
@@ -157,6 +163,8 @@ Then show the steps and the "What to do if" list briefly and ask if anything is 
       },
     );
     if (notes) blocks.push({ type: "heading", text: "Notes" }, { type: "paragraph", text: notes });
+    const help = str(o.help);
+    if (help) blocks.push({ type: "heading", text: "Where to go for help" }, { type: "paragraph", text: help });
     blocks.push({ type: "heading", text: "What to do if" });
     if (exceptions.length) {
       blocks.push({

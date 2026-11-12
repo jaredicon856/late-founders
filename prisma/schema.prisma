@@ -130,6 +130,7 @@ model Sop {
   title      String
   owner      String       @default("")
   nextReview DateTime?
+  archived   Boolean      @default(false) // archived SOPs keep their history and can be restored
   createdAt  DateTime     @default(now())
   updatedAt  DateTime     @updatedAt
   user       User         @relation(fields: [userId], references: [id], onDelete: Cascade)

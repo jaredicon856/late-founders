@@ -40,6 +40,11 @@ export interface ColumnDef {
   label: string;
   type: FieldType;
   options?: string[];
+  // A select whose choices are the filled-in values of another table's column
+  // (e.g. the Role column picks from the role headings). Plain text until there are any.
+  optionsFrom?: { table: string; column: string };
+  // A select whose choices come from a list of strings in the member record.
+  optionsProfile?: string;
   width?: number; // relative width, default 1
 }
 

@@ -7,6 +7,7 @@ import Anthropic from "@anthropic-ai/sdk";
 import { getAsset } from "@/content/catalog";
 import { getMode } from "@/content/registry";
 import { SaveError } from "@/content/modes/util";
+import { today } from "@/content/profile";
 import type { ModeDef, ProfileData } from "@/content/types";
 import { createVersion, setStatus } from "@/lib/assets";
 import { db, parseJson } from "@/lib/db";
@@ -57,7 +58,7 @@ function slice(mode: ModeDef, profile: ProfileData): ProfileData {
 
 function recordMessage(mode: ModeDef, profile: ProfileData): string {
   const s = slice(mode, profile);
-  return `Member record for this tool (current):\n${JSON.stringify(s, null, 1)}${
+  return `Today's date (the member's time zone): ${today()}.\n\nMember record for this tool (current):\n${JSON.stringify(s, null, 1)}${
     mode.disclaimer ? `\n\nShow this statement with every result in this tool: "${mode.disclaimer}"` : ""
   }`;
 }

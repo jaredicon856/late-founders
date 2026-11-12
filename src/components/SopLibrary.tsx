@@ -16,7 +16,7 @@ type Draft = {
 
 const empty = (role: string): Draft => ({
   title: "", role, owner: "", nextReview: "", notes: "",
-  content: { purpose: "", steps: [{ what: "", why: "" }], exceptions: [], notes: "" },
+  content: { purpose: "", steps: [{ what: "", why: "" }], exceptions: [], notes: "", help: "" },
 });
 
 function Editor({ draft, roles, onCancel, onSaved }: { draft: Draft; roles: string[]; onCancel: () => void; onSaved: (sops: SopSummary[], roles: string[]) => void }) {
@@ -73,6 +73,11 @@ function Editor({ draft, roles, onCancel, onSaved }: { draft: Draft; roles: stri
         </div>
       ))}
       <button className="btn-ghost" style={{ marginBottom: 18 }} onClick={() => setC({ exceptions: [...c.exceptions, { when: "", do: "" }] })}>+ Exception</button>
+      <div className="field" style={{ marginBottom: 18 }}>
+        <label>Where to go for help</label>
+        <input className="input" value={c.help} placeholder="e.g. Ask Maria in ops, or check the client folder notes" onChange={(e) => setC({ help: e.target.value })} />
+        <span className="hint">Who or what to check when something comes up that this SOP does not cover, so the answer is not always you.</span>
+      </div>
       <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
         <button className="btn-primary" onClick={save} disabled={busy}>{busy ? "Saving…" : d.id ? "Save as new version" : "Add to library"}</button>
         <button className="btn-ghost" onClick={onCancel}>Cancel</button>
@@ -101,6 +106,18 @@ export default function SopLibrary({ initialSops, initialRoles }: { initialSops:
   }
 
   const overdue = sops.filter((s) => s.overdue).length;
+  const dueSoon = sops.filter((s) => s.dueSoon).length;
+  const archived = sops.filter((s) => s.archived);
+  const [showArchived, setShowArchived] = useState(false);
+  async function act(action: "archive" | "restore" | "delete", id: string) {
+    if (action === "delete" && !confirm("Delete this SOP and all its versions for good?")) return;
+    const res = await fetch("/api/sops", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ action, id }) });
+    if (res.ok) {
+      const body = await res.json();
+      setSops(body.sops);
+      setRoles(body.roles);
+    }
+  }
 
   return (
     <>
@@ -113,6 +130,7 @@ export default function SopLibrary({ initialSops, initialRoles }: { initialSops:
         <Link className="btn-primary" href="/assets/sop-generator">Generate an SOP from a recording</Link>
       </div>
       {overdue > 0 && <div className="callout warning"><strong>{overdue} SOP{overdue > 1 ? "s are" : " is"} overdue for review</strong>Open each one, check it still matches how the task is done, and save it with a new review date.</div>}
+      {dueSoon > 0 && <div className="callout note"><strong>{dueSoon} SOP{dueSoon > 1 ? "s are" : " is"} due for review in the next 30 days</strong>Book the review now, with the SOP's owner.</div>}
       {editing && (
         <Editor draft={editing} roles={allRoles} onCancel={() => setEditing(null)} onSaved={(s, r) => { setSops(s); setRoles(r); setEditing(null); }} />
       )}
@@ -120,7 +138,7 @@ export default function SopLibrary({ initialSops, initialRoles }: { initialSops:
         <div className="card"><p className="muted" style={{ margin: 0 }}>Create a folder for each role in your business, then add SOPs to it by hand or from the SOP Generator.</p></div>
       )}
       {allRoles.map((role) => {
-        const list = sops.filter((s) => s.role === role);
+        const list = sops.filter((s) => s.role === role && !s.archived);
         return (
           <section key={role} className="shelf">
             <div className="shelf-head">
@@ -137,8 +155,8 @@ export default function SopLibrary({ initialSops, initialRoles }: { initialSops:
                     <div className="asset-row" style={{ border: 0, padding: 0 }}>
                       <button className="link" style={{ all: "unset", cursor: "pointer", fontWeight: 700 }} onClick={() => setOpen(open === s.id ? null : s.id)}>{s.title}</button>
                       <span className="muted small">Owner: {s.owner || "not set"} · Updated {new Date(s.updatedAt).toLocaleDateString("en-US", { dateStyle: "medium" })} · v{s.version}</span>
-                      <span className="s" style={{ color: s.overdue ? "var(--danger)" : "var(--muted)" }}>
-                        {s.overdue ? `Review overdue (${s.nextReview})` : s.nextReview ? `Review ${s.nextReview}` : "No review date"}
+                      <span className="s" style={{ color: s.overdue ? "var(--danger)" : s.dueSoon ? "var(--warn, #b7791f)" : "var(--muted)", fontWeight: s.overdue || s.dueSoon ? 700 : undefined }}>
+                        {s.overdue ? `Review overdue (${s.nextReview})` : s.dueSoon ? `Review due soon (${s.nextReview})` : s.nextReview ? `Review ${s.nextReview}` : "No review date"}
                       </span>
                     </div>
                     {open === s.id && (
@@ -151,10 +169,12 @@ export default function SopLibrary({ initialSops, initialRoles }: { initialSops:
                             <ul>{s.content.exceptions.map((e, i) => <li key={i}><strong>{e.when}</strong>: {e.do}</li>)}</ul>
                           </>
                         )}
+                        {s.content.help && <p className="small"><strong>Where to go for help:</strong> {s.content.help}</p>}
                         <div className="dl" style={{ marginBottom: 10 }}>
                           <button className="btn-ghost" onClick={() => setEditing({ id: s.id, title: s.title, role: s.role, owner: s.owner, nextReview: s.nextReview ?? "", notes: "", content: s.content })}>Edit (new version)</button>
                           <a className="btn-ghost" href={`/api/sops/${s.id}/export`}>PDF</a>
                           <a className="btn-ghost" href={`/api/sops/${s.id}/export?format=docx`}>Word</a>
+                          <button className="btn-ghost" onClick={() => act("archive", s.id)}>Archive</button>
                         </div>
                         <div className="lbl">Versions</div>
                         <ul className="small muted">
@@ -174,6 +194,31 @@ export default function SopLibrary({ initialSops, initialRoles }: { initialSops:
           </section>
         );
       })}
+      {archived.length > 0 && (
+        <section className="shelf">
+          <div className="shelf-head">
+            <div>
+              <div className="name">Archived</div>
+              <div className="meta">{archived.length} SOP{archived.length === 1 ? "" : "s"}, history kept</div>
+            </div>
+            <button className="btn-ghost" style={{ marginLeft: "auto" }} onClick={() => setShowArchived(!showArchived)}>{showArchived ? "Hide" : "Show"}</button>
+          </div>
+          {showArchived && (
+            <div className="shelf-body">
+              {archived.map((s) => (
+                <div key={s.id} className="asset-row" style={{ borderBottom: "1px solid var(--line)", padding: "12px 0" }}>
+                  <span style={{ fontWeight: 700 }}>{s.title}</span>
+                  <span className="muted small">{s.role} · v{s.version}</span>
+                  <span className="dl" style={{ marginLeft: "auto" }}>
+                    <button className="btn-ghost" onClick={() => act("restore", s.id)}>Restore</button>
+                    <button className="btn-ghost" onClick={() => act("delete", s.id)}>Delete</button>
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
+        </section>
+      )}
     </>
   );
 }

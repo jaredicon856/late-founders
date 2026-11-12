@@ -5,6 +5,7 @@ export type SopContent = {
   steps: { what: string; why: string }[];
   exceptions: { when: string; do: string }[];
   notes: string;
+  help: string; // where to go for help when the SOP does not cover it
 };
 
 export type SopSummary = {
@@ -15,6 +16,8 @@ export type SopSummary = {
   nextReview: string | null;
   updatedAt: string;
   overdue: boolean;
+  dueSoon: boolean; // review due within 30 days
+  archived: boolean;
   version: number;
   content: SopContent;
   versions: { version: number; notes: string; createdAt: string }[];
@@ -28,7 +31,16 @@ export function toContent(raw: unknown): SopContent {
     steps: arr(o.steps).map((s) => ({ what: String(s.what ?? ""), why: String(s.why ?? "") })).filter((s) => s.what),
     exceptions: arr(o.exceptions).map((e) => ({ when: String(e.when ?? ""), do: String(e.do ?? "") })).filter((e) => e.when || e.do),
     notes: String(o.notes ?? ""),
+    help: String(o.help ?? ""),
   };
+}
+
+// The live SOP titles, kept in the member record so other tools (the
+// One-Week-Away Test Plan) can offer them as choices.
+export async function syncSopTitles(userId: string) {
+  const { writeProfile } = await import("./record");
+  const list = await db.sop.findMany({ where: { userId, archived: false }, select: { title: true }, orderBy: { title: "asc" } });
+  await writeProfile(userId, { sop_titles: list.map((s) => s.title) }, "sop-library");
 }
 
 export async function listSops(userId: string): Promise<SopSummary[]> {
@@ -47,7 +59,9 @@ export async function listSops(userId: string): Promise<SopSummary[]> {
       owner: s.owner,
       nextReview: s.nextReview ? s.nextReview.toISOString().slice(0, 10) : null,
       updatedAt: (latest?.createdAt ?? s.updatedAt).toISOString(),
-      overdue: !!s.nextReview && s.nextReview < now,
+      overdue: !s.archived && !!s.nextReview && s.nextReview < now,
+      dueSoon: !s.archived && !!s.nextReview && s.nextReview >= now && s.nextReview.getTime() - now.getTime() < 30 * 86_400_000,
+      archived: s.archived,
       version: latest?.version ?? 0,
       content: toContent(parseJson(latest?.contentJson, {})),
       versions: s.versions.map((v) => ({ version: v.version, notes: v.notes, createdAt: v.createdAt.toISOString() })),
