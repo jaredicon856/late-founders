@@ -1,5 +1,5 @@
 import { asNumber, money } from "../profile";
-import { addMonths, monthlyBurn, monthsText, mvi, openRisks, personalGap, scenarios } from "../quit";
+import { addMonths, monthlyBurn, monthsAtMvi, monthsText, mvi, openRisks, personalGap, runwaySavings, scenarios } from "../quit";
 import type { SheetData, WorksheetDef } from "../types";
 
 // Member-record fields written here:
@@ -126,18 +126,22 @@ export const runwayCalculator: WorksheetDef = {
     },
     {
       title: "3 · Three ways out",
-      intro: "The same reserve, run three ways. Update these every month as the numbers change.",
+      intro: "The same savings, run three ways: Module 3 walks through each path, so fill this in alongside it. Update it every month as the numbers change.",
       blocks: [
         {
           kind: "fields",
           fields: [
             {
-              key: "reserve", label: "Reserve you could live on ($)", type: "money", width: "half",
-              hint: "Savings and severance. Not retirement money you would pay penalties to touch.",
+              key: "reserve", label: "Runway savings ($)", type: "money", width: "half",
+              hint: "Savings and severance you could live on. Not retirement money you would pay penalties to touch.",
+            },
+            {
+              key: "liability_reserve", label: "Held back for liabilities ($)", type: "money", width: "half",
+              hint: "Money you keep for what you would still owe if the business stopped: a personally guaranteed loan, a tax bill. It is taken off your runway savings below.",
             },
             {
               key: "committed_revenue", label: "Committed revenue ($/mo)", type: "money", width: "half",
-              hint: "Signed contracts only. Not pipeline, not verbal yeses.",
+              hint: "Signed contracts only, including a signed transition retainer with your current employer. Not pipeline, not verbal yeses.",
             },
           ],
         },
@@ -195,7 +199,10 @@ export const runwayCalculator: WorksheetDef = {
             const m = mvi(d);
             if (!s || !m) return null;
             const side = asNumber(d.side_income) ?? 0;
-            return `${monthsText(s.stay_and_build)}. Side income is ${Math.round((side / m) * 100)}% of your MVI.`;
+            const streak = monthsAtMvi(d);
+            return `${monthsText(s.stay_and_build)}. Side income is ${Math.round((side / m) * 100)}% of your MVI. ${
+              streak >= 3 ? `It has been at or above your MVI ${streak} months in a row: the lesson's three-month test is met.` : `Months in a row at or above your MVI: ${streak} of the 3 the lesson asks for.`
+            }`;
           },
         },
         {
@@ -224,7 +231,7 @@ export const runwayCalculator: WorksheetDef = {
     { key: "monthly_burn", from: (d) => monthlyBurn(d) },
     { key: "mvi", from: (d) => mvi(d) },
     { key: "committed_revenue", from: (d) => asNumber(d.committed_revenue) },
-    { key: "reserve_balance", from: (d) => asNumber(d.reserve) },
+    { key: "reserve_balance", from: (d) => (asNumber(d.reserve) === null ? null : runwaySavings(d)) },
     { key: "health_premium", from: (d) => asNumber(d.health_premium) },
     {
       key: "quit_scenarios",
@@ -309,7 +316,7 @@ export const riskInventory: WorksheetDef = {
             columns: [
               { key: "creditor", label: "Creditor", type: "text", width: 1.4 },
               { key: "minimum", label: "Minimum payment ($/mo)", type: "money", width: 1 },
-              { key: "liability", label: "Liability", type: "select", options: ["Personal", "Business"], width: 0.9 },
+              { key: "liability", label: "Liability", type: "select", options: ["Personal", "Business", "Business, personally guaranteed"], width: 1.1 },
               { key: "status", label: "Status", type: "select", options: STATUS, width: 0.8 },
             ],
           },
@@ -438,6 +445,12 @@ export const contractChecklist: WorksheetDef = {
               key: "disclosure",
               label: "Do you have to disclose side work?",
               detail: "Look for: a duty to report outside business interests, sometimes yearly.\nWhat it may mean: not disclosing can be a breach on its own, even if the work itself is allowed.",
+            },
+            {
+              key: "severance",
+              label: "If you are offered a severance agreement, what does it add?",
+              detail:
+                "Look for: new non-compete, non-solicit or non-disparagement terms, a release of claims, and conditions on the payment (repaid if you start a competing business).\nCommon language: \"in consideration of the Severance Payment, Employee agrees…\".\nWhat it may mean: a severance agreement can add limits your original contract never had. Have it read before you sign, and before you count the payment in your runway savings.",
             },
           ],
         },

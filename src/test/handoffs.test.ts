@@ -67,3 +67,19 @@ describe("Local dates", () => {
     expect(dayIn("America/Los_Angeles", new Date("2026-11-12T02:40:00Z"))).toBe("2026-11-11");
   });
 });
+
+describe("Calendar files", () => {
+  it("puts each trigger on the first of its month, plus monthly runway updates", async () => {
+    const { decisionEvents, toIcs } = await import("@/lib/calendar");
+    const ev = decisionEvents({ quit_decision: { triggers: [{ condition: "Two signed retainers", target_month: "2027-03" }] } }, "2026-11-12");
+    expect(ev[0]).toMatchObject({ date: "2027-03-01", title: "Quit-or-stay check: Two signed retainers" });
+    expect(ev[1]).toMatchObject({ date: "2026-12-01", rrule: "FREQ=MONTHLY;COUNT=12" });
+    const ics = toIcs("Late Founders", ev);
+    expect(ics).toContain("DTSTART;VALUE=DATE:20270301");
+    expect(ics).toContain("DTEND;VALUE=DATE:20270302");
+  });
+  it("starts campaign logging next Monday", async () => {
+    const { campaignEvents } = await import("@/lib/calendar");
+    expect(campaignEvents({}, "2026-11-12")[0].date).toBe("2026-11-16");
+  });
+});

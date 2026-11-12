@@ -53,12 +53,27 @@ export function scenarios(d: SheetData) {
   const m = mvi(d);
   const burn = monthlyBurn(d);
   if (m === null || burn === null) return null;
-  const reserve = num(d.reserve);
+  const reserve = runwaySavings(d);
   return {
     cold_turkey: coverage(reserve, num(d.committed_revenue), m),
     phased_exit: coverage(reserve, num(d.reduced_w2) + num(d.business_income), m),
     stay_and_build: coverage(reserve, num(d.current_income) + num(d.side_income), burn),
   };
+}
+
+// Runway savings after the money held back for liabilities.
+export function runwaySavings(d: SheetData): number {
+  return Math.max(0, num(d.reserve) - num(d.liability_reserve));
+}
+
+// The latest run of months, from the side-income log, at or above MVI.
+export function monthsAtMvi(d: SheetData): number {
+  const m = mvi(d);
+  if (!m) return 0;
+  const amounts = rows(d, "side_log").map((r) => asNumber(r.amount)).filter((n): n is number => n !== null);
+  let streak = 0;
+  for (let i = amounts.length - 1; i >= 0 && amounts[i] >= m; i--) streak++;
+  return streak;
 }
 
 export const monthsText = (c: Coverage) => (c.months === null ? "Covered: income meets the need" : `${c.months} months`);

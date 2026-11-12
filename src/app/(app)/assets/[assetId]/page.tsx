@@ -31,6 +31,15 @@ export default async function AssetPage({ params }: { params: Promise<{ assetId:
   }
   const nextUp = statuses[assetId]?.status === "complete" ? <NextUp profile={profile} statuses={statuses} /> : null;
 
+  const calendar =
+    (assetId === "decision-engine" && profile.quit_decision) || assetId === "campaign-metrics" ? (
+      <div className="dl" style={{ marginTop: 12 }}>
+        <a className="btn-ghost" href={`/api/calendar/${assetId}`}>Add the dates to your calendar (.ics)</a>
+        <span className="muted small" style={{ alignSelf: "center" }}>
+          {assetId === "decision-engine" ? "Your trigger months, plus a monthly Runway Calculator update." : "A weekly logging reminder, and the date your next change is allowed."}
+        </span>
+      </div>
+    ) : null;
   const head = (
     <>
       <div className="eyebrow">
@@ -76,6 +85,7 @@ export default async function AssetPage({ params }: { params: Promise<{ assetId:
           uploads={assetId === "sop-generator"}
         />
         <VersionList tz={tz} assetId={assetId} versions={versions} formats={["pdf", "docx"]} />
+        {calendar}
         {nextUp}
         <div className="note-bar" style={{ marginTop: 18 }}>
           Same assistant throughout the community. Opening a different tool switches its mode, its instructions and which part of your record it can read and write.
@@ -123,6 +133,7 @@ export default async function AssetPage({ params }: { params: Promise<{ assetId:
         readOnly={!!def.readOnly}
       />
       <VersionList tz={tz} assetId={assetId} versions={versions} formats={def.exports} current={!!def.readOnly} canExportCurrent />
+      {calendar}
       {nextUp}
     </>
   );
