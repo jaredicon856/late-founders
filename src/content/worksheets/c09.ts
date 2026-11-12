@@ -8,13 +8,13 @@ const state = (d: SheetData, k: string) =>
   d[k] && typeof d[k] === "object" ? (d[k] as Record<string, { done?: unknown; result?: unknown }>) : {};
 
 export const WEEKEND_STEPS = [
-  { key: "login", label: "Log in to your Late Founders GHL workspace", detail: "Use the link on the Course 09 shelf. Change the password and turn on two-factor sign-in." },
+  { key: "login", label: "Log in to your Late Founders GHL workspace", detail: "Use the login link on the Course 09 shelf and the invite email from the Late Founders team. No invite yet? Ask the team in Skool. Once in, change the password and turn on two-factor sign-in." },
   { key: "profile", label: "Business profile filled in", detail: "Business name, address, time zone, logo and brand colors from your Brand Sheet." },
-  { key: "domain", label: "Domain connected", detail: "The domain from your Availability Sweep, pointed at your site." },
-  { key: "pipeline", label: "Pipeline reviewed", detail: "Rename the stages to match how you actually sell; delete any you will not use." },
+  { key: "domain", label: "Domain connected", detail: "The domain you registered in Course 04, pointed at your site. Not sure how? Ask the Late Founders team before you change any DNS settings." },
+  { key: "pipeline", label: "Pipeline reviewed", detail: "Rename the stages you use to match how you actually sell, and leave the rest. Renaming is a label change, not a rebuild." },
   { key: "site", label: "Homepage and landing page customized", detail: "Your words from the One-Page Offer, not the template's." },
   { key: "calendar", label: "Booking calendar set up", detail: "Your real availability, a buffer between calls, confirmation and reminder messages on." },
-  { key: "sequences", label: "Welcome and nurture emails rewritten in your voice", detail: "Read each one aloud. If it does not sound like you, rewrite it." },
+  { key: "sequences", label: "Welcome and nurture emails rewritten in your voice", detail: "Rewrite every email before you turn the sequence on, or keep the unrewritten ones paused: real leads can arrive this weekend. Read each one aloud. If it does not sound like you, rewrite it." },
   { key: "payments", label: "Payments connected", detail: "Your processor linked and your real price on the offer." },
 ];
 
@@ -41,7 +41,7 @@ export const weekendTracker: WorksheetDef = {
 };
 
 export const LAUNCH_CHECKS = [
-  { key: "published", label: "Site published and loading on desktop and mobile", detail: "Open it on your phone on mobile data, not your home Wi-Fi." },
+  { key: "published", label: "Site loads at its live address, on your own domain, on desktop and mobile", detail: "Publish first, then check. Open it on your phone on mobile data, not your home Wi-Fi." },
   { key: "placeholders", label: "All placeholder text and images replaced", detail: "Search every page for \"lorem\", \"your business\" and template stock photos." },
   { key: "pipeline", label: "Pipeline active, with a test contact moved through every stage", detail: "Create a fake contact and drag it from first stage to last. Check each automation fired." },
   { key: "welcome", label: "Welcome sequence live and rewritten in your voice", detail: "Send it to yourself. Read it on your phone." },
@@ -52,7 +52,7 @@ export const LAUNCH_CHECKS = [
   },
   { key: "nurture_exit", label: "Nurture sequence stops when someone books", detail: "Book as your test contact and confirm the nurture emails stop." },
   { key: "payments", label: "Payments connected, price correct, a test payment updates the contact", detail: "Make a real small payment and refund it." },
-  { key: "links", label: "Every link and button on every live page clicked", detail: "Including the footer, the privacy page and every button on mobile." },
+  { key: "links", label: "Every link and button clicked, and a privacy page live", detail: "Including the footer and every button on mobile. The privacy page must exist and be linked from every page." },
 ];
 
 export const launchChecklist: WorksheetDef = {

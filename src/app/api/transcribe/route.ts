@@ -14,7 +14,7 @@ export async function POST(req: Request) {
   const key = process.env.TRANSCRIPTION_API_KEY;
   if (!url || !key) {
     return NextResponse.json(
-      { error: "Recording uploads aren't switched on yet. Paste a transcript or upload a .txt, .vtt or .srt file instead." },
+      { error: "Recordings can't be turned into text here yet. Paste a transcript instead, or upload a .txt, .vtt or .srt file. Free ways to get one: Zoom or Google Meet's built-in transcript, or your phone's voice memo app (iPhone and most Android phones can show a transcript you can copy)." },
       { status: 501 },
     );
   }

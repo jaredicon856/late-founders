@@ -68,7 +68,7 @@ function MemberEntry({
 }
 
 export default function Chat({
-  assetId, initial, persistent, disclaimer, memberEntry, connected, name, uploads,
+  assetId, initial, persistent, disclaimer, memberEntry, connected, name, uploads, transcribe,
 }: {
   assetId: string;
   initial: Line[];
@@ -78,6 +78,7 @@ export default function Chat({
   connected: boolean;
   name: string;
   uploads?: boolean; // transcript / recording upload (SOP Generator)
+  transcribe?: boolean; // a speech-to-text key is set, so recordings can be uploaded
 }) {
   const router = useRouter();
   const [lines, setLines] = useState<Line[]>(initial);
@@ -244,10 +245,10 @@ export default function Chat({
         <div style={{ marginTop: 14, display: "flex", gap: 10, flexWrap: "wrap" }}>
           {uploads && (
             <label className="btn-ghost" style={{ cursor: "pointer" }}>
-              Upload recording or transcript
+              {transcribe ? "Upload recording or transcript" : "Upload a transcript file (.txt, .vtt, .srt)"}
               <input
                 type="file"
-                accept="audio/*,video/*,.txt,.vtt,.srt,.md,text/plain"
+                accept={transcribe ? "audio/*,video/*,.txt,.vtt,.srt,.md,text/plain" : ".txt,.vtt,.srt,.md,text/plain"}
                 hidden
                 onChange={(e) => {
                   const f = e.target.files?.[0];

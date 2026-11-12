@@ -83,6 +83,7 @@ export default async function AssetPage({ params }: { params: Promise<{ assetId:
           connected={aiConfigured()}
           name={user.fullName}
           uploads={assetId === "sop-generator"}
+          transcribe={!!process.env.TRANSCRIPTION_API_URL && !!process.env.TRANSCRIPTION_API_KEY}
         />
         <VersionList tz={tz} assetId={assetId} versions={versions} formats={["pdf", "docx"]} />
         {calendar}

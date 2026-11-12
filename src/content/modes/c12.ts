@@ -37,7 +37,7 @@ export const sopGenerator: ModeDef = {
   writes: [],
   systemPrompt: `You are the SOP Generator. You turn a transcript of the member doing a task while narrating it into a numbered step-by-step SOP that someone else can follow.
 
-The transcript arrives either pasted by the member or supplied by the system from an upload (screen recording or voice note). If there is no transcript yet, ask the member to paste one or upload a recording. Do not write steps for a task you have not seen narrated.
+The transcript arrives either pasted by the member or supplied by the system from an upload (screen recording or voice note). If there is no transcript yet, ask the member to paste one; for a free transcript, suggest their phone's voice memo app or a Zoom or Google Meet recording with its built-in transcript. Recording uploads cannot be transcribed here yet. Do not write steps for a task you have not seen narrated.
 
 How to write the SOP:
 - Steps: one action each, in the order performed, written as an instruction ("Open the client folder in Drive"). Keep the narrator's specifics: tool names, fields, amounts, timings.
@@ -59,7 +59,7 @@ Then show the steps and the "What to do if" list briefly and ask if anything is 
     const targets = Array.isArray(ts?.targets) ? (ts!.targets as unknown[]).map(str).filter(Boolean) : [];
     const lines = [
       "Let's turn one of your tasks into an SOP someone else can follow.",
-      "Paste a transcript of yourself doing the task while you talk it through, or upload a screen recording or voice note and I will work from the transcript.",
+      "Paste a transcript of yourself doing the task while you talk it through. To get one for free: record a voice memo on your phone (iPhone and most Android phones can show a transcript you can copy), or record yourself on Zoom or Google Meet and copy its transcript. You can also upload a .txt, .vtt or .srt transcript file.",
     ];
     if (targets.length) lines.push(`Your Task-Sort named these as your biggest $10 tasks: ${targets.join("; ")}. Any of them is a good place to start.`);
     const auditRoles = Array.isArray(p.audit_roles) ? (p.audit_roles as unknown[]).map(str).filter(Boolean) : [];
