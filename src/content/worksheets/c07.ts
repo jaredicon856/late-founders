@@ -222,15 +222,37 @@ export function prefilledCalendar(p: ProfileData) {
     // The member's own idea goes into the first slot for its pillar; later slots start blank.
     const idea = !used.has(pillar) && ideas[pillar] ? ideas[pillar] : "";
     used.add(pillar);
-    return { week: `Week ${week}`, day, pillar, idea, status: "Idea" };
+    return { week: `Week ${week}`, day, pillar, idea, hook: "", format: "", status: "Idea" };
   });
 }
+
+// Later visits: a pillar idea saved after the calendar was made goes into the
+// first empty slot for that pillar, if it is not on the calendar yet.
+export function refreshCalendar(d: SheetData, p: ProfileData): SheetData | null {
+  const ideas = p.content_pillars && typeof p.content_pillars === "object" ? (p.content_pillars as Record<string, string>) : {};
+  const slots = rows(d, "slots").map((r) => ({ ...r }));
+  if (!slots.length) return null;
+  let changed = false;
+  for (const pillar of PILLARS) {
+    const idea = text(ideas[pillar]);
+    if (!idea || slots.some((r) => text(r.idea) === idea)) continue;
+    const empty = slots.find((r) => r.pillar === pillar && !text(r.idea));
+    if (empty) {
+      empty.idea = idea;
+      changed = true;
+    }
+  }
+  return changed ? { ...d, slots } : null;
+}
+
+const FORMATS = ["Story", "List", "How-to", "Opinion", "Before and after", "Question"];
 
 export const contentCalendar: WorksheetDef = {
   assetId: "content-calendar",
   exports: ["xlsx", "pdf"],
   reads: ["content_pillars"],
   initial: (p) => ({ slots: prefilledCalendar(p) }),
+  refresh: refreshCalendar,
   sections: [
     {
       title: "Four weeks, three posts a week",
@@ -247,7 +269,9 @@ export const contentCalendar: WorksheetDef = {
               { key: "week", label: "Week", type: "select", options: ["Week 1", "Week 2", "Week 3", "Week 4"], width: 0.8 },
               { key: "day", label: "Day", type: "select", options: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"], width: 0.6 },
               { key: "pillar", label: "Pillar", type: "select", options: [...PILLARS], width: 0.9 },
-              { key: "idea", label: "Post idea", type: "text", width: 3 },
+              { key: "idea", label: "Post idea", type: "text", width: 2.4 },
+              { key: "hook", label: "Hook (first line)", type: "text", width: 2 },
+              { key: "format", label: "Format", type: "select", options: FORMATS, width: 0.9 },
               { key: "status", label: "Status", type: "select", options: ["Idea", "Drafted", "Scheduled", "Posted"], width: 0.9 },
             ],
           },
@@ -259,6 +283,61 @@ export const contentCalendar: WorksheetDef = {
           compute: (d) => {
             const s = rows(d, "slots").filter((r) => text(r.pillar));
             return s.length ? `${s.filter((r) => r.status === "Posted").length} of ${s.length}` : null;
+          },
+        },
+        {
+          kind: "callout",
+          tone: "note",
+          title: "Have a call, a voice memo or an old article?",
+          text: "The Repurposing Engine (Course 11) turns real material into a post, a video script and a one-line version, filtered through your angle statement. Use it to fill a slot from something you already said.",
+        },
+      ],
+    },
+    {
+      title: "Idea Bank",
+      intro: "Every idea you have, before it has a slot. Aim for twenty. The best sources are questions people already asked you: the Workflow Library has three prompts that stock this list from real material.",
+      blocks: [
+        {
+          kind: "table",
+          table: {
+            key: "idea_bank",
+            minRows: 5,
+            maxRows: 100,
+            addable: true,
+            columns: [
+              { key: "idea", label: "Idea", type: "text", width: 3 },
+              { key: "pillar", label: "Pillar", type: "select", options: [...PILLARS], width: 0.9 },
+              { key: "source", label: "Where it came from", type: "select", options: ["A question someone asked", "Interview or call notes", "Campaign reply", "Something I keep saying", "Other"], width: 1.4 },
+            ],
+          },
+        },
+        {
+          kind: "computed",
+          key: "bank_count",
+          label: "Ideas in the bank",
+          compute: (d) => {
+            const n = rows(d, "idea_bank").filter((r) => text(r.idea)).length;
+            return n ? `${n} of 20` : null;
+          },
+        },
+      ],
+    },
+    {
+      title: "Accounts to engage with",
+      intro: "Twenty people your buyers already read. A thoughtful comment on their posts puts you in front of the audience you want before you post much yourself.",
+      blocks: [
+        {
+          kind: "table",
+          table: {
+            key: "targets",
+            minRows: 5,
+            maxRows: 40,
+            addable: true,
+            columns: [
+              { key: "name", label: "Name", type: "text", width: 1.4 },
+              { key: "why", label: "Why their audience matters to you", type: "text", width: 2.4 },
+              { key: "last", label: "Last commented", type: "date", width: 1 },
+            ],
           },
         },
       ],

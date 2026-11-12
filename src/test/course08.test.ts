@@ -47,3 +47,13 @@ describe("Message-Sequence Generator", () => {
     expect(() => sequenceGenerator.onSave({ ...good, delays: { before_opener: 1, before_value: 4, before_cta: 5 } }, profile)).toThrow(/3 to 5 days/);
   });
 });
+
+describe("Campaign tracker judgement", () => {
+  it("waits before judging replies and bookings", async () => {
+    const { weakest, weekRates, totalRow } = await import("@/content/worksheets/c08");
+    const d = { weeks: [{ sent: 100, accepted: 40, replies_opener: 1, replies_value: 1, replies_cta: 1, booked: 0, held: 0 }] };
+    const t = totalRow(d)!;
+    expect(weakest(weekRates(t), 1)?.key).toBe("acceptance");
+    expect(weakest(weekRates(t), 2)?.key).not.toBe("acceptance");
+  });
+});

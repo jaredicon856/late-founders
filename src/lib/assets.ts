@@ -62,6 +62,7 @@ export async function loadSheet(userId: string, assetId: string) {
     const empty = (v: unknown) => v === undefined || v === null || v === "";
     for (const [k, v] of Object.entries(def.fill(profile))) if (empty(data[k]) && !empty(v)) data = { ...data, [k]: v };
   }
+  if (def.refresh && state && state.dataJson !== "{}") data = def.refresh(data, profile) ?? data;
   return { def, data, profile, status: (state?.status ?? "not_started") as Status, updatedAt: state?.updatedAt ?? null };
 }
 

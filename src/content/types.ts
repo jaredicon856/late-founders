@@ -116,6 +116,8 @@ export interface WorksheetDef {
   // Values from the member record that fill only fields still empty on load
   // (a figure entered in a later tool carried back to an earlier one).
   fill?: (profile: ProfileData) => SheetData;
+  // Adjusts saved data on load from newer record values; null = no change.
+  refresh?: (data: SheetData, profile: ProfileData) => SheetData | null;
   // Member record fields written when the member saves/completes.
   writes?: { key: string; from: (data: SheetData, profile: ProfileData) => unknown }[];
   exports: ("pdf" | "xlsx" | "docx" | "zip")[];

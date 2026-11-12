@@ -168,6 +168,30 @@ const wf = (category: string, title: string, inputs: string, job: string, prompt
 export const WORKFLOWS: LibraryEntry[] = [
   wf(
     "Content repurposing",
+    "Idea source 1: questions people already asked",
+    "Your last ten customer questions. No customers yet? Your Course 03 interview notes or replies from your Course 08 campaign work just as well.",
+    "Turns questions someone already asked into post ideas, because someone is already asking.",
+    "Below are real questions people asked me. For each one, write a one-line post idea that answers it from my experience, and say which of my content pillars it fits (Clarity, Authority, Legacy, Lessons, AI). Use only the questions; do not invent new ones.\n\nQuestions:\n[paste]",
+    "Ten one-line ideas, each traceable to a real question, ready for the Idea Bank on your 4-Week Content Calendar.",
+  ),
+  wf(
+    "Content repurposing",
+    "Idea source 2: your last ten pieces of content",
+    "Your last ten posts, comments or emails you are proud of. No posting history yet? Use ten long messages or notes you wrote to clients or colleagues.",
+    "Finds the opinions you keep repeating, which are your real positions, and turns each into an idea.",
+    "Here is a set of things I wrote. Find the opinions I state more than once, in my words. For each, give a one-line post idea that states it plainly and the pillar it fits. Do not soften the opinion.\n\nWriting:\n[paste]",
+    "Three to five ideas built on positions you hold, quoted back in your phrasing.",
+  ),
+  wf(
+    "Content repurposing",
+    "Idea source 3: one conversation, many ideas",
+    "A transcript or voice memo of a call or conversation where you explained your work (10+ minutes).",
+    "Pulls every distinct idea out of one conversation, so a single call stocks the bank for weeks.",
+    "Below is a transcript. List every distinct idea I explained, one line each, with the line I said that carries it. Tag each with the pillar it fits. Skip small talk.\n\nTranscript:\n[paste]",
+    "Eight or more ideas, each with your own sentence attached, so the post writes itself from your words.",
+  ),
+  wf(
+    "Content repurposing",
     "One conversation into a week of posts",
     "A real transcript or voice memo of you explaining something to a client or peer (10+ minutes). Not a topic.",
     "Pulls the three strongest ideas out of something you already said and drafts a post for each.",

@@ -106,13 +106,15 @@ export const icpWorksheet: WorksheetDef = {
 // Starting benchmarks for a conservative LinkedIn campaign. They only rank the
 // member's own numbers against each other, so the weakest step is found; they
 // are not targets to hit.
+// minWeeks: how many logged weeks before a step can be judged at all
+// (acceptance after a week, replies after two, bookings and shows after a month).
 export const METRICS = [
-  { key: "acceptance", label: "Connection acceptance", benchmark: 30, fix: "Low acceptance points at the list or the connection request. Re-check the list against your ICP, and make the request reference their trigger condition with no pitch." },
-  { key: "reply_opener", label: "Reply to the opener", benchmark: 10, fix: "Low replies to the opener mean it is not specific enough. It should prove you looked at their profile: one observation only they would recognize." },
-  { key: "reply_value", label: "Reply to the value message", benchmark: 8, fix: "Low replies to the value message mean it fails the still-worth-receiving test. Would it be useful if they never replied? If not, it is a teaser. Replace it with something genuinely useful." },
-  { key: "reply_cta", label: "Reply to the soft CTA", benchmark: 8, fix: "Low replies to the soft CTA: make it a question, not an instruction, tie it to the value message, and give an explicit easy out." },
-  { key: "booking", label: "Calls booked from replies", benchmark: 25, fix: "Low booking with healthy replies means the leak is in how you handle replies, not the sequence. Answer fast, ask one question back, and suggest a time rather than sending a link." },
-  { key: "show", label: "Calls held from bookings", benchmark: 75, fix: "Low show rate: confirm the day before, keep the gap between booking and call under a week, and say what they will get from the call." },
+  { key: "acceptance", minWeeks: 1, label: "Connection acceptance", benchmark: 30, fix: "Low acceptance points at the list or the connection request. Re-check the list against your ICP, and make the request reference their trigger condition with no pitch." },
+  { key: "reply_opener", minWeeks: 2, label: "Reply to the opener", benchmark: 10, fix: "Low replies to the opener mean it is not specific enough. It should prove you looked at their profile: one observation only they would recognize." },
+  { key: "reply_value", minWeeks: 2, label: "Reply to the value message", benchmark: 8, fix: "Low replies to the value message mean it fails the still-worth-receiving test. Would it be useful if they never replied? If not, it is a teaser. Replace it with something genuinely useful." },
+  { key: "reply_cta", minWeeks: 2, label: "Reply to the soft CTA", benchmark: 8, fix: "Low replies to the soft CTA: make it a question, not an instruction, tie it to the value message, and give an explicit easy out." },
+  { key: "booking", minWeeks: 4, label: "Calls booked from replies", benchmark: 25, fix: "Low booking with healthy replies means the leak is in how you handle replies, not the sequence. Answer fast, ask one question back, and suggest a time rather than sending a link." },
+  { key: "show", minWeeks: 4, label: "Calls held from bookings", benchmark: 75, fix: "Low show rate: confirm the day before, keep the gap between booking and call under a week, and say what they will get from the call." },
 ] as const;
 export type MetricKey = (typeof METRICS)[number]["key"];
 
@@ -138,12 +140,26 @@ export function latestWeek(d: SheetData): TableRow | null {
   return r.length ? r[r.length - 1] : null;
 }
 
-export function weakest(rates: Record<MetricKey, number | null>) {
+export const loggedWeeks = (d: SheetData) => rows(d, "weeks").filter((x) => asNumber(x.sent) !== null);
+
+// All logged weeks added together: steady numbers to judge, not one noisy week.
+export function totalRow(d: SheetData): TableRow | null {
+  const r = loggedWeeks(d);
+  if (!r.length) return null;
+  const keys = ["sent", "accepted", "replies_opener", "replies_value", "replies_cta", "positive", "booked", "held"];
+  return Object.fromEntries(keys.map((k) => {
+    const vals = r.map((x) => asNumber(x[k])).filter((n): n is number => n !== null);
+    return [k, vals.length ? vals.reduce((a, b) => a + b, 0) : null];
+  }));
+}
+
+// weeks: how many weeks are logged; steps with too few weeks are not judged.
+export function weakest(rates: Record<MetricKey, number | null>, weeks = Infinity) {
   let worst: (typeof METRICS)[number] | null = null;
   let worstRatio = Infinity;
   for (const m of METRICS) {
     const v = rates[m.key];
-    if (v === null) continue;
+    if (v === null || weeks < m.minWeeks) continue;
     const ratio = v / m.benchmark;
     if (ratio < worstRatio) {
       worst = m;
@@ -178,6 +194,25 @@ export const campaignMetrics: WorksheetDef = {
   exports: ["xlsx", "pdf"],
   sections: [
     {
+      title: "Before you send the first request",
+      intro: "Launch only when every box is ticked. Each one is a leak you would otherwise find in week three.",
+      blocks: [
+        {
+          kind: "checklist",
+          key: "launch",
+          mode: "check",
+          items: [
+            { key: "icp", label: "ICP paragraph saved", detail: "One real buyer, with a trigger condition, on the ICP Worksheet." },
+            { key: "list", label: "A first list of at least 50 people who fit it", detail: "Checked against the ICP, not just job titles." },
+            { key: "profile", label: "Your profile's priority fix is done", detail: "The lowest-scoring section from the Profile-Audit AI. Prospects look at your profile before they accept." },
+            { key: "sequence", label: "Message sequence saved", detail: "Connection request, opener, value message and soft CTA from the Message-Sequence Generator." },
+            { key: "booking", label: "Booking page tested", detail: "Book a slot yourself and check the confirmation arrives." },
+            { key: "pace", label: "A daily sending pace you can keep", detail: "Well inside LinkedIn's own limits. Steady beats bursts." },
+          ],
+        },
+      ],
+    },
+    {
       title: "Log every week",
       intro: "Count replies per message, not in total. A total tells you something is wrong; per message tells you where.",
       blocks: [
@@ -195,6 +230,7 @@ export const campaignMetrics: WorksheetDef = {
               { key: "replies_opener", label: "Replies: opener", type: "number", width: 0.8 },
               { key: "replies_value", label: "Replies: value msg", type: "number", width: 0.8 },
               { key: "replies_cta", label: "Replies: soft CTA", type: "number", width: 0.8 },
+              { key: "positive", label: "Positive replies", type: "number", width: 0.8 },
               { key: "booked", label: "Calls booked", type: "number", width: 0.8 },
               { key: "held", label: "Calls held", type: "number", width: 0.8 },
             ],
@@ -220,12 +256,13 @@ export const campaignMetrics: WorksheetDef = {
         {
           kind: "computed",
           key: "weakest",
-          label: "Your weakest step this week",
+          label: "Your weakest step so far",
           big: true,
           compute: (d) => {
-            const w = latestWeek(d);
-            const m = w ? weakest(weekRates(w)) : null;
-            return m ? m.label : null;
+            const t = totalRow(d);
+            if (!t) return null;
+            const m = weakest(weekRates(t), loggedWeeks(d).length);
+            return m ? m.label : "Too early to judge";
           },
         },
         {
@@ -233,10 +270,39 @@ export const campaignMetrics: WorksheetDef = {
           key: "fix",
           label: "What it points to",
           compute: (d) => {
-            const w = latestWeek(d);
-            const m = w ? weakest(weekRates(w)) : null;
-            return m ? m.fix : null;
+            const t = totalRow(d);
+            if (!t) return null;
+            const m = weakest(weekRates(t), loggedWeeks(d).length);
+            return m ? m.fix : "Keep logging. Acceptance can be judged after one week, replies after two, bookings and shows after a month.";
           },
+        },
+        {
+          kind: "computed",
+          key: "benchmarks",
+          label: "Your numbers against the starting benchmarks",
+          compute: (d) => {
+            const t = totalRow(d);
+            const weeks = loggedWeeks(d).length;
+            const r = t ? weekRates(t) : null;
+            const posRate = t && asNumber(t.positive) !== null && t.accepted ? Math.round(((asNumber(t.positive) ?? 0) / (asNumber(t.accepted) ?? 1)) * 1000) / 10 : null;
+            return {
+              headers: ["Step", "Benchmark", "Yours (all weeks)", "Judged from"],
+              rows: [
+                ...METRICS.map((m) => [
+                  m.label,
+                  `${m.benchmark}%`,
+                  r && r[m.key] !== null ? `${r[m.key]}%` : "-",
+                  weeks >= m.minWeeks ? "Now" : `${m.minWeeks} week${m.minWeeks === 1 ? "" : "s"} logged`,
+                ]),
+                ["Positive replies (of accepted)", "-", posRate !== null ? `${posRate}%` : "-", "Watch it: replies that are a polite no do not book calls"],
+              ],
+            };
+          },
+        },
+        {
+          kind: "callout",
+          tone: "note",
+          text: "The benchmarks are starting points for a careful LinkedIn campaign. They only show which of your steps is weakest; they are not targets. Stay within LinkedIn's own sending limits.",
         },
       ],
     },
@@ -281,9 +347,10 @@ export const campaignMetrics: WorksheetDef = {
       key: "campaign_metrics",
       from: (d) => {
         const w = latestWeek(d);
-        if (!w) return null;
+        const t = totalRow(d);
+        if (!w || !t) return null;
         const rates = weekRates(w);
-        return { week: String(w.week ?? ""), rates, weakest: weakest(rates)?.key ?? null };
+        return { week: String(w.week ?? ""), rates, weakest: weakest(weekRates(t), loggedWeeks(d).length)?.key ?? null };
       },
     },
   ],
