@@ -15,7 +15,7 @@ export const DISCOVERY_QUESTIONS = [
   ["q1", "1 · Walk me through how you handle this now."],
   ["q2", "2 · What have you already tried?"],
   ["q3", "3 · What is this costing you, in time, money or stress?"],
-  ["q4", "4 · If this were handled, what would it free up?"],
+  ["q4", "4 · If this were handled, what would that let you do that you can't do now?"],
   ["q5", "5 · What happens if this is not solved in your timeframe?"],
 ] as const;
 
@@ -68,9 +68,29 @@ export const discoverySheet: WorksheetDef = {
               label: "The gap, in one line",
               type: "textarea",
               lines: 2,
-              hint: "From Now to Wanted, in the prospect's vocabulary, not yours. If they said \"the trucks leave wrong\", do not write \"fulfillment accuracy\".",
+              hint: "From Now to Wanted, in the prospect's vocabulary, not yours. No sales calls yet? Practice on your Course 03 interview notes. If they said \"the trucks leave wrong\", do not write \"fulfillment accuracy\".",
             },
           ],
+        },
+        {
+          kind: "checklist",
+          key: "ready",
+          mode: "check",
+          items: [
+            { key: "exact", label: "They said it exactly", detail: "You can quote the problem in their words, not your summary." },
+            { key: "failed", label: "I know what failed", detail: "What they already tried, and why it did not work." },
+            { key: "cost", label: "They named the cost", detail: "In time, money or stress, in their own words." },
+          ],
+        },
+        {
+          kind: "computed",
+          key: "ready_check",
+          label: "Ready to pitch?",
+          compute: (d) => {
+            const c = d.ready && typeof d.ready === "object" ? (d.ready as Record<string, { done?: boolean }>) : {};
+            const n = ["exact", "failed", "cost"].filter((k) => c[k]?.done).length;
+            return n === 3 ? "Yes: all three are true. Pitch." : `Not yet: ${n} of 3. Keep asking before you pitch.`;
+          },
         },
       ],
     },
@@ -88,7 +108,7 @@ export const discoverySheet: WorksheetDef = {
 
 export const SCRIPT_SLOTS = [
   ["ask", "Your ask", "Stated as a proposal, not a suggestion."],
-  ["price_line", "Your price, with its anchor", "Written to be said word for word. The anchor comes first."],
+  ["price_line", "Your price, with its anchor", "The anchor is the cost they named in discovery. Say it, say the number, then stop talking."],
   ["too_expensive", "\"It's too expensive.\"", "Word for word."],
   ["no_time", "\"I don't have time right now.\"", "Word for word."],
   ["think_about_it", "\"Let me think about it.\"", "Word for word."],
@@ -102,14 +122,14 @@ export function starterScripts(p: ProfileData): SheetData {
   const offer = (p.offer_record && typeof p.offer_record === "object" ? p.offer_record : {}) as Offer;
   const price = text(offer.package?.price);
   return {
-    ask: "Based on what you have told me, I suggest we start with [package] on [date]. Shall I send the agreement today?",
+    ask: "Based on what you have told me, I'd do [package] for [price], starting [date]. Shall I send the agreement today?",
     price_line: price
-      ? `Most firms spend [what the problem costs them] on this every year. The full engagement is ${price}.`
-      : "Most firms spend [what the problem costs them] on this every year. The full engagement is [price].",
-    too_expensive: "That is fair to raise. Compared with what, the cost of fixing it, or the cost of leaving it as it is?",
-    no_time: "That makes sense. Is it that this is not a priority right now, or that you cannot see how to fit the work in?",
+      ? `You said this is costing you [the cost they named]. The full engagement is ${price}.`
+      : "You said this is costing you [the cost they named]. The full engagement is [price].",
+    too_expensive: "That's fair. Against [the cost they named] of leaving it as it is, is it the amount, or is the budget genuinely not there right now?",
+    no_time: "Understood. Is it the time to do the work, or the time to make the decision? The work takes about [hours] a week from you.",
     think_about_it: "Of course. So I know what to send, what part do you want to think through?",
-    follow_up: "Can you say more about that?",
+    follow_up: "Is that the whole thing, or is there something else going on?",
     phrase1: "",
     phrase2: "",
     phrase3: "",

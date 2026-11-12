@@ -74,7 +74,7 @@ export const COURSES: CourseDef[] = [
     title: "The Sales Framework",
     pillar: "Pillar 2",
     assets: ["discovery-sheet", "objection-library"],
-    note: "Your CRM follow-up sequence and lost-deal reasons are set up in your GHL workspace.",
+    note: "You build the follow-up and lost-deal reasons in Modules 4 and 5: a CRM reminder for each follow-up touch (you write and send each message yourself) and a loss-reason field on every deal. Ask permission to record at the start of every call.",
   },
   {
     number: 11,
