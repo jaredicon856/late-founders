@@ -301,11 +301,26 @@ const addMonth = (iso: string) => {
 export const hoursSavedTracker: WorksheetDef = {
   assetId: "hours-saved-tracker",
   exports: ["pdf", "xlsx"],
-  initial: () => ({ audited_on: new Date().toISOString().slice(0, 10) }),
+  reads: ["audit_top_three"],
+  // First visit: the three targets from the AI Audit Tracker, with their
+  // estimated hours, so the member confirms rather than retypes them.
+  initial: (p) => {
+    const top = Array.isArray(p.audit_top_three) ? (p.audit_top_three as Record<string, unknown>[]) : [];
+    const workflows = top.slice(0, 3).map((t) => {
+      const h = asNumber(t?.hours_per_month);
+      return {
+        name: [text(t?.task), text(t?.workflow)].filter(Boolean).join(": "),
+        source: "AI Audit Tracker",
+        hours_week: h !== null ? Math.round((h / WEEKS_PER_MONTH) * 10) / 10 : "",
+        running: "",
+      };
+    });
+    return { audited_on: new Date().toISOString().slice(0, 10), ...(workflows.length ? { workflows } : {}) };
+  },
   sections: [
     {
       title: "Every workflow you set up",
-      intro: "One row per workflow, including the ones you stopped using. Only the ones still running count.",
+      intro: "One row per workflow, including the ones you stopped using. Only the ones still running count. Your top three from the AI Audit Tracker start the list with their estimated hours: change each to what it really saves now.",
       blocks: [
         {
           kind: "table",

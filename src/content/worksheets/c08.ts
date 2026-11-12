@@ -1,5 +1,5 @@
 import { asNumber } from "../profile";
-import type { SheetData, TableRow, WorksheetDef } from "../types";
+import type { ProfileData, SheetData, TableRow, WorksheetDef } from "../types";
 
 // Member-record fields written here:
 //   icp_paragraph: string   one-paragraph ideal customer, read by the Message-Sequence Generator
@@ -20,16 +20,35 @@ export function icpParagraph(d: SheetData): string {
   const pain = text(d.pain);
   if (!role || !company || !trigger || !pain) return "";
   const article = /^[aeiou]/i.test(role) ? "an" : "a";
-  return `My buyer is ${article} ${role} at ${company}. Right now, ${trigger}. In their words: "${pain}."`;
+  return `My buyer is ${article} ${role} at ${company}. Right now, ${lowerFirst(trigger)}. In their words: "${unquote(pain)}."`;
+}
+
+// "Just got funding" reads "Right now, just got funding"; "IT just left" stays.
+const lowerFirst = (t: string) => (/^[A-Z][a-z]/.test(t) ? t[0].toLowerCase() + t.slice(1) : t);
+const unquote = (t: string) => t.replace(/^["'“”‘’]+|["'“”‘’]+$/g, "").replace(/[.\s]+$/, "");
+
+// First visit: start from the buyer defined in the Course 05 Offer-Builder.
+export function icpFromOffer(p: ProfileData): SheetData {
+  const o = p.offer_record && typeof p.offer_record === "object" ? (p.offer_record as Record<string, unknown>) : {};
+  const b = o.buyer && typeof o.buyer === "object" ? (o.buyer as Record<string, unknown>) : {};
+  const quotes = Array.isArray(o.buyer_quotes) ? o.buyer_quotes.filter((q): q is string => typeof q === "string" && !!q.trim()) : [];
+  const str = (v: unknown) => (typeof v === "string" ? v.trim() : "");
+  const out: SheetData = {};
+  if (str(b.situation)) out.trigger = str(b.situation);
+  if (quotes.length) out.pain = unquote(quotes[0]);
+  else if (str(b.problem)) out.pain = str(b.problem);
+  return out;
 }
 
 export const icpWorksheet: WorksheetDef = {
   assetId: "icp-worksheet",
   exports: ["pdf", "docx"],
+  reads: ["offer_record"],
+  initial: icpFromOffer,
   sections: [
     {
       title: "One real buyer, four facts",
-      intro: "Describe one buyer you could picture by name, not a market. Every list you build after this gets filtered through it.",
+      intro: "Describe one buyer you could picture by name, not a market. Every list you build after this gets filtered through it. If you built an offer in Course 05, the trigger and pain start from that buyer: sharpen them for LinkedIn.",
       blocks: [
         {
           kind: "fields",

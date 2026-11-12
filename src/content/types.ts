@@ -113,6 +113,9 @@ export interface WorksheetDef {
   // Data recomputed from the member record on every load, overriding saved
   // values (generated documents like the Personal Roadmap).
   live?: (profile: ProfileData) => SheetData;
+  // Values from the member record that fill only fields still empty on load
+  // (a figure entered in a later tool carried back to an earlier one).
+  fill?: (profile: ProfileData) => SheetData;
   // Member record fields written when the member saves/completes.
   writes?: { key: string; from: (data: SheetData, profile: ProfileData) => unknown }[];
   exports: ("pdf" | "xlsx" | "docx" | "zip")[];

@@ -21,7 +21,7 @@
 //
 //   objection_list: { objection: string; lever: string; dismissed: boolean }[]
 
-import { asNumber } from "../profile";
+import { asNumber, money } from "../profile";
 import type { ModeDef, ProfileData } from "../types";
 import { SaveError, str, strArray, obj, objArray } from "./util";
 
@@ -80,7 +80,7 @@ const s = { type: "string" };
 export const offerBuilder: ModeDef = {
   assetId: "offer-builder",
   persistent: true,
-  reads: ["hidden_assets", "problem_statement", "audience", "founder_type", "offer_record", "interview_signal_tally", "objection_list"],
+  reads: ["hidden_assets", "problem_statement", "audience", "founder_type", "offer_record", "interview_signal_tally", "smoke_test_metrics", "objection_list"],
   writes: ["offer_record"],
   systemPrompt: `You run the Offer-Builder Agent for Course 05: a persistent workspace where the member builds one offer across eleven lessons and several weeks. Their saved offer_record is in the member record; pick up exactly where it left off and never ask again for something already saved.
 
@@ -88,9 +88,9 @@ Seven stages, in order. Tell the member which stage you are on.
 1. The four value levers. Capture and score each 1 to 10 with the member: dream outcome (what the buyer gets, in their terms), perceived likelihood of success (why they will believe it works for them), time delay (how soon they see a result), effort and sacrifice (what it costs them in effort, beyond money). Higher scores are better for the buyer: a short time delay and low effort score high.
 2. Stacking additions. Each addition is tagged to the one lever it moves. If an addition moves none of the four levers, reject it and say why. Bonuses that only add bulk do not make the stack.
 3. A keepable promise. Generate exactly three promise sentence variants. For each, ask whether the member would defend it to a customer six months after the sale. The chosen promise must be one they said yes to.
-4. The buyer: situation, stage, problem, and how skeptical they are. Invite the member to paste real buyer quotes (from interviews or messages). Then rewrite the headline and promise in the buyer's own words, using those quotes. Never invent quotes.
+4. The buyer: situation, stage, problem, and how skeptical they are. The member's Course 03 interview quotes are in interview_signal_tally.quotes: show them first and ask which ones sound most like this buyer, instead of asking the member to paste quotes they already logged. Invite them to add any others (from messages or later calls). Then rewrite the headline and promise in the buyer's own words, using those quotes. Never invent quotes.
 5. Productized package: name, scope, explicit exclusions, timeline, price. Then three tiers, with the middle tier built as the intended default: the one most buyers should choose. The outer tiers exist to make the middle one the obvious choice.
-6. A price sentence with an anchor: the price set against something the buyer already compares it to (the cost of the problem, the alternative they pay for now).
+6. A price sentence with an anchor: the price set against something the buyer already compares it to (the cost of the problem, the alternative they pay for now). If smoke_test_metrics has a price, start from it: say what was charged and how many paid, and treat it as evidence, not a ceiling.
 7. Objections: list the objections a buyer would raise, sort each by the lever it attacks, and give one specific edit to the offer per objection. Use any objections saved from the Skeptical-Buyer Simulation.
 
 Proof: pull it from the member's Hidden Assets Inventory (experience and outcomes with numbers). Use their actual results only. If the inventory is empty, ask for specific results.
@@ -122,6 +122,13 @@ SAVING: call save_output at the end of every completed stage, after the member c
         ? `From your Hidden Assets Inventory I have ${proof.length} result${proof.length === 1 ? "" : "s"} to use as proof, for example: ${proof[0]}.`
         : "Your Hidden Assets Inventory has no experience results yet. Filling it in gives us proof material for the offer.",
     );
+    const quotes = strArray(obj(p.interview_signal_tally).quotes);
+    const smoke = asNumber(obj(p.smoke_test_metrics).price);
+    const from03 = [
+      quotes.length ? `${quotes.length} interview quote${quotes.length === 1 ? "" : "s"}` : "",
+      smoke !== null ? `your smoke-test price (${money(smoke)})` : "",
+    ].filter(Boolean);
+    if (from03.length) lines.push(`From Course 03 I have ${from03.join(" and ")}. We will use them when we get to the buyer and the price.`);
     lines.push("Stage 1, the four value levers. Start with the dream outcome: when this works, what does your buyer have that they do not have today, in their terms?");
     return lines.join("\n\n");
   },

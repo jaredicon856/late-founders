@@ -1,4 +1,4 @@
-import type { SheetData, WorksheetDef } from "../types";
+import type { ProfileData, SheetData, WorksheetDef } from "../types";
 
 // Member record written here:
 //   name_candidates: string[]  // non-empty candidate names, in row order (read by the Availability-Sweep Agent)
@@ -214,10 +214,25 @@ export const entitySetupChecklist: WorksheetDef = {
   ],
 };
 
+type SweepRow = { name?: string; handles?: { platform?: string; handle?: string; status?: string; url?: string }[] };
+
+// The handles from the member's latest Availability Sweep for their business
+// name (or the first name swept), so the social row checks the right profiles.
+export function sweepHandles(p: ProfileData): string[][] {
+  const sr = p.sweep_results && typeof p.sweep_results === "object" ? (p.sweep_results as { results?: SweepRow[] }) : null;
+  const results = Array.isArray(sr?.results) ? sr.results : [];
+  if (!results.length) return [];
+  const want = typeof p.business_name === "string" ? p.business_name.trim().toLowerCase() : "";
+  const hit = results.find((r) => (r.name ?? "").trim().toLowerCase() === want) ?? results[0];
+  const label: Record<string, string> = { available: "Free when swept: claim it", taken: "Taken: check it is yours", unknown: "Could not check", not_run: "Not checked" };
+  return (hit.handles ?? []).map((h) => [h.platform ?? "", h.handle ? `@${h.handle}` : "", label[h.status ?? ""] ?? h.status ?? ""]);
+}
+
 export const digitalPresenceAudit: WorksheetDef = {
   assetId: "digital-presence-audit",
   exports: ["pdf", "docx"],
   dense: true, // spec: one page
+  reads: ["sweep_results", "business_name"],
   sections: [
     {
       title: "1 · The five credibility gaps",
@@ -231,10 +246,19 @@ export const digitalPresenceAudit: WorksheetDef = {
           items: [
             { key: "email_domain", label: "Professional email on your own domain", detail: "you@yourbusiness.com, not a free webmail address." },
             { key: "website", label: "Complete, live website with no placeholders", detail: "No lorem ipsum, stock \"coming soon\" pages or broken links." },
-            { key: "contact", label: "Consistent contact information", detail: "Same name, email, phone and address everywhere they appear." },
-            { key: "social", label: "Filled-out social profiles", detail: "Photo, bio, link to your site and a recent post on each profile you keep." },
+            { key: "contact", label: "Consistent contact information", detail: "Same name, email, phone and address everywhere they appear. Use a mailbox or virtual address, not your home address." },
+            { key: "social", label: "Filled-out social profiles", detail: "Photo, bio, link to your site and a recent post on each handle you claimed in the Availability Sweep. A handle you hold but do not use: fill in the bio and link, and leave it at that." },
             { key: "legal_footer", label: "Basic legal footer", detail: "Business name, copyright line, privacy policy and terms on your site." },
           ],
+        },
+        {
+          kind: "computed",
+          key: "handles",
+          label: "Your handles, from the Availability Sweep",
+          compute: (_d, p) => {
+            const rows = sweepHandles(p);
+            return rows.length ? { headers: ["Platform", "Handle", "Status"], rows } : null;
+          },
         },
       ],
     },
@@ -251,7 +275,7 @@ export const digitalPresenceAudit: WorksheetDef = {
             { key: "email_footer", label: "Email footer", detail: "Name, role, business, website and one way to reach you." },
             { key: "invoice", label: "Invoice template", detail: "Business legal name, logo, payment terms and how to pay." },
             { key: "booking", label: "Calendar booking page", detail: "Your branding, a clear meeting name and a confirmation message." },
-            { key: "out_of_office", label: "Out-of-office reply", detail: "Return date and who to contact meanwhile." },
+            { key: "out_of_office", label: "Out-of-office reply", detail: "Return date and who to contact meanwhile. Working solo: say when you will reply instead." },
             { key: "file_names", label: "Proposal file names", detail: "Client and business name, not \"final_v3_edit.pdf\"." },
             { key: "voicemail", label: "Voicemail greeting", detail: "Your name and business, recorded in your own voice." },
           ],

@@ -58,6 +58,10 @@ export async function loadSheet(userId: string, assetId: string) {
   ]);
   let data: SheetData = state && state.dataJson !== "{}" ? parseJson(state.dataJson, {}) : def.initial?.(profile) ?? {};
   if (def.live) data = { ...data, ...def.live(profile) };
+  if (def.fill) {
+    const empty = (v: unknown) => v === undefined || v === null || v === "";
+    for (const [k, v] of Object.entries(def.fill(profile))) if (empty(data[k]) && !empty(v)) data = { ...data, [k]: v };
+  }
   return { def, data, profile, status: (state?.status ?? "not_started") as Status, updatedAt: state?.updatedAt ?? null };
 }
 

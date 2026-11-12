@@ -19,7 +19,8 @@ const moneyOrNull = (n: number | null) => (n === null ? null : `${money(n)}/mo`)
 export const runwayCalculator: WorksheetDef = {
   assetId: "runway-calculator",
   exports: ["pdf", "xlsx"],
-  reads: ["freedom_number"],
+  reads: ["freedom_number", "health_cost"],
+  fill: (p) => ({ health_premium: asNumber(p.health_cost) ?? "" }),
   sections: [
     {
       title: "1 · Your real monthly burn",
@@ -89,7 +90,7 @@ export const runwayCalculator: WorksheetDef = {
             },
             {
               key: "health_premium", label: "Replacement health premium ($/mo)", type: "money", width: "half",
-              hint: "The full monthly premium, with no employer paying part of it.",
+              hint: "The full monthly premium, with no employer paying part of it. Leave employer-paid cover out of your burn above: it stops when the paycheck does, and this line replaces it. Your Risk Inventory quote fills this in if it is empty.",
             },
             {
               key: "overhead", label: "Business overhead ($/mo)", type: "money", width: "half",
@@ -224,6 +225,7 @@ export const runwayCalculator: WorksheetDef = {
     { key: "mvi", from: (d) => mvi(d) },
     { key: "committed_revenue", from: (d) => asNumber(d.committed_revenue) },
     { key: "reserve_balance", from: (d) => asNumber(d.reserve) },
+    { key: "health_premium", from: (d) => asNumber(d.health_premium) },
     {
       key: "quit_scenarios",
       from: (d: SheetData) => {
@@ -330,7 +332,10 @@ export const riskInventory: WorksheetDef = {
       ],
     },
   ],
+  reads: ["health_premium"],
+  fill: (p) => ({ health_cost: asNumber(p.health_premium) ?? "" }),
   writes: [
+    { key: "health_cost", from: (d) => asNumber(d.health_cost) },
     { key: "open_risk_count", from: (d) => openRisks(d).length },
     { key: "risk_items", from: (d) => openRisks(d) },
   ],

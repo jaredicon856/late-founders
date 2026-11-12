@@ -1,31 +1,62 @@
-// Course 05 worksheets. The One-Page Offer Template reads offer_record (written
-// by the Offer-Builder Agent) to populate itself the first time it opens. It
-// writes nothing back: the Offer-Builder Agent owns offer_record.
+// Course 05 worksheets. The One-Page Offer Template and the Offer-Builder Agent
+// share one offer: the page shows the current offer_record every time it opens
+// and writes its six sections back into it, so the Offer-Builder Agent and the
+// Skeptical-Buyer Simulation always see the page as the member last left it.
 
-import type { ProfileData, SheetData, WorksheetDef } from "../types";
+import type { ProfileData, SheetData, TableRow, WorksheetDef } from "../types";
 
-function fromOfferRecord(p: ProfileData): SheetData {
+const s = (v: unknown) => (typeof v === "string" ? v : "");
+const PAGE_KEYS = ["headline", "promise", "proof", "price_sentence", "tiers", "guarantee", "cta"] as const;
+
+export function pageFromRecord(p: ProfileData): SheetData {
   const o = p.offer_record && typeof p.offer_record === "object" ? (p.offer_record as Record<string, unknown>) : null;
   if (!o) return {};
-  const s = (v: unknown) => (typeof v === "string" ? v : "");
   const proof = Array.isArray(o.proof) ? (o.proof as unknown[]).map(s).filter(Boolean) : [];
   const tiers = Array.isArray(o.tiers)
-    ? (o.tiers as Record<string, unknown>[]).map((t) => ({
-        name: s(t?.name),
-        price: s(t?.price),
-        scope: s(t?.scope),
-        default: t?.default === true,
-      }))
+    ? (o.tiers as Record<string, unknown>[]).map((t) => ({ name: s(t?.name), price: s(t?.price), scope: s(t?.scope) }))
     : [];
-  return {
+  const out: SheetData = {
     headline: s(o.headline),
     promise: s(o.promise),
     proof: proof.map((x) => `• ${x}`).join("\n"),
     price_sentence: s(o.price_sentence),
-    tiers,
+    tiers: tiers.some((t) => t.name || t.price || t.scope) ? tiers : [],
     guarantee: s(o.guarantee),
     cta: s(o.cta),
   };
+  // Only what the record actually holds: an empty field never blanks the page.
+  return Object.fromEntries(Object.entries(out).filter(([, v]) => (Array.isArray(v) ? v.length : v)));
+}
+
+// The page's sections merged onto the stored offer. Empty page fields keep
+// what the record had, the same rule the Offer-Builder Agent saves by.
+export function recordFromPage(d: SheetData, p: ProfileData): Record<string, unknown> | null {
+  const prev = p.offer_record && typeof p.offer_record === "object" ? (p.offer_record as Record<string, unknown>) : {};
+  const next: Record<string, unknown> = { ...prev };
+  let changed = false;
+  for (const k of PAGE_KEYS) {
+    let v: unknown;
+    if (k === "proof") {
+      const lines = s(d.proof).split("\n").map((x) => x.replace(/^\s*[•\-*]\s*/, "").trim()).filter(Boolean);
+      v = lines.length ? lines : null;
+    } else if (k === "tiers") {
+      const rows = (Array.isArray(d.tiers) ? (d.tiers as TableRow[]) : []).map((t, i) => ({
+        name: s(t?.name).trim(),
+        price: s(t?.price).trim(),
+        scope: s(t?.scope).trim(),
+        default: i === 1,
+      }));
+      v = rows.some((t) => t.name || t.price || t.scope) ? rows : null;
+    } else {
+      v = s(d[k]).trim() || null;
+    }
+    if (v === null) continue;
+    if (JSON.stringify(v) !== JSON.stringify(prev[k])) changed = true;
+    next[k] = v;
+  }
+  if (!changed) return null;
+  next.updated_at = new Date().toISOString();
+  return next;
 }
 
 export const onePageOffer: WorksheetDef = {
@@ -33,7 +64,9 @@ export const onePageOffer: WorksheetDef = {
   exports: ["pdf", "docx"],
   dense: true, // one page
   reads: ["offer_record"],
-  initial: fromOfferRecord,
+  initial: pageFromRecord,
+  live: pageFromRecord,
+  writes: [{ key: "offer_record", from: (d, p) => recordFromPage(d, p) }],
   sections: [
     {
       title: "1 · Headline",

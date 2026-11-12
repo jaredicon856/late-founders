@@ -34,7 +34,7 @@ const prior = (p: ProfileData) => obj(p.linkedin_audit);
 
 export const profileAudit: ModeDef = {
   assetId: "profile-audit",
-  reads: ["linkedin_audit", "angle_statement", "founder_type", "offer_record"],
+  reads: ["linkedin_audit", "angle_statement", "founder_type", "offer_record", "interview_signal_tally"],
   writes: ["linkedin_audit"],
   systemPrompt: `You run the Profile-Audit AI for Course 07, LinkedIn Authority. The member pastes their LinkedIn profile section by section; you score each and rewrite it.
 
@@ -47,6 +47,8 @@ Score each section 1 to 10 against these standards, then rewrite it:
 - Banner: says what they do and for whom at a glance.
 - Featured, Skills, Recent activity, Recommendations: whether each supports the headline's promise.
 
+For the About section's opening (the reader's problem) and the headline's outcome, use the buyer's own words from the member's Course 03 interview quotes (interview_signal_tally.quotes) when they exist: offer one or two that fit and ask which sounds right. Also score the About section on each of its five parts (1 to 10 each, shown as you go), so the member sees which part is weak, not only the total.
+
 Use only facts the member gives. If their record has an angle statement or an offer, keep the rewrites consistent with them. Show each score and rewrite as you go, and let the member push back. When all eight are done, the system flags the lowest-scoring section as the priority fix; tell them which it is and why. Confirm, then call save_output.`,
   opener: (p) => {
     const a = prior(p);
@@ -56,6 +58,8 @@ Use only facts the member gives. If their record has an angle statement or an of
     if (str(a.date)) lines.push(`Your last audit (${str(a.date)}) scored ${a.total}/80, with ${str(a.lowest)} as the priority fix. This run is saved as a new version so you can compare.`);
     const angle = str(p.angle_statement);
     if (angle) lines.push(`I will keep the rewrites consistent with your angle: "${angle}"`);
+    const quotes = Array.isArray(obj(p.interview_signal_tally).quotes) ? (obj(p.interview_signal_tally).quotes as unknown[]).filter((q) => typeof q === "string" && q.trim()) : [];
+    if (quotes.length) lines.push(`I also have ${quotes.length} buyer quote${quotes.length === 1 ? "" : "s"} from your Course 03 interviews. Their words make the strongest About opening, so I will draw on them.`);
     lines.push("Start with your headline. Paste it exactly as it reads now.");
     return lines.join("\n\n");
   },

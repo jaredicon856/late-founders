@@ -18,6 +18,8 @@ export const PROFILE_FIELDS: Record<string, string> = {
   mvi: "Minimum Viable Income",
   committed_revenue: "Signed monthly revenue",
   reserve_balance: "Reserve",
+  health_premium: "Replacement health premium",
+  health_cost: "Health cover cost (Risk Inventory)",
   quit_scenarios: "Quit scenarios",
   open_risk_count: "Open risks",
   risk_items: "Open risk items",
