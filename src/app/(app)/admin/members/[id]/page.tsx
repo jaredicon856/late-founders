@@ -8,6 +8,8 @@ import { db } from "@/lib/db";
 import { getProfile } from "@/lib/record";
 import { setDisabled } from "../../actions";
 import ResetPassword from "./ResetPassword";
+import EmailLink from "./EmailLink";
+import { emailConfigured } from "@/lib/email";
 
 const DAY = 86_400_000;
 
@@ -150,6 +152,7 @@ export default async function AdminMember({ params }: { params: Promise<{ id: st
             <h3>Account</h3>
             {isMe ? <p className="muted small">This is your own account. Change your password under Team.</p> : (
               <>
+                {emailConfigured() && <EmailLink userId={user.id} />}
                 <ResetPassword userId={user.id} />
                 <form action={setDisabled} className="admin-action">
                   <input type="hidden" name="userId" value={user.id} />

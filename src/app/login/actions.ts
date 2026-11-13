@@ -4,6 +4,8 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { createSession, destroySession, getUser, hashPassword, safeNext, verifyPassword } from "@/lib/auth";
 import { db } from "@/lib/db";
+import { sendResetLink, sendWelcome } from "@/lib/mailers";
+import { hashResetToken, resetUsable } from "@/lib/resetToken";
 
 export type AuthState = { error?: string };
 
@@ -37,6 +39,7 @@ export async function signup(_: AuthState, form: FormData): Promise<AuthState> {
   if (await db.user.findUnique({ where: { email } })) return { error: "An account with that email already exists. Log in instead." };
   const user = await db.user.create({ data: { name, lastName, email, passwordHash: await hashPassword(password) } });
   await createSession(user.id);
+  await sendWelcome(email, name); // never blocks sign-up: a failed send is only logged
   redirect(safeNext(form.get("next")) ?? "/assets/founder-diagnostic");
 }
 
@@ -51,4 +54,32 @@ export async function saveLastName(form: FormData) {
 export async function logout() {
   await destroySession();
   redirect("/login");
+}
+
+export type ForgotState = { done?: boolean; error?: string };
+
+// Always answers the same way, so the form can't be used to find out who has an account.
+export async function requestReset(_: ForgotState, form: FormData): Promise<ForgotState> {
+  const email = clean(form.get("email")).toLowerCase();
+  if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return { error: "Enter the email you log in with." };
+  const user = await db.user.findUnique({ where: { email }, select: { id: true } });
+  if (user) await sendResetLink(user.id, "forgot");
+  return { done: true };
+}
+
+export type ResetFormState = { error?: string };
+
+export async function completeReset(_: ResetFormState, form: FormData): Promise<ResetFormState> {
+  const token = clean(form.get("token"));
+  const password = clean(form.get("password"));
+  if (password.length < 10) return { error: "Use at least 10 characters." };
+  const r = token ? await db.passwordReset.findUnique({ where: { tokenHash: hashResetToken(token) } }) : null;
+  if (!r || !resetUsable(r)) return { error: "This link has expired or was already used. Ask for a new one." };
+  await db.$transaction([
+    db.user.update({ where: { id: r.userId }, data: { passwordHash: await hashPassword(password) } }),
+    db.passwordReset.update({ where: { id: r.id }, data: { usedAt: new Date() } }),
+    db.session.deleteMany({ where: { userId: r.userId } }),
+  ]);
+  await createSession(r.userId);
+  redirect("/dashboard");
 }

@@ -1,5 +1,6 @@
 "use server";
 
+import { sendResetLink } from "@/lib/mailers";
 import { randomBytes } from "node:crypto";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
@@ -26,6 +27,18 @@ export async function resetPassword(_: ResetState, form: FormData): Promise<Rese
   await db.user.update({ where: { id: userId }, data: { passwordHash: await hashPassword(password) } });
   await db.session.deleteMany({ where: { userId } });
   return { password };
+}
+
+export type LinkState = { sent?: string; error?: string };
+
+// Support: emails the member a link to choose a new password (24 hours).
+export async function emailLoginLink(_: LinkState, form: FormData): Promise<LinkState> {
+  await requireAdmin();
+  const userId = str(form.get("userId"));
+  const user = await db.user.findUnique({ where: { id: userId }, select: { email: true } });
+  if (!user) return { error: "No such member." };
+  const r = await sendResetLink(userId, "admin");
+  return r.sent ? { sent: `Sent to ${user.email}. The link works for 24 hours.` } : { error: r.error ?? "It didn't send." };
 }
 
 // Turning an account off logs them out and stops them logging back in. Their work is kept.

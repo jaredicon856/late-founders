@@ -99,3 +99,12 @@ describe("Sweep verdicts", () => {
     expect(paidCount({})).toBeNull();
   });
 });
+
+describe("Email", () => {
+  it("escapes member text and skips sending without a key", async () => {
+    const { layout, sendEmail } = await import("@/lib/email");
+    expect(layout("Hi <b>", ["a & b"], { label: "Go", url: "https://x.test/?a=1&b=2" })).toContain("Hi &lt;b&gt;");
+    delete process.env.RESEND_API_KEY;
+    expect(await sendEmail("a@b.c", "s", "t", "h")).toEqual({ sent: false, error: "Email isn't set up yet." });
+  });
+});

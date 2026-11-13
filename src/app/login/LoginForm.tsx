@@ -16,7 +16,7 @@ function PasswordInput({ id, autoComplete, minLength }: { id: string; autoComple
   );
 }
 
-export default function LoginForm({ needsCode, next, adminOnly }: { needsCode: boolean; next: string | null; adminOnly?: boolean }) {
+export default function LoginForm({ needsCode, next, adminOnly, emailOn }: { needsCode: boolean; next: string | null; adminOnly?: boolean; emailOn?: boolean }) {
   const [mode, setMode] = useState<"login" | "signup">("login");
   const [loginState, loginAction, loggingIn] = useActionState<AuthState, FormData>(login, {});
   const [signupState, signupAction, signingUp] = useActionState<AuthState, FormData>(signup, {});
@@ -35,6 +35,7 @@ export default function LoginForm({ needsCode, next, adminOnly }: { needsCode: b
           <div className="field"><label htmlFor="password">Password</label><PasswordInput id="password" autoComplete="current-password" /></div>
           {error && <p className="err">{error}</p>}
           <button className="btn-primary" disabled={loggingIn}>{loggingIn ? "Logging in…" : "Log in"}</button>
+          {emailOn && <p className="small" style={{ marginTop: 12 }}><a className="link" href="/login/forgot">Forgot your password?</a></p>}
         </form>
       ) : (
         <form action={signupAction}>
