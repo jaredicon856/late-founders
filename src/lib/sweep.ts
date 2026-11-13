@@ -134,12 +134,32 @@ async function markerTrademark(name: string, searchUrl: string): Promise<NameSwe
   const u = encodeURIComponent(process.env.MARKER_API_USER ?? "");
   const p = encodeURIComponent(process.env.MARKER_API_PASS ?? "");
   const term = encodeURIComponent(name.trim());
-  const failed = { status: "failed" as const, message: "The trademark search didn't respond, so this name has NOT been cleared. Try again, or search with the link.", hits: [], searchUrl };
-  for (const path of [`trademark/${term}`, `trademark/search/${term}`]) {
-    const res = await get(`https://markerapi.com/api/v2/trademarks/${path}/status/active/start/1/username/${u}/password/${p}`, { headers: { accept: "application/json" } });
-    if (!res?.ok) continue;
-    const body = (await res.json().catch(() => null)) as { count?: number; trademarks?: Record<string, unknown>[] } | null;
-    if (!body || (!Array.isArray(body.trademarks) && body.count === undefined)) continue;
+  // The v2 address in its two published spellings, then v1. The failure
+  // message carries short codes (HTTP status, or "json") to tell which broke.
+  const urls = [
+    `https://markerapi.com/api/v2/trademarks/trademark/${term}/status/active/start/1/username/${u}/password/${p}`,
+    `https://markerapi.com/api/v2/trademarks/trademark/search/${term}/status/active/start/1/username/${u}/password/${p}`,
+    `https://markerapi.com/api/v1/trademark/search/${term}/username/${u}/password/${p}`,
+  ];
+  const codes: string[] = [];
+  for (const url of urls) {
+    const res = await get(url, { headers: { accept: "application/json" } });
+    if (!res?.ok) {
+      codes.push(res ? String(res.status) : "timeout");
+      continue;
+    }
+    const text = await res.text();
+    let body: { count?: number; trademarks?: Record<string, unknown>[]; error?: string; msg?: string } | null = null;
+    try {
+      body = JSON.parse(text);
+    } catch {
+      codes.push("json");
+      continue;
+    }
+    if (!body || (!Array.isArray(body.trademarks) && body.count === undefined)) {
+      codes.push(`shape:${String(body?.error ?? body?.msg ?? Object.keys(body ?? {}).join("+")).slice(0, 40)}`);
+      continue;
+    }
     const list = Array.isArray(body.trademarks) ? body.trademarks : [];
     return done(
       name,
@@ -152,7 +172,12 @@ async function markerTrademark(name: string, searchUrl: string): Promise<NameSwe
       searchUrl,
     );
   }
-  return failed;
+  return {
+    status: "failed",
+    message: `The trademark search didn't respond, so this name has NOT been cleared. Try again, or search with the link. (Codes: ${codes.join(", ")})`,
+    hits: [],
+    searchUrl,
+  };
 }
 
 // Any trademark search service that answers GET {url}?q=<name> with
