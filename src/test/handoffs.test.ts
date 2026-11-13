@@ -83,3 +83,19 @@ describe("Calendar files", () => {
     expect(campaignEvents({}, "2026-11-12")[0].date).toBe("2026-11-16");
   });
 });
+
+describe("Sweep verdicts", () => {
+  it("gives every name a card", async () => {
+    const { verdict } = await import("@/lib/sweep");
+    const d = (status: "available" | "taken", variant: "exact" | "close" | "hyphenated" = "exact") => ({ domain: "x.com", status, variant });
+    expect(verdict({ domains: [d("available")], domainFlag: null }).tone).toBe("good");
+    expect(verdict({ domains: [d("taken"), d("taken", "close")], domainFlag: null }).text).toMatch(/Taken almost everywhere/);
+    expect(verdict({ domains: [d("taken"), d("available", "hyphenated")], domainFlag: null }).text).toMatch(/hyphen/);
+  });
+  it("counts deposits and pre-sales as payments", async () => {
+    const { paidCount } = await import("@/content/modes/c03");
+    expect(paidCount({ deposits: 2, presales: 1 })).toBe(3);
+    expect(paidCount({ payments: 4 })).toBe(4);
+    expect(paidCount({})).toBeNull();
+  });
+});

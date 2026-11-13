@@ -51,7 +51,7 @@ export const nameCandidates: WorksheetDef = {
               },
               { key: "said_aloud", label: "Said aloud passed", type: "yesno", width: 0.7 },
               { key: "spelled_cold", label: "Spelled cold passed", type: "yesno", width: 0.7 },
-              { key: "names_honestly", label: "Who this name names, honestly (one sentence)", type: "text", width: 2.6 },
+              { key: "names_honestly", label: "Who this name names, honestly (e.g. \"It names founders who started later in life\")", type: "text", width: 2.6 },
             ],
           },
         },
@@ -177,18 +177,19 @@ export const entitySetupChecklist: WorksheetDef = {
           key: "steps",
           mode: "check",
           notes: true,
+          notesHint: "Date done, confirmation or reference number, anything still waiting",
           items: [
             {
               key: "file_entity",
               label: "1. File your entity with the state",
               detail:
-                "What it is: registering your LLC or corporation with the state's business filing office, which gives you a legal business separate from you.\nWhy first: everything after this needs the exact legal name and filing date the state gives you.",
+                "What it is: registering your LLC or corporation with the state's business filing office, which gives you a legal business separate from you.\nWhy first: everything after this needs the exact legal name and filing date the state gives you.\nWhere: your state's business filing office, usually the Secretary of State. The SBA lists each state's office at sba.gov/business-guide/launch-your-business/register-your-business. Some states take longer than others, so start early.",
             },
             {
               key: "ein",
               label: "2. Get your EIN",
               detail:
-                "What it is: your Employer Identification Number, the free federal tax ID the IRS issues to your business.\nWhy after filing: the application asks for your entity type and legal name, which only exist once the state accepts your filing.",
+                "What it is: your Employer Identification Number, the free federal tax ID the IRS issues to your business.\nWhy after filing: the application asks for your entity type and legal name, which only exist once the state accepts your filing.\nWhere: apply free on the IRS site, irs.gov/ein. Never pay a third-party site for it.",
             },
             {
               key: "bank_account",

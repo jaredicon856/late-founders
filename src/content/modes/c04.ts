@@ -270,7 +270,7 @@ The sheet carries the MEMBER's brand, not Late Founders'. Never use Late Founder
 
 The sheet must contain:
 1. Logo usage notes: a minimum size (in px for screen and mm or inches for print), clear space (stated as a multiple of a logo element, e.g. the height of the first letter), and three to five do or don't notes. If they have no logo yet, write these as the brief for the designer.
-2. Colors as six-digit hex codes only, never color names: one or two primary colors and one to three secondary colors, each with where it is used. Check that body text color on the background has strong contrast. Keep any existing colors the member wants.
+2. Colors as six-digit hex codes only, never color names: three colors in total, matching the course video: one primary color and one or two secondary colors, each with where it is used. Check that body text color on the background has strong contrast. Keep any existing colors the member wants.
 3. One or two typefaces from widely licensable families (free under the SIL Open Font License or Apache License, for example from Google Fonts), each assigned to headline, body, or both, with a common system fallback.
 4. Voice: three to five specific descriptors (not "professional" or "friendly" alone), each with one example sentence to write and one to avoid, written for this member's audience.
 5. A core bio: two or three sentences in that voice, third person, that say who the member helps, with what, and why they are credible. Use only facts from the member and their record (their Hidden Assets Inventory, audience and problem statement); ask for anything missing. It is the bio they paste into LinkedIn, a podcast pitch or a website footer.
@@ -314,8 +314,8 @@ Show the member a draft of the whole sheet, take their edits, and save only once
         additionalProperties: false,
         required: ["primary", "secondary"],
         properties: {
-          primary: { type: "array", items: colour, description: "One or two." },
-          secondary: { type: "array", items: colour, description: "One to three." },
+          primary: { type: "array", items: colour, description: "Exactly one." },
+          secondary: { type: "array", items: colour, description: "One or two (three colors in total)." },
         },
       },
       typefaces: {
@@ -371,8 +371,8 @@ Show the member a draft of the whole sheet, take their edits, and save only once
       if (bad.length) throw new SaveError(`colours.${k} has values that are not six-digit hex codes: ${bad.join(", ")}. Use codes like #1F3A5F, never color names.`);
       return list;
     };
-    const primary = readColours("primary", 1, 2);
-    const secondary = readColours("secondary", 1, 3);
+    const primary = readColours("primary", 1, 1);
+    const secondary = readColours("secondary", 1, 2);
 
     const typefaces = objArray(o.typefaces).map((t) => ({ family: str(t.family), role: str(t.role), licence: str(t.licence), fallback: str(t.fallback) }));
     if (typefaces.length < 1 || typefaces.length > 2) throw new SaveError(`typefaces must have one or two entries; got ${typefaces.length}.`);

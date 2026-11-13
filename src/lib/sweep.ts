@@ -73,6 +73,19 @@ export function domainFlag(results: DomainResult[]): string | null {
   return null;
 }
 
+// One plain verdict per name, so every name gets a card, not only the bad ones.
+export function verdict(r: Pick<NameSweep, "domains" | "domainFlag">): { tone: "good" | "warning"; text: string } {
+  if (r.domainFlag) return { tone: "warning", text: r.domainFlag };
+  const exact = r.domains.find((d) => d.variant === "exact");
+  const free = r.domains.filter((d) => d.status === "available");
+  if (exact?.status === "taken" && !free.length) return { tone: "warning", text: "Taken almost everywhere: the .com and every close version are taken. Pick another name." };
+  if (free.some((d) => d.variant === "hyphenated"))
+    return { tone: "warning", text: "A hyphenated .com is free, but hyphens are a warning sign: people forget them when they type or say the name." };
+  if (exact?.status === "available")
+    return { tone: "good", text: "Clean so far: the .com is free. Check the social handles by hand and search USPTO before you commit." };
+  return { tone: "warning", text: "The .com couldn't be checked. Look it up at your domain registrar before you rely on it." };
+}
+
 async function handles(name: string): Promise<HandleResult[]> {
   const h = slug(name).slice(0, 30);
   const [gh, yt] = await Promise.all([

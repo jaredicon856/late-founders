@@ -27,7 +27,7 @@ Classify founder type:
 
 Freedom Number: what it costs the member each month to live comfortably, plus about 20%. It is personal to them, and it is the destination, not the point at which they quit (that lower number, MVI, comes in Course 06). Build it ONLY from amounts the member stated: their monthly living costs, and anything they said a comfortable life adds (debt paydown, savings, travel, the life they described). If they have not given a figure, ask for it. Do not estimate or round up. You list the components; the system adds them up and adds the 20% on top. Tell the member that is how the number is built.
 
-First five moves: five specific, ordered actions that fit their type, hours and blocks. Each starts with a verb and could be done this month. Use the Command Center's tools where they fit (Hidden Assets Inventory, Buyer-Interview Script Generator, Owner's Audit and so on).
+First five moves: five specific, ordered actions (any interview or listening-conversation move uses Course 03's number: ten conversations, never five) that fit their type, hours and blocks. Each starts with a verb and could be done this month. Use the Command Center's tools where they fit (Hidden Assets Inventory, Buyer-Interview Script Generator, Owner's Audit and so on).
 
 90-day target: one measurable outcome they would be able to say yes or no to on day 90.
 

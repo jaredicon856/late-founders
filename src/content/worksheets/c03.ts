@@ -15,7 +15,7 @@ const THRESHOLD = 7;
 function interviewRows(d: SheetData): TableRow[] {
   const rows = Array.isArray(d.interviews) ? (d.interviews as TableRow[]) : [];
   return rows.filter((r) =>
-    ["name", "source", "date_contacted", "responded", "completed", "signal", "quote", "prior_spend"].some((k) => {
+    ["name", "source", "date_contacted", "responded", "completed", "signal", "quote", "prior_spend", "price_answer", "notes"].some((k) => {
       const v = r[k];
       return v !== undefined && v !== null && String(v).trim() !== "";
     }),
@@ -59,7 +59,7 @@ export const interviewTracker: WorksheetDef = {
           kind: "callout",
           tone: "note",
           title: "Seven or more strong is the threshold to proceed",
-          text: "A strong signal is a buyer who described the problem in their own words, has already tried to solve it, and has spent money or real time on it. Polite interest is a weak signal, however warm the call felt.",
+          text: "A strong signal is a specific, recent story with a cost: the buyer told you about the last time the problem happened, in their own words, and what it cost them in money or real time. Polite interest is a weak signal, however warm the call felt.",
         },
         {
           kind: "computed",
@@ -69,6 +69,8 @@ export const interviewTracker: WorksheetDef = {
             const t = tally(d);
             if (!t.logged) return null;
             if (t.strong >= THRESHOLD) return `${t.strong} strong. You have cleared the threshold of ${THRESHOLD}. Take the tally into your Go/No-Go Scorecard.`;
+            if (t.completed >= TARGET && t.strong <= 3) return `${t.strong} strong after ${t.completed} calls. Three or fewer means go back: sharpen the problem statement or the audience before you test further.`;
+            if (t.completed >= TARGET) return `${t.strong} strong after ${t.completed} calls: the middle ground. Run five more interviews with a sharper audience before you decide.`;
             return `${t.strong} strong. ${THRESHOLD - t.strong} more to reach the threshold of ${THRESHOLD}.`;
           },
         },
@@ -89,13 +91,13 @@ export const interviewTracker: WorksheetDef = {
     },
     {
       title: "Interview log",
-      intro: "One row per buyer. Write the quote word for word, the way they said it. Add rows as you go past ten.",
+      intro: "One row per buyer. Start with your list of 15 to 20 names, and write each quote word for word, the way they said it. In Module 4, log what each buyer said about price here too.",
       blocks: [
         {
           kind: "table",
           table: {
             key: "interviews",
-            minRows: 10,
+            minRows: 20,
             addable: true,
             columns: [
               { key: "name", label: "Name", type: "text", width: 1.1 },
@@ -106,6 +108,8 @@ export const interviewTracker: WorksheetDef = {
               { key: "signal", label: "Signal", type: "select", options: ["Strong", "Weak"], width: 0.7 },
               { key: "quote", label: "Verbatim quote", type: "text", width: 2.6 },
               { key: "prior_spend", label: "Prior spend mentioned", type: "yesno", width: 0.8 },
+              { key: "price_answer", label: "What they said about price (Module 4)", type: "text", width: 1.6 },
+              { key: "notes", label: "Notes", type: "text", width: 1.6 },
             ],
           },
         },

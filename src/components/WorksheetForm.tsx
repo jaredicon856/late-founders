@@ -299,7 +299,7 @@ export default function WorksheetForm({
                         </td>
                       )}
                       {b.notes && (
-                        <td><Input type="text" label={`${it.label} notes`} value={s.notes} disabled={readOnly} onChange={(v) => setItem(it.key, { notes: v })} /></td>
+                        <td><Input type="text" label={`${it.label} notes`} value={s.notes} placeholder={b.notesHint} disabled={readOnly} onChange={(v) => setItem(it.key, { notes: v })} /></td>
                       )}
                     </tr>
                   );

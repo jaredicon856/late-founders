@@ -94,6 +94,7 @@ export default async function Dashboard() {
         </div>
         <div className="card">
           <div className="eyebrow">Your first five moves</div>
+          <p className="muted small" style={{ margin: "4px 0 10px" }}>Tick each one off yourself as you finish it.</p>
           {moves.length ? (
             <FirstFive moves={moves} done={done} />
           ) : (

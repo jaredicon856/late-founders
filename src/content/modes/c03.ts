@@ -60,7 +60,7 @@ const CONTEXT_LABELS: Record<string, string> = {
 export const interviewScriptGenerator: ModeDef = {
   assetId: "interview-script-generator",
   persistent: true,
-  reads: ["problem_statement", "audience", "script_versions", "interview_signal_tally"],
+  reads: ["problem_statement", "audience", "script_versions", "interview_signal_tally", "hidden_assets"],
   writes: ["problem_statement", "audience", "script_versions"],
   systemPrompt: `You run the Buyer-Interview Script Generator for Course 03. You build, and over later sessions re-sharpen, the script the member uses to interview potential buyers. Every save creates a new version; all earlier versions are kept.
 
@@ -68,15 +68,16 @@ INPUTS
 - A problem statement that is solution-free: it describes the buyer's problem and its cost to them, and does not mention the member's product, service or idea. If the member's statement names a solution ("an app that...", "a coaching program for..."), point that out and help them rewrite it as the problem alone.
 - An audience description: who has the problem, specifically enough that the member could name ten of them.
 - Whether these are warm interviews (referrals, people who know the member) or cold ones (LinkedIn, communities). The opener differs.
-- Optional context the member adds in later sessions: painkiller score, market floor, personal fit notes, price objections heard. Use any that are present to sharpen the questions. Carry forward context from the latest saved version unless the member changes it.
+- Module 1 context, asked for on the FIRST run too (Lessons 1.2 and 1.3), one question at a time, after the problem statement and audience: their painkiller answers (how many of the four painkiller tests the problem passes), their market floor (how many buyers they can reach), and personal fit notes. If they have not done Module 1 yet, say they can add these when they come back to sharpen the script, and carry on. On later runs, also ask for price objections heard. Use whatever is present to sharpen the questions. Carry forward context from the latest saved version unless the member changes it.
+- Their network: the member's Hidden Assets Inventory (Course 02) may list contacts in hidden_assets.network. When building the audience, point out any listed contacts who fit it, by name, as people to interview first. Do not invent contacts.
 
 VAGUENESS
 If the problem statement is too vague to produce specific questions (no clear who, no concrete situation, no cost or consequence), tell the member directly: "This statement is too vague. The questions it produces will be generic and the answers will tell you nothing." Then ask one question to tighten it. Do not generate a script from a vague statement.
 
 THE SCRIPT
-1. Opener: about one minute spoken (roughly 120 to 160 words). Who the member is, why they are calling, that they are not selling anything, and permission to ask about the buyer's experience. Warm: reference the person who connected them. Cold: one line on why this person was chosen.
-2. Exactly nine core questions. Every question asks about actual past behavior or current and prior spend: the last time the problem happened, what it cost, what they tried, what they paid for, who else was involved, what they use now. Never ask about hypothetical willingness to buy or future intent: no "would you pay", "would you use", "how much would", "are you interested in", "imagine if". Each question gets a follow-up probe and a note on what to listen for.
-3. Close: about two minutes spoken (roughly 250 to 320 words). Thank them, ask whether there is anything you should have asked, ask for two or three referrals to others with the same problem, and agree how to follow up.
+1. Opener: about one minute spoken (roughly 120 to 160 words). Who the member is, why they are calling, that they are not selling anything, that it will take about fifteen minutes (always fifteen, matching the outreach message), and permission to ask about the buyer's experience. Warm: reference the person who connected them. Cold: one line on why this person was chosen.
+2. Exactly nine core questions. Every question asks about actual past behavior or current and prior spend: the last time the problem happened, what it cost, what they tried, what they paid for, who else was involved, what they use now. Include this one, worded for their situation: "What happened the last time it got worse?" Never ask about hypothetical willingness to buy or future intent: no "would you pay", "would you use", "how much would", "are you interested in", "imagine if". Each question gets a follow-up probe and a note on what to listen for.
+3. Close: about two minutes spoken (roughly 250 to 320 words). Thank them, ask whether there is anything you should have asked, ask permission to quote their words (anonymously or by name, their choice) on a test page, ask for two or three referrals to others with the same problem, and agree how to follow up. The member is aiming for ten interviews in total; say ten if a number comes up.
 
 When you regenerate, say in one or two lines what changed from the previous version and why.
 
@@ -297,9 +298,17 @@ function band(total: number): "Go" | "Pivot" | "No-Go" {
 
 const pct = (n: number | null) => (n === null ? "" : `${Math.round(n * 10) / 10}%`);
 
+// Deposits plus pre-sales, the Lesson 3.3 numbers (older saves used "payments").
+export function paidCount(s: Record<string, unknown>): number | null {
+  const d = asNumber(s.deposits);
+  const p = asNumber(s.presales);
+  if (d === null && p === null) return asNumber(s.payments);
+  return (d ?? 0) + (p ?? 0);
+}
+
 export const goNoGo: ModeDef = {
   assetId: "go-no-go",
-  reads: ["problem_statement", "interview_signal_tally", "smoke_test_metrics", "script_versions"],
+  reads: ["problem_statement", "interview_signal_tally", "smoke_test_metrics", "script_versions", "freedom_number"],
   writes: ["gonogo_score", "gonogo_band"],
   memberEntry: {
     key: "smoke_test_metrics",
@@ -307,16 +316,17 @@ export const goNoGo: ModeDef = {
     fields: [
       { key: "visitors", label: "Visitors", type: "number", width: "half" },
       { key: "signups", label: "Sign-ups", type: "number", width: "half" },
-      { key: "payments", label: "Payments", type: "number", width: "half" },
+      { key: "deposits", label: "Deposits", type: "number", width: "half" },
+      { key: "presales", label: "Pre-sales", type: "number", width: "half" },
       { key: "price", label: "Price charged ($)", type: "money", width: "half" },
     ],
   },
   systemPrompt: `You run the Go/No-Go Scorecard for Course 03. You score the member's idea on evidence, not enthusiasm, across four categories, each 1 to 5:
 
-1. Demand: the interview tally (strong signals against the target of ten, seven being the threshold; prior spend mentioned) plus smoke-test payments. Payments outweigh sign-ups; sign-ups outweigh compliments.
+1. Demand: the interview tally (strong signals against the target of ten, seven being the threshold; prior spend mentioned) plus smoke-test deposits and pre-sales (together, "payments"). Payments outweigh sign-ups; sign-ups outweigh compliments.
 2. Margin: price minus realistic costs per sale, including the member's own time at an hourly value they state. Ask for cost per sale, hours per sale and what their hour is worth if they are not in the record.
 3. Personal fit: whether the member can and wants to deliver this for years: skills, energy, hours available, how it sits with their life. Use any personal fit notes in their saved interview scripts, then ask.
-4. Market size: their market floor (the number of reachable buyers they can actually name or reach) run through their actual conversion rate from the smoke test. Ask for the floor if it is not in the record.
+4. Market size: their market floor (the number of reachable buyers they can actually name or reach) run through their actual conversion rate from the smoke test, times their monthly price, measured against their Freedom Number (freedom_number in the record: what it costs them to live comfortably plus about 20%). That is the one income number used everywhere. Ask for the floor if it is not in the record. If there is no Freedom Number yet, say the Founder Diagnostic sets it and ask them for it.
 
 The interview tally and smoke-test numbers are in the member record when they exist. Smoke-test numbers are entered by the member in the boxes above this chat; if they are missing, ask the member to fill them in there. Ask for everything else one item at a time. Never fill a gap with an assumption.
 
@@ -342,14 +352,14 @@ Walk the member through your scores category by category, then confirm before ca
     }
     const v = asNumber(s.visitors);
     const su = asNumber(s.signups);
-    const pay = asNumber(s.payments);
+    const pay = paidCount(s);
     const price = asNumber(s.price);
     if (v !== null || pay !== null) {
       lines.push(
-        `Your smoke test: ${v ?? "?"} visitors, ${su ?? "?"} sign-ups, ${pay ?? "?"} payments${price !== null ? ` at ${money(price)}` : ""}.`,
+        `Your smoke test: ${v ?? "?"} visitors, ${su ?? "?"} sign-ups, ${pay ?? "?"} paid (deposits and pre-sales)${price !== null ? ` at ${money(price)}` : ""}.`,
       );
     } else {
-      lines.push("Your smoke-test numbers are not in yet. Enter visitors, sign-ups, payments and price in the boxes above.");
+      lines.push("Your smoke-test numbers are not in yet. Enter visitors, sign-ups, deposits, pre-sales and price in the boxes above.");
     }
     lines.push("To score margin I need your realistic costs. What does it cost you to deliver one sale, not counting your own time?");
     return lines.join("\n\n");
@@ -385,7 +395,7 @@ Walk the member through your scores category by category, then confirm before ca
     const tallyRec = obj(profile.interview_signal_tally);
     const smoke = obj(profile.smoke_test_metrics);
     const hasTally = Object.keys(tallyRec).length > 0;
-    const payments = asNumber(smoke.payments);
+    const payments = paidCount(smoke);
     const visitors = asNumber(smoke.visitors);
 
     const cats = CATEGORIES.map(({ key, label }) => {
@@ -438,7 +448,7 @@ Walk the member through your scores category by category, then confirm before ca
     if (visitors !== null || payments !== null)
       figureItems.push({
         label: "Smoke test",
-        value: `${visitors ?? "?"} visitors, ${asNumber(smoke.signups) ?? "?"} sign-ups, ${payments ?? "?"} payments`,
+        value: `${visitors ?? "?"} visitors, ${asNumber(smoke.signups) ?? "?"} sign-ups, ${asNumber(smoke.deposits) ?? 0} deposits, ${asNumber(smoke.presales) ?? 0} pre-sales`,
       });
     if (price !== null) figureItems.push({ label: "Price", value: money(price) });
     if (margin !== null)
@@ -448,6 +458,9 @@ Walk the member through your scores category by category, then confirm before ca
       });
     if (rate !== null) figureItems.push({ label: "Conversion rate", value: pct(rate) });
     if (buyersAtFloor !== null) figureItems.push({ label: "Buyers at your market floor", value: `${buyersAtFloor} of ${floor}` });
+    const freedom = asNumber(profile.freedom_number);
+    if (buyersAtFloor !== null && price !== null && freedom)
+      figureItems.push({ label: "Against your Freedom Number", value: `${money(buyersAtFloor * price)}/mo of ${money(freedom)}/mo` });
 
     const flagged = cats.filter((c) => c.strength !== "solid");
     const flagText = (s: Strength) => (s === "solid" ? "Solid" : s === "thin" ? "Thin evidence" : "Missing evidence");

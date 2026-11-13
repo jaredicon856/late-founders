@@ -78,6 +78,7 @@ export type Block =
       key: string;
       mode: "check" | "passfail";
       notes?: boolean;
+      notesHint?: string; // placeholder in each notes box
       items: { key: string; label: string; detail?: string }[];
     }
   | { kind: "prose"; heading?: string; paragraphs?: string[]; bullets?: string[]; numbered?: string[] }

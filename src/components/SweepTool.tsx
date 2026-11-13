@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import type { NameSweep } from "@/lib/sweep";
+import { type NameSweep, verdict } from "@/lib/sweep";
 
 const MARK = { available: "Free", taken: "Taken", unknown: "Couldn't check", not_run: "Check by hand" } as const;
 const COLOR = { available: "var(--mint)", taken: "var(--danger)", unknown: "var(--warn)", not_run: "var(--muted)" } as const;
@@ -72,7 +72,20 @@ export default function SweepTool({ initialNames }: { initialNames: string[] }) 
                     <td className="label">{di === 0 ? ".com" : results[0].domains[di].variant === "hyphenated" ? "Hyphenated .com" : "Close variant"}</td>
                     {results.map((r) => {
                       const d = r.domains[di];
-                      return <td key={r.name} style={{ padding: 10 }}>{d ? <><div className="small muted">{d.domain}</div><span style={{ color: COLOR[d.status], fontWeight: 700 }}>{MARK[d.status]}</span></> : "—"}</td>;
+                      return (
+                        <td key={r.name} style={{ padding: 10 }}>
+                          {d ? (
+                            <>
+                              <div className="small muted">{d.domain}</div>
+                              {d.variant === "hyphenated" && d.status === "available" ? (
+                                <span style={{ color: "var(--warn)", fontWeight: 700 }}>Free, but hyphenated</span>
+                              ) : (
+                                <span style={{ color: COLOR[d.status], fontWeight: 700 }}>{MARK[d.status]}</span>
+                              )}
+                            </>
+                          ) : "—"}
+                        </td>
+                      );
                     })}
                   </tr>
                 ))}
@@ -107,9 +120,10 @@ export default function SweepTool({ initialNames }: { initialNames: string[] }) 
               </tbody>
             </table>
           </div>
-          {results.filter((r) => r.domainFlag).map((r) => (
-            <div key={r.name} className="callout warning"><strong>{r.name}</strong>{r.domainFlag}</div>
-          ))}
+          {results.map((r) => {
+            const v = verdict(r);
+            return <div key={r.name} className={`callout ${v.tone === "good" ? "note" : "warning"}`}><strong>{r.name}</strong>{v.text}</div>;
+          })}
           <div className="callout legal">
             <strong>Raw results, not a legal clearance</strong>
             Run every close trademark hit in your category through the triage guide, and see a trademark attorney before you commit to a name with close hits.
