@@ -21,9 +21,17 @@ export async function POST(req: Request) {
   const form = await req.formData();
   const file = form.get("file");
   if (!(file instanceof File)) return NextResponse.json({ error: "No file" }, { status: 400 });
-  if (file.size > MAX) return NextResponse.json({ error: "That recording is over 200 MB. Trim it to one task." }, { status: 413 });
+  const openai = /api\.openai\.com/.test(url);
+  // OpenAI takes files up to 25 MB.
+  const limit = openai ? 25 * 1024 * 1024 : MAX;
+  if (file.size > limit)
+    return NextResponse.json(
+      { error: `That recording is over ${openai ? "25" : "200"} MB. Trim it to one task, or record audio only (a voice memo is far smaller than a screen recording).` },
+      { status: 413 },
+    );
   const fd = new FormData();
   fd.append("file", file, file.name);
+  if (openai) fd.append("model", process.env.TRANSCRIPTION_MODEL || "whisper-1");
   const res = await fetch(url, { method: "POST", headers: { authorization: `Bearer ${key}` }, body: fd });
   if (!res.ok) return NextResponse.json({ error: "Transcription failed. Paste a transcript instead." }, { status: 502 });
   const body = (await res.json().catch(() => ({}))) as { text?: string };

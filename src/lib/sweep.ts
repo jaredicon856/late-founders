@@ -112,12 +112,56 @@ export function similarity(a: string, b: string): number {
   return Math.max(0, score);
 }
 
+type Hit = { mark?: string; owner?: string; classes?: string; status?: string };
+
+function done(name: string, raw: Hit[], searchUrl: string): NameSweep["trademark"] {
+  const hits = raw
+    .map((h) => ({ mark: String(h.mark ?? ""), owner: String(h.owner ?? ""), classes: String(h.classes ?? ""), status: String(h.status ?? ""), similarity: similarity(name, String(h.mark ?? "")) }))
+    .filter((h) => h.mark)
+    .sort((a, b) => b.similarity - a.similarity)
+    .slice(0, 15);
+  return {
+    status: "done",
+    message: hits.length ? `${hits.length} registered or pending marks came back. Run each through the triage guide.` : "No marks came back for this exact search. Search close spellings too before you rely on it.",
+    hits,
+    searchUrl,
+  };
+}
+
+// Marker API (markerapi.com): username and password go in the path; it answers
+// { count, trademarks: [{ wordmark, serialnumber, code, description, status?, owner? }] }.
+async function markerTrademark(name: string, searchUrl: string): Promise<NameSweep["trademark"]> {
+  const u = encodeURIComponent(process.env.MARKER_API_USER ?? "");
+  const p = encodeURIComponent(process.env.MARKER_API_PASS ?? "");
+  const term = encodeURIComponent(name.trim());
+  const failed = { status: "failed" as const, message: "The trademark search didn't respond, so this name has NOT been cleared. Try again, or search with the link.", hits: [], searchUrl };
+  for (const path of [`trademark/${term}`, `trademark/search/${term}`]) {
+    const res = await get(`https://markerapi.com/api/v2/trademarks/${path}/status/active/start/1/username/${u}/password/${p}`, { headers: { accept: "application/json" } });
+    if (!res?.ok) continue;
+    const body = (await res.json().catch(() => null)) as { count?: number; trademarks?: Record<string, unknown>[] } | null;
+    if (!body || (!Array.isArray(body.trademarks) && body.count === undefined)) continue;
+    const list = Array.isArray(body.trademarks) ? body.trademarks : [];
+    return done(
+      name,
+      list.map((t) => ({
+        mark: String(t.wordmark ?? t.mark ?? ""),
+        owner: String(t.owner ?? ""),
+        classes: String(t.code ?? t.class ?? ""),
+        status: String(t.status ?? ""),
+      })),
+      searchUrl,
+    );
+  }
+  return failed;
+}
+
 // Any trademark search service that answers GET {url}?q=<name> with
 // { hits: [{ mark, owner, classes, status }] } and a Bearer key works.
 async function trademark(name: string, category: string): Promise<NameSweep["trademark"]> {
   const searchUrl = `https://tmsearch.uspto.gov/search/search-results?query=${encodeURIComponent(name)}`;
   const url = process.env.TRADEMARK_API_URL;
   const key = process.env.TRADEMARK_API_KEY;
+  if (process.env.MARKER_API_USER && process.env.MARKER_API_PASS) return markerTrademark(name, searchUrl);
   if (!url || !key) {
     return {
       status: "not_run",
