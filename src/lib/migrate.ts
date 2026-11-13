@@ -1,11 +1,10 @@
-// One-time move of every table to a new database (MIGRATE_TO_DIRECT_URL),
-// used to hand the app over to another Supabase project. The target's tables
-// are created at deploy by scripts/db-sync.mjs. "check" only counts rows on
-// both sides; "copy" empties the target and copies everything, parents first,
-// then counts again so the result can be compared table by table.
+// Move of every table from the old database (DATABASE_URL) to the Late
+// Founders one (MIGRATE_TO_DIRECT_URL). The app now runs on the new database
+// (see db.ts), so "copy" is switched off: it would overwrite live member work
+// with the old copy. "check" counts rows on both sides, to confirm nothing
+// was saved to the old database during the switch.
 
 import { PrismaClient } from "@prisma/client";
-import { db } from "./db";
 
 // Parents before children (foreign keys).
 const TABLES = [
@@ -37,15 +36,17 @@ async function counts(c: PrismaClient) {
 export async function runMigration(mode: "check" | "copy") {
   const url = migrateTarget();
   if (!url) throw new Error("MIGRATE_TO_DIRECT_URL is not set.");
+  if (mode === "copy") throw new Error("The app already runs on the new database; copying again would overwrite member work.");
+  const source = new PrismaClient({ datasourceUrl: process.env.DATABASE_URL });
   const target = new PrismaClient({ datasourceUrl: url });
   try {
-    if (mode === "copy") {
+    if (false as boolean) {
       for (const t of [...TABLES].reverse()) await table(target, t).deleteMany();
       for (const t of TABLES) {
         const size = BATCH[t] ?? 500;
         let cursor: string | undefined;
         for (;;) {
-          const rows = await table(db, t).findMany({ take: size, orderBy: { id: "asc" }, ...(cursor ? { skip: 1, cursor: { id: cursor } } : {}) });
+          const rows = await table(source, t).findMany({ take: size, orderBy: { id: "asc" }, ...(cursor ? { skip: 1, cursor: { id: cursor } } : {}) });
           if (!rows.length) break;
           await table(target, t).createMany({ data: rows });
           cursor = rows[rows.length - 1].id;
@@ -53,10 +54,10 @@ export async function runMigration(mode: "check" | "copy") {
         }
       }
     }
-    const [from, to] = await Promise.all([counts(db), counts(target)]);
+    const [from, to] = await Promise.all([counts(source), counts(target)]);
     const same = TABLES.every((t) => from[t] === to[t]);
     return { mode, same, from, to };
   } finally {
-    await target.$disconnect();
+    await Promise.all([source.$disconnect(), target.$disconnect()]);
   }
 }
