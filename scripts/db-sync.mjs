@@ -18,6 +18,14 @@ execSync("npx prisma db push --skip-generate", { stdio: "inherit" });
 execSync("npx prisma db execute --file prisma/rls.sql --schema prisma/schema.prisma", { stdio: "inherit" });
 console.log("db-sync: tables in sync, row level security on");
 
+// Handover: also create the tables in the database the app is moving to.
+if (process.env.MIGRATE_TO_DIRECT_URL && process.env.MIGRATE_TO_DATABASE_URL) {
+  const env = { ...process.env, DATABASE_URL: process.env.MIGRATE_TO_DATABASE_URL, DIRECT_URL: process.env.MIGRATE_TO_DIRECT_URL };
+  execSync("npx prisma db push --skip-generate", { stdio: "inherit", env });
+  execSync("npx prisma db execute --file prisma/rls.sql --schema prisma/schema.prisma", { stdio: "inherit", env });
+  console.log("db-sync: handover database tables in sync, row level security on");
+}
+
 const email = (process.env.BOOTSTRAP_ADMIN_EMAIL ?? "").trim().toLowerCase();
 const hash = process.env.BOOTSTRAP_ADMIN_PASSWORD_HASH ?? "";
 if (email && /^\$2[aby]\$\d\d\$/.test(hash)) {
