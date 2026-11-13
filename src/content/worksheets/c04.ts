@@ -218,6 +218,19 @@ type SweepRow = { name?: string; handles?: { platform?: string; handle?: string;
 
 // The handles from the member's latest Availability Sweep for their business
 // name (or the first name swept), so the social row checks the right profiles.
+// One line per swept name: free domains and what the trademark check found.
+export function sweepSummary(p: ProfileData): string[][] {
+  const sr = p.sweep_results && typeof p.sweep_results === "object" ? (p.sweep_results as { results?: Record<string, unknown>[] }) : null;
+  const results = Array.isArray(sr?.results) ? sr.results : [];
+  return results.map((r) => {
+    const domains = Array.isArray(r.domains) ? (r.domains as { domain?: string; status?: string }[]) : [];
+    const free = domains.filter((x) => x.status === "available").map((x) => x.domain ?? "").filter(Boolean);
+    const tm = (r.trademark ?? {}) as { status?: string; hits?: { mark?: string }[] };
+    const tmText = tm.status === "done" ? (tm.hits?.length ? `${tm.hits.length} similar marks: ${tm.hits.slice(0, 3).map((h) => h.mark).join(", ")}` : "No marks found") : "Not checked: search USPTO yourself";
+    return [String(r.name ?? ""), free.length ? `Free: ${free.join(", ")}` : "None free", tmText];
+  });
+}
+
 export function sweepHandles(p: ProfileData): string[][] {
   const sr = p.sweep_results && typeof p.sweep_results === "object" ? (p.sweep_results as { results?: SweepRow[] }) : null;
   const results = Array.isArray(sr?.results) ? sr.results : [];
@@ -263,7 +276,38 @@ export const digitalPresenceAudit: WorksheetDef = {
       ],
     },
     {
-      title: "2 · The touchpoint audit",
+      title: "2 · Search audit",
+      intro: "Search your business name, and your own name if you are the face of it, in a private window so you see what a stranger sees.",
+      blocks: [
+        {
+          kind: "checklist",
+          key: "search",
+          mode: "passfail",
+          notes: true,
+          items: [
+            { key: "accuracy", label: "Accuracy", detail: "Does your correctly branded site appear on the first page?" },
+            { key: "consistency", label: "Consistency", detail: "Do the results match the name, bio and photo you standardized in Lesson 5.1?" },
+            { key: "conflicts", label: "Conflicts", detail: "Does anything from your Module 2 sweep resurface here, a similarly named business creating confusion about which one is you? Your Sweep results are shown below." },
+            { key: "completeness", label: "Completeness", detail: "Are your key profiles indexed and showing, or too new and too empty to appear?" },
+          ],
+        },
+        {
+          kind: "computed",
+          key: "sweep_conflicts",
+          label: "From your Availability Sweep",
+          compute: (_d, p) => {
+            const rows = sweepSummary(p);
+            return rows.length ? { headers: ["Name", "Domains", "Trademark check"], rows } : null;
+          },
+        },
+        {
+          kind: "fields",
+          fields: [{ key: "search_fixes", label: "What to fix", type: "textarea", lines: 3, hint: "Profiles to update, old listings to remove, new profiles to give time." }],
+        },
+      ],
+    },
+    {
+      title: "3 · The touchpoint audit",
       intro: "The small places clients see you after they say yes. Each one should look like the same business.",
       blocks: [
         {

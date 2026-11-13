@@ -51,19 +51,21 @@ describe("Risk Inventory", () => {
 });
 
 describe("Decision Engine", () => {
-  const base: DecisionInputs = { founder_type: "Fresh Start", freedom_number: 9000, monthly_burn: 3200, mvi: 4400, committed_revenue: 0, reserve: 0, open_risk_count: 0 };
-  it("quits now once signed revenue meets MVI and nothing is open", () => {
-    expect(decide({ ...base, committed_revenue: 4400 }).band).toBe("Quit now");
+  const base: DecisionInputs = { founder_type: "Fresh Start", freedom_number: 9000, monthly_burn: 3200, mvi: 4400, committed_revenue: 0, reserve: 0, open_risk_count: 0, months_at_mvi: 0 };
+  it("quits now only when signed revenue covers MVI, nothing is open and it held three months", () => {
+    expect(decide({ ...base, committed_revenue: 4400, months_at_mvi: 3 }).band).toBe("Quit now");
+    expect(decide({ ...base, committed_revenue: 4400, months_at_mvi: 2 }).band).toBe("Quit in three to six months");
+    expect(decide({ ...base, committed_revenue: 4400, months_at_mvi: 3, open_risk_count: 1 }).band).toBe("Quit in three to six months");
   });
-  it("names every gap to the next band", () => {
+  it("names every gap to quitting now", () => {
     const d = decide({ ...base, committed_revenue: 500, reserve: 10000, open_risk_count: 4 });
     expect(d.band).toBe("Stay and build");
-    expect(d.gaps).toHaveLength(3);
+    expect(d.gaps).toHaveLength(4);
   });
-  it("asks a First-Timer for three more months of cover", () => {
-    const i = { ...base, committed_revenue: 2200, reserve: 2200 * 13 };
-    expect(decide(i).band).toBe("Quit now");
-    expect(decide({ ...i, founder_type: "First-Timer" }).band).toBe("Quit in three to six months");
+  it("asks a First-Timer for three more months of cover before the three-to-six-month band", () => {
+    const i = { ...base, committed_revenue: 1100, reserve: 3300 * 7 };
+    expect(decide(i).band).toBe("Quit in three to six months");
+    expect(decide({ ...i, founder_type: "First-Timer" }).band).toBe("Stay and build");
   });
 });
 

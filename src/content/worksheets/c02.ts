@@ -1,5 +1,5 @@
 import type { SheetData, WorksheetDef } from "../types";
-import { asNumber } from "../profile";
+import { asNumber, money } from "../profile";
 
 const addDays = (iso: string, days: number) => {
   const t = new Date(`${iso}T00:00:00Z`);
@@ -14,6 +14,24 @@ export const hiddenAssetsInventory: WorksheetDef = {
   exports: ["pdf", "xlsx"],
   dense: true, // spec: must print to a single page
   sections: [
+    {
+      title: "Your \"too late\" sentence",
+      screenOnly: true, // kept off the one-page printout
+      blocks: [
+        {
+          kind: "fields",
+          fields: [
+            {
+              key: "too_late",
+              label: "The sentence you tell yourself about why it's too late",
+              type: "text",
+              placeholder: "e.g. \"I'm 58, and nobody funds a first-time founder my age.\"",
+              screenHint: "Write it down exactly as it sounds in your head. The rest of this page is the evidence against it.",
+            },
+          ],
+        },
+      ],
+    },
     {
       title: "1 · Experience",
       intro: "Five skills, each with an outcome you can put a number or a result on.",
@@ -105,9 +123,19 @@ export const hiddenAssetsInventory: WorksheetDef = {
               key: "judgment",
               label: "Your pattern recognition, in your own words",
               type: "textarea",
+              width: "half",
               lines: 3,
               placeholder: "What do you see coming before other people in your field do?",
               screenHint: "What you can judge that others can't. For example: \"I can tell a realistic plan from a wishful one.\"",
+            },
+            {
+              key: "hard_lessons",
+              label: "Three hard lessons you'd never repeat",
+              type: "textarea",
+              width: "half",
+              lines: 3,
+              placeholder: "1.\n2.\n3.",
+              screenHint: "The expensive mistakes. A younger founder pays for each of these; you already have.",
             },
           ],
         },
@@ -126,6 +154,8 @@ export const hiddenAssetsInventory: WorksheetDef = {
         launch_minimum: asNumber(d.launch_minimum),
         capital_kinds: d.capital_kinds ?? "",
         judgment: d.judgment ?? "",
+        too_late: d.too_late ?? "",
+        hard_lessons: d.hard_lessons ?? "",
       }),
     },
   ],
@@ -134,7 +164,7 @@ export const hiddenAssetsInventory: WorksheetDef = {
 export const ninetyDayCommitment: WorksheetDef = {
   assetId: "ninety-day-commitment",
   exports: ["pdf", "docx"],
-  reads: ["origin_story", "journal_entries", "ninety_day_target"],
+  reads: ["origin_story", "journal_entries", "ninety_day_target", "freedom_number"],
   initial: (p) => ({ origin_story: typeof p.origin_story === "string" ? p.origin_story : "" }),
   // The end date follows the start date by 90 days, and can never sit before it.
   derive: (changed, d) => {
@@ -157,7 +187,16 @@ export const ninetyDayCommitment: WorksheetDef = {
         {
           kind: "callout",
           tone: "note",
-          text: "This worksheet is how you reach that target: the daily action is what you do every day, and the enough number is the result on day 90 that tells you it worked.",
+          text: "This worksheet is how you reach that target: the daily action is what you do every day. Your Freedom Number below is where all of it leads.",
+        },
+        {
+          kind: "computed",
+          key: "freedom",
+          label: "Your Freedom Number, from the Founder Diagnostic",
+          compute: (_d, p) => {
+            const n = asNumber(p.freedom_number);
+            return n ? `${money(n)}/mo: what it costs you to live comfortably, plus about 20%` : "Not set yet. Your Founder Diagnostic sets it.";
+          },
         },
         {
           kind: "fields",
@@ -169,12 +208,6 @@ export const ninetyDayCommitment: WorksheetDef = {
               label: "Minimum daily founder action",
               type: "text",
               hint: "Small enough to do on your worst day. Thirty minutes of outreach counts; \"work on the business\" does not.",
-            },
-            {
-              key: "enough_number",
-              label: "Enough number",
-              type: "text",
-              hint: "The result at day 90 that tells you this worked.",
             },
             {
               key: "origin_story",
@@ -209,11 +242,11 @@ export const ninetyDayCommitment: WorksheetDef = {
   writes: [
     {
       key: "commitment",
-      from: (d) => ({
+      from: (d, p) => ({
         start_date: d.start_date ?? "",
         end_date: d.end_date ?? "",
         daily_action: d.daily_action ?? "",
-        enough_number: d.enough_number ?? "",
+        freedom_number: asNumber(p.freedom_number),
       }),
     },
   ],

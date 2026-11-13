@@ -1,7 +1,7 @@
 import type { AssetDef, CourseDef } from "./types";
 
 // All fourteen courses. Resources that live outside the Command Center (GHL
-// snapshot items, walkthrough videos, IconPress, live sessions) are not listed.
+// snapshot items, walkthrough videos, live sessions) are not listed.
 
 export const COURSES: CourseDef[] = [
   {
@@ -51,20 +51,20 @@ export const COURSES: CourseDef[] = [
   {
     number: 7,
     title: "LinkedIn Authority",
-    pillar: "Pillar 2",
+    pillar: "Pillar 2 · Authority & Leverage",
     assets: ["profile-audit", "hook-library", "content-pillars", "content-calendar"],
   },
   {
     number: 8,
     title: "LinkedIn Automation & Campaign Setup",
-    pillar: "Pillar 2",
+    pillar: "Pillar 2 · Authority & Leverage",
     assets: ["icp-worksheet", "sequence-generator", "campaign-metrics"],
     note: "Before you start: this course uses paid tools you buy yourself: HeyReach, plus either LinkedIn Sales Navigator or Apollo. Check current pricing on each before Lesson 1.2.",
   },
   {
     number: 9,
     title: "Your Tech Stack in a Weekend",
-    pillar: "Pillar 2",
+    pillar: "Pillar 2 · Authority & Leverage",
     assets: ["weekend-tracker", "launch-checklist"],
     note: "Your CRM, website, pipeline and email sequences live in your Late Founders GHL workspace. The Command Center tracks your progress and holds the launch checklist.",
     link: { label: "Open your GHL workspace", envKey: "GHL_LOGIN_URL", fallback: "https://app.gohighlevel.com/" },
@@ -72,14 +72,14 @@ export const COURSES: CourseDef[] = [
   {
     number: 10,
     title: "The Sales Framework",
-    pillar: "Pillar 2",
+    pillar: "Pillar 2 · Authority & Leverage",
     assets: ["discovery-sheet", "objection-library"],
     note: "You build the follow-up and lost-deal reasons in Modules 4 and 5: a CRM reminder for each follow-up touch (you write and send each message yourself) and a loss-reason field on every deal. Ask permission to record at the start of every call.",
   },
   {
     number: 11,
     title: "AI for Founders",
-    pillar: "Pillar 2",
+    pillar: "Pillar 2 · Authority & Leverage",
     assets: ["ai-audit-tracker", "workflow-library", "repurposing-engine", "hours-saved-tracker"],
     note: "Monthly AI for Founders live session: the date and Zoom link are on the Skool Calendar tab.",
   },
@@ -129,7 +129,7 @@ export const ASSETS: AssetDef[] = [
   { id: "reframing-journal", code: "02.2", course: 2, kind: "ai", title: "Reframing Journal",
     summary: "Rewrite a layoff, a rut or a late start with you as the one who acted." },
   { id: "ninety-day-commitment", code: "02.3", course: 2, kind: "worksheet", title: "90-Day Commitment Worksheet",
-    summary: "Dates, a daily minimum and an enough number, printed and signed." },
+    summary: "Dates, a daily minimum and your Freedom Number, printed and signed." },
 
   // Course 03
   { id: "interview-script-generator", code: "03.1", course: 3, kind: "ai", title: "Buyer-Interview Script Generator",
@@ -174,7 +174,7 @@ export const ASSETS: AssetDef[] = [
   { id: "contract-review-checklist", code: "06.4", course: 6, kind: "checklist", title: "Employment Contract Review Checklist",
     summary: "What to look for in IP, non-compete and moonlighting clauses before you build on the side." },
 
-  // Course 07 (07.4 IconPress is an external ICON product, linked rather than built)
+  // Course 07
   { id: "profile-audit", code: "07.1", course: 7, kind: "ai", title: "Profile-Audit AI",
     summary: "Paste your LinkedIn profile section by section; each is scored, rewritten, and the weakest flagged." },
   { id: "hook-library", code: "07.2", course: 7, kind: "library", title: "Hook & Template Library",

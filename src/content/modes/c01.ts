@@ -3,6 +3,8 @@ import { asNumber, money } from "../profile";
 import type { ModeDef } from "../types";
 import { SaveError, str, strArray, obj } from "./util";
 
+export const FREEDOM_CUSHION = 0.2;
+
 export const founderDiagnostic: ModeDef = {
   assetId: "founder-diagnostic",
   reads: [],
@@ -23,7 +25,7 @@ Classify founder type:
 - "First-Timer": still employed, building on the side for the first time.
 - "Buried Founder": already runs a business and is buried in it: the business depends on them.
 
-Freedom Number: a monthly dollar figure built ONLY from amounts the member stated: their monthly living costs plus the monthly margin they said they want on top (debt paydown, savings, the life they described). If they have not given a figure, ask for it. Do not estimate, round up, or add a cushion they did not ask for. You list the components; the system adds them.
+Freedom Number: what it costs the member each month to live comfortably, plus about 20%. It is personal to them, and it is the destination, not the point at which they quit (that lower number, MVI, comes in Course 06). Build it ONLY from amounts the member stated: their monthly living costs, and anything they said a comfortable life adds (debt paydown, savings, travel, the life they described). If they have not given a figure, ask for it. Do not estimate or round up. You list the components; the system adds them up and adds the 20% on top. Tell the member that is how the number is built.
 
 First five moves: five specific, ordered actions that fit their type, hours and blocks. Each starts with a verb and could be done this month. Use the Command Center's tools where they fit (Hidden Assets Inventory, Buyer-Interview Script Generator, Owner's Audit and so on).
 
@@ -72,8 +74,11 @@ When all five stages are covered, summarize what you heard in a few lines and as
     if (!ROUTES[type]) throw new SaveError("founder_type must be Fresh Start, First-Timer or Buried Founder.");
     const comps = (Array.isArray(o.freedom_components) ? o.freedom_components : []).map(obj);
     if (!comps.length) throw new SaveError("No Freedom Number components. Ask the member for their monthly living costs before saving.");
-    const freedom = comps.reduce((s, c) => s + (asNumber(c.monthly_amount) ?? 0), 0);
-    if (!(freedom > 0)) throw new SaveError("Freedom Number components add up to zero. Ask the member for the figures.");
+    const comfortable = comps.reduce((s, c) => s + (asNumber(c.monthly_amount) ?? 0), 0);
+    if (!(comfortable > 0)) throw new SaveError("Freedom Number components add up to zero. Ask the member for the figures.");
+    // The Freedom Number is the cost of living comfortably plus about 20%.
+    const cushion = Math.round(comfortable * FREEDOM_CUSHION);
+    const freedom = Math.round(comfortable) + cushion;
     const moves = strArray(o.first_five_moves);
     if (moves.length !== 5) throw new SaveError(`first_five_moves must have exactly five items; got ${moves.length}.`);
     const target = str(o.ninety_day_target);
@@ -108,7 +113,10 @@ When all five stages are covered, summarize what you heard in a few lines and as
             table: {
               headers: ["Component", "Monthly", "What you said"],
               widths: [1.2, 0.7, 2.4],
-              rows: comps.map((c) => [str(c.label), money(asNumber(c.monthly_amount)), str(c.member_words)]),
+              rows: [
+                ...comps.map((c) => [str(c.label), money(asNumber(c.monthly_amount)), str(c.member_words)]),
+                ["Cushion (20%)", money(cushion), "Added on top of living comfortably"],
+              ],
               totalRow: ["Freedom Number", money(freedom), ""],
             },
           },

@@ -29,6 +29,12 @@ export const discoverySheet: WorksheetDef = {
       title: "Prospect",
       blocks: [
         {
+          kind: "callout",
+          tone: "legal",
+          title: "Recording the call? Ask first",
+          text: "Ask permission at the start of every call, before you record: \"Is it OK if I record this, so I can listen properly instead of taking notes?\" Recording without everyone's consent is illegal in several US states, California and Washington among them.",
+        },
+        {
           kind: "fields",
           fields: [
             { key: "prospect", label: "Name", type: "text", width: "third" },

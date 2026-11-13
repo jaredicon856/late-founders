@@ -70,15 +70,18 @@ function inputsLine(p: ProfileData): string {
     `signed revenue ${money(inputs.committed_revenue)}/mo`,
     `reserve ${money(inputs.reserve)}`,
     `${inputs.open_risk_count} open risk${inputs.open_risk_count === 1 ? "" : "s"}`,
+    `${inputs.months_at_mvi} month${inputs.months_at_mvi === 1 ? "" : "s"} in a row at or above MVI`,
   ].join(", ");
 }
 
 export const decisionEngine: ModeDef = {
   assetId: "decision-engine",
-  reads: ["founder_type", "freedom_number", "monthly_burn", "mvi", "committed_revenue", "reserve_balance", "open_risk_count", "risk_items", "quit_scenarios", "offer_record", "quit_decision"],
+  reads: ["founder_type", "freedom_number", "monthly_burn", "mvi", "committed_revenue", "reserve_balance", "open_risk_count", "risk_items", "mvi_streak_months", "quit_scenarios", "offer_record", "quit_decision"],
   writes: ["quit_decision"],
   disclaimer: DISCLAIMER,
   systemPrompt: `You run the AI Decision Engine for Course 06, Quit or Stay. You do not ask the member to enter numbers: everything comes from their record (Runway Calculator, Risk Inventory, Founder Diagnostic, and their offer from the Course 05 Offer-Builder Agent).
+
+The quit rule, from Lesson 5.1: "Quit now" only when signed revenue covers MVI, every risk item is closed, and income has been at or above MVI for three months in a row. The Freedom Number is the destination, not the gate.
 
 The system has already computed the recommendation band from the record and shown it in your first message: "Quit now", "Quit in three to six months" or "Stay and build". You never change the band. If the member argues with it or offers different numbers in chat, do not recalculate. Tell them: circumstances change the answer, not inputs. If something real has changed (a contract signed, a debt paid off, a health plan chosen), they update the Runway Calculator or Risk Inventory and come back, and the engine re-reads the record.
 

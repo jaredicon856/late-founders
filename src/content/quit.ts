@@ -117,6 +117,7 @@ export type DecisionInputs = {
   committed_revenue: number;
   reserve: number;
   open_risk_count: number;
+  months_at_mvi: number; // latest run of months with business income at or above MVI
 };
 
 export function decisionInputs(p: ProfileData): { inputs: DecisionInputs | null; missing: string[] } {
@@ -137,6 +138,7 @@ export function decisionInputs(p: ProfileData): { inputs: DecisionInputs | null;
       committed_revenue: asNumber(p.committed_revenue) ?? 0,
       reserve: asNumber(p.reserve_balance) ?? 0,
       open_risk_count: risks as number,
+      months_at_mvi: asNumber(p.mvi_streak_months) ?? 0,
     },
   };
 }
@@ -153,29 +155,33 @@ function thresholds(type: string) {
 
 export type Decision = { band: Band; coverage_months: number | null; committed_pct: number; gaps: string[] };
 
+// "Quit now" follows Course 06 Lesson 5.1 exactly: signed revenue covers MVI,
+// every risk item is closed, and income has held at or above MVI for three
+// months in a row. "Quit in three to six months" is the reserve-backed step
+// before that.
+export const MONTHS_AT_MVI = 3;
+
 export function decide(i: DecisionInputs): Decision {
   const c = coverage(i.reserve, i.committed_revenue, i.mvi);
   const pct = i.mvi > 0 ? i.committed_revenue / i.mvi : 1;
   const t = thresholds(i.founder_type);
-  const meets = (b: { months: number; committedPct: number; risks: number }) =>
-    i.open_risk_count <= b.risks && (pct >= 1 || ((c.months ?? Infinity) >= b.months && pct >= b.committedPct));
-  const band: Band = meets(t.now) ? "Quit now" : meets(t.soon) ? "Quit in three to six months" : "Stay and build";
+  const quitNow = pct >= 1 && i.open_risk_count === 0 && i.months_at_mvi >= MONTHS_AT_MVI;
+  const soon = i.open_risk_count <= t.soon.risks && (pct >= 1 || ((c.months ?? Infinity) >= t.soon.months && pct >= t.soon.committedPct));
+  const band: Band = quitNow ? "Quit now" : soon ? "Quit in three to six months" : "Stay and build";
 
-  // Named gaps: what stands between the member and the next band up.
+  // Named gaps: everything still between the member and "Quit now".
   const gaps: string[] = [];
-  const target = band === "Stay and build" ? t.soon : band === "Quit in three to six months" ? t.now : null;
-  if (target && pct < 1) {
-    const months = c.months ?? Infinity;
-    if (months < target.months)
+  if (band !== "Quit now") {
+    if (band === "Stay and build" && pct < 1 && (c.months ?? Infinity) < t.soon.months)
       gaps.push(
-        `Reserve covers ${c.months} months of the ${money(c.shortfall)}/mo shortfall against your MVI; the next band needs ${target.months}. That is about ${money(Math.ceil((target.months - months) * c.shortfall))} more in reserve, or less shortfall.`,
+        `Reserve covers ${c.months} months of the ${money(c.shortfall)}/mo shortfall against your MVI; quitting in three to six months needs ${t.soon.months}. That is about ${money(Math.ceil((t.soon.months - (c.months ?? 0)) * c.shortfall))} more in reserve, or less shortfall.`,
       );
-    if (pct < target.committedPct)
-      gaps.push(
-        `Signed revenue is ${money(i.committed_revenue)}/mo, ${Math.round(pct * 100)}% of your ${money(i.mvi)} MVI; the next band needs ${Math.round(target.committedPct * 100)}% (${money(Math.ceil(i.mvi * target.committedPct))}/mo).`,
-      );
+    if (pct < 1)
+      gaps.push(`Signed revenue is ${money(i.committed_revenue)}/mo, ${Math.round(pct * 100)}% of your ${money(i.mvi)} MVI; quitting now needs it to cover all of it.`);
+    if (i.open_risk_count > 0)
+      gaps.push(`${i.open_risk_count} open risk${i.open_risk_count === 1 ? "" : "s"} on your Risk Inventory; quitting now needs every one closed.`);
+    if (i.months_at_mvi < MONTHS_AT_MVI)
+      gaps.push(`Income has been at or above your MVI ${i.months_at_mvi} month${i.months_at_mvi === 1 ? "" : "s"} in a row; quitting now needs ${MONTHS_AT_MVI}. Log each month in the Runway Calculator.`);
   }
-  if (target && i.open_risk_count > target.risks)
-    gaps.push(`${i.open_risk_count} open risk${i.open_risk_count === 1 ? "" : "s"} on your Risk Inventory; the next band allows ${target.risks}.`);
   return { band, coverage_months: c.months, committed_pct: Math.round(pct * 100), gaps };
 }

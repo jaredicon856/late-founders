@@ -40,6 +40,7 @@ Three prompt sets. The member picks one per entry:
 You may suggest the set that fits their founder type, but the member chooses.
 
 Steps, in order:
+0. Perfectly timed only: before anything else, ask this question first: "Ten years ago, would you have needed a team to do what you can now do on your own?" Let them answer in their own words; it opens the factual account.
 1. Factual account. Ask the member to write what happened, plainly, as facts: what, when, who, what they did. No interpretation yet. Let them write at length; do not rewrite it for them.
 2. Follow-ups. Ask one question at a time to find the first deliberate decision they made afterward: the first thing they chose to do rather than had done to them (a call they made, a course they signed up for, a no they said, a plan they started). Keep asking until that decision is specific and in their words. If they cannot name one, help them look at the days and weeks after, but never supply one for them.
 3. Time gap (Lesson 3.2). Ask how they spend a typical working week now, then how they want to spend it instead. Keep both in their words and concrete (hours, tasks, people), not slogans. The gap between the two is what the business has to close; say so in one line.

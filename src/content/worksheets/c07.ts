@@ -5,12 +5,13 @@ import type { LibraryEntry, ProfileData, SheetData, TableRow, WorksheetDef } fro
 //   angle_statement: string                   read by the Course 11 Repurposing Engine as a standing filter
 
 export const PILLARS = ["Clarity", "Authority", "Legacy", "Lessons", "AI"] as const;
+// Word for word from Course 07, Lesson 2.1.
 const PILLAR_COPY: Record<(typeof PILLARS)[number], string> = {
-  Clarity: "Making something confusing in your field simple. Explainers, myths, what people get wrong.",
-  Authority: "Proof you know the work: results, client stories, the calls you got right.",
-  Legacy: "What decades in your field taught you, and what you want to leave behind.",
-  Lessons: "Mistakes and turning points, told honestly, with what you would do differently.",
-  AI: "How you actually use AI in your work, as someone with the experience to judge its output.",
+  Clarity: "The frameworks and decisions you use to cut through confusion in your field. The mental model, the decision tree, the \"here's exactly how I decide X.\"",
+  Authority: "Your wins, case studies, and the expertise that proves you know this cold. Evidence, not bragging.",
+  Legacy: "Why you do this and what you are building toward. This is the pillar that makes you a person rather than a vendor.",
+  Lessons: "Mistakes and what they taught you. The most trust-building pillar, because it is the hardest to fake.",
+  AI: "How you actually use AI and tools in your work, plainly, no hype.",
 };
 
 const rows = (d: SheetData, k: string): TableRow[] =>
@@ -60,7 +61,7 @@ export const HOOKS: LibraryEntry[] = [
   entry("Post formats", "Framework or list", "Hook. One line on why it matters. Three to five numbered points, one sentence each. A closing line that asks which one they would add.",
     "A list of generic tips with no context.",
     "\"The three numbers I check every Monday\", each with what it told you last month.",
-    ["Clarity", "Authority", "AI"]),
+    ["Clarity"]),
   entry("Post formats", "Story arc", "Where I was. What went wrong. The moment it turned. What I do now. One line on what it means for the reader.",
     "A motivational story with no specifics.",
     "The week your biggest client left, told in dates and numbers, ending with the change you made to pricing.",
@@ -72,11 +73,11 @@ export const HOOKS: LibraryEntry[] = [
   entry("Post formats", "Before and after", "Before: the situation, in numbers. The one change. After: the result, in the same numbers. What it took.",
     "Vague transformation claims.",
     "A client's onboarding took 14 days; one checklist took it to 3. The before and after, step by step.",
-    ["Authority", "AI"]),
+    ["Authority"]),
   entry("Post formats", "Direct question", "A short setup with your own answer, then a real question you want answered.",
     "\"Thoughts?\" at the end of anything.",
     "\"I have stopped doing discovery calls over 30 minutes. Has anyone found the long call actually closes better?\"",
-    ["Legacy", "Lessons"]),
+    ["Audience research"]),
 
   entry("Comment openers", "Add a specific", "[Their point] matches what I saw when [your specific example].", "Great post!", "This matches what I saw running a 40-person warehouse: the night shift's errors halved when we wrote the steps down."),
   entry("Comment openers", "Respectful disagreement", "I would push back on one part: [point]. In my experience [specific].", "I disagree.", "I would push back on the hiring point. In my experience the first hire should be operations, not sales."),
@@ -114,7 +115,7 @@ export const hookLibrary: WorksheetDef = {
           kind: "library",
           categories: ["Hook patterns", "Post formats", "Comment openers", "Connection requests", "DM openers"],
           entries: HOOKS,
-          tagFilter: { label: "Pillar", tags: [...PILLARS] },
+          tagFilter: { label: "Pillar", tags: [...PILLARS, "Audience research"] },
         },
       ],
     },

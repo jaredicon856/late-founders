@@ -178,7 +178,7 @@ export const runwayCalculator: WorksheetDef = {
         },
         {
           kind: "table",
-          label: "Side income, month by month",
+          label: "Business income, month by month (the Decision Engine reads this for the three-months-in-a-row test)",
           table: {
             key: "side_log",
             minRows: 3,
@@ -233,6 +233,7 @@ export const runwayCalculator: WorksheetDef = {
     { key: "committed_revenue", from: (d) => asNumber(d.committed_revenue) },
     { key: "reserve_balance", from: (d) => (asNumber(d.reserve) === null ? null : runwaySavings(d)) },
     { key: "health_premium", from: (d) => asNumber(d.health_premium) },
+    { key: "mvi_streak_months", from: (d) => (mvi(d) ? monthsAtMvi(d) : null) },
     {
       key: "quit_scenarios",
       from: (d: SheetData) => {
@@ -320,6 +321,31 @@ export const riskInventory: WorksheetDef = {
               { key: "status", label: "Status", type: "select", options: STATUS, width: 0.8 },
             ],
           },
+        },
+      ],
+    },
+    {
+      title: "4 · De-risking checklist",
+      intro: "Before you leave, work through these five moves. Mark each done or not done, with a note on where it stands.",
+      blocks: [
+        {
+          kind: "callout",
+          tone: "note",
+          title: "Job already ended?",
+          text: "Keeping credit open and signing revenue before you go both assume a paycheck. If yours has already stopped, mark those two \"not done\" with a note, and put your effort into the reserve, health cover and household numbers.",
+        },
+        {
+          kind: "checklist",
+          key: "derisk",
+          mode: "check",
+          notes: true,
+          items: [
+            { key: "liability_reserve", label: "Build a liability reserve, separate from runway", detail: "Target three to six months of MVI-level expenses. Record it as \"Held back for liabilities\" in your Runway Calculator, so it stays out of your coverage months." },
+            { key: "health_priced", label: "Price your health coverage now", detail: "COBRA and marketplace, with real quotes." },
+            { key: "household", label: "Align your household on real numbers", detail: "Burn, MVI and reserve, said out loud with the people they affect." },
+            { key: "committed_revenue", label: "Secure one piece of committed revenue before you go, if your path allows", detail: "Signed, not promised." },
+            { key: "credit", label: "Keep access to credit while employed", detail: "Lenders look at a paycheck. Open or raise what you may need before it stops." },
+          ],
         },
       ],
     },
