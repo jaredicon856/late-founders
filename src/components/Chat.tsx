@@ -263,7 +263,7 @@ export default function Chat({
           </button>
         </div>
         <p className="muted small" style={{ margin: "12px 0 0" }}>
-          This conversation is saved. Close the Command Center whenever you like and pick up here next time.
+          This conversation is saved. Close the Portal whenever you like and pick up here next time.
         </p>
       </div>
     </>

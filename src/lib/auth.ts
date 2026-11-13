@@ -1,4 +1,4 @@
-// Email + password login with a server-side session table. The Command Center
+// Email + password login with a server-side session table. The Portal
 // owns login for now; Skool SSO can replace createSession's caller later
 // without touching anything that reads requireUser().
 

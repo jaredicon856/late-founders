@@ -244,7 +244,7 @@ export const WORKFLOWS: LibraryEntry[] = [
     "A transcript of you narrating the task while doing it (screen recording with voice works best).",
     "Turns the narration into numbered steps someone else can follow, with the decisions called out.",
     "Turn this narrated walkthrough into a standard operating procedure. Numbered steps, one action each, starting with a verb. Call out every decision point as \"If X, then Y\". List the tools and logins needed at the top. Mark anything I skipped over with [ask owner].\n\nTranscript:\n[paste]",
-    "Steps a new hire could follow on day one, with every judgment call visible instead of hidden in your head. (Course 12's SOP Generator does this inside the Command Center.)",
+    "Steps a new hire could follow on day one, with every judgment call visible instead of hidden in your head. (Course 12's SOP Generator does this inside the Portal.)",
   ),
   wf(
     "SOP capture",

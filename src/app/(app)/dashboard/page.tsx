@@ -146,8 +146,8 @@ export default async function Dashboard() {
 
       <div className="note-bar">
         Every tool reads this profile. Your route through the courses: {route.map((n) => courseLabel(n)).join(" → ")}.{" "}
-        {Object.values(statuses).filter((s) => s.status === "complete").length} of {ASSETS.length} Command Center tools complete (the
-        Command Center counts its tools and worksheets, not every lesson in Skool).
+        {Object.values(statuses).filter((s) => s.status === "complete").length} of {ASSETS.length} Portal tools complete (the
+        Portal counts its tools and worksheets, not every lesson in Skool).
       </div>
     </>
   );

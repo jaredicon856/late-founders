@@ -1,7 +1,7 @@
 import type { SheetData, WorksheetDef } from "../types";
 
 // Course 09's software (the GHL sub-account, pipeline, site templates and email
-// sequences) lives in the GHL snapshot. The Command Center links out to it and
+// sequences) lives in the GHL snapshot. The Portal links out to it and
 // holds two things: the weekend progress tracker and the launch checklist.
 
 const state = (d: SheetData, k: string) =>

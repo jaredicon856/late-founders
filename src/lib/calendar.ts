@@ -17,7 +17,7 @@ function nextDay(iso: string): string {
 
 export function toIcs(name: string, events: CalEvent[], stamp = new Date()): string {
   const now = stamp.toISOString().replace(/[-:]/g, "").replace(/\.\d+/, "");
-  const lines = ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//Late Founders//Command Center//EN", "CALSCALE:GREGORIAN", `X-WR-CALNAME:${esc(name)}`];
+  const lines = ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//Late Founders//Portal//EN", "CALSCALE:GREGORIAN", `X-WR-CALNAME:${esc(name)}`];
   for (const e of events) {
     lines.push(
       "BEGIN:VEVENT",

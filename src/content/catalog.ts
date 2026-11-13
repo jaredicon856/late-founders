@@ -1,6 +1,6 @@
 import type { AssetDef, CourseDef } from "./types";
 
-// All fourteen courses. Resources that live outside the Command Center (GHL
+// All fourteen courses. Resources that live outside the Portal (GHL
 // snapshot items, walkthrough videos, live sessions) are not listed.
 
 export const COURSES: CourseDef[] = [
@@ -66,7 +66,7 @@ export const COURSES: CourseDef[] = [
     title: "Your Tech Stack in a Weekend",
     pillar: "Pillar 2 · Authority & Leverage",
     assets: ["weekend-tracker", "launch-checklist"],
-    note: "Your CRM, website, pipeline and email sequences live in your Late Founders GHL workspace. The Command Center tracks your progress and holds the launch checklist.",
+    note: "Your CRM, website, pipeline and email sequences live in your Late Founders GHL workspace. The Portal tracks your progress and holds the launch checklist.",
     link: { label: "Open your GHL workspace", envKey: "GHL_LOGIN_URL", fallback: "https://app.gohighlevel.com/" },
   },
   {

@@ -16,7 +16,7 @@ export default async function AdminTeam() {
       <div className="accent" />
       <p className="muted">
         Admins see this Admin area: every member, their progress and files, and can reset passwords or turn accounts off. They can also use
-        the Command Center like any member.
+        the Portal like any member.
       </p>
       <div className="card" style={{ marginBottom: 18 }}>
         <h3>Admins</h3>
@@ -34,7 +34,7 @@ export default async function AdminTeam() {
       <div className="card" style={{ marginBottom: 18 }}>
         <h3>Add an admin</h3>
         <p className="muted small">
-          They need a Command Center account first: sign up with the member code, then enter that email here. Admins can only be added
+          They need a Portal account first: sign up with the member code, then enter that email here. Admins can only be added
           from this page, never at sign-up, because sign-up doesn't check that someone owns the email they type.
         </p>
         <AddAdmin />

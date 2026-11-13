@@ -130,7 +130,7 @@ export function courseStatus(course: number, statuses: StatusMap): Status {
 }
 
 // Every course is open. Skool decides which lessons a member reaches; the
-// Command Center only recommends an order (the member's route) so a link
+// Portal only recommends an order (the member's route) so a link
 // from any Skool lesson always lands on a working tool.
 export function nextAsset(profile: ProfileData, statuses: StatusMap) {
   for (const n of routeFor(profile)) {

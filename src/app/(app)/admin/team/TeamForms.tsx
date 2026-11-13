@@ -21,7 +21,7 @@ export function AddAdmin() {
   return (
     <form action={action} className="admin-action">
       <input type="hidden" name="make" value="1" />
-      <input className="input" name="email" type="email" required placeholder="Their Command Center login email" style={{ maxWidth: 340 }} />
+      <input className="input" name="email" type="email" required placeholder="Their Portal login email" style={{ maxWidth: 340 }} />
       <button className="btn-primary" disabled={pending}>Make admin</button>
       {state.ok && <span className="small" style={{ color: "var(--mint)" }}>{state.ok}</span>}
       {state.error && <span className="err">{state.error}</span>}

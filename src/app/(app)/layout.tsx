@@ -11,7 +11,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
       <header className="topbar">
         <Link href={user.isAdmin ? "/admin" : "/dashboard"} className="brand">
           <img src="/brand/lf_horizontal_bright_transparent.png" alt="Late Founders" />
-          <span className="cc">Command Center</span>
+          <span className="cc">Portal</span>
         </Link>
         <Nav logout={logout} isAdmin={user.isAdmin} unread={user.isAdmin ? 0 : await unreadCount(user.id)} />
       </header>

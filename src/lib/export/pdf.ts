@@ -564,7 +564,7 @@ export async function renderPdf(rd: RenderDoc): Promise<Uint8Array> {
   const doc = await PDFDocument.create();
   doc.setTitle(`${rd.title} · Late Founders`);
   doc.setAuthor("Late Founders");
-  doc.setCreator("Late Founders Command Center");
+  doc.setCreator("Late Founders Portal");
   const fonts = await loadFonts(doc);
   const logoBytes = await loadFile("public/brand/lf_horizontal_bright_transparent.png");
   const logo = logoBytes ? await doc.embedPng(logoBytes) : null;

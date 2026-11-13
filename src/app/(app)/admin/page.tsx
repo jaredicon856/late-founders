@@ -49,7 +49,7 @@ export default async function AdminOverview() {
 
       <div className="kpi-grid">
         <Stat href="/admin/members" label="Members" value={total} note={`${count("new")} joined this week`} />
-        <Stat href="/admin/members?show=active" label="Active this week" value={count("active")} of={total} note="Opened the Command Center in 7 days" />
+        <Stat href="/admin/members?show=active" label="Active this week" value={count("active")} of={total} note="Opened the Portal in 7 days" />
         <Stat href="/admin/members?show=diagnosed" label="Diagnostic done" value={count("diagnosed")} of={total} note="The first step for everyone" />
         <Stat href="/admin/members?sort=progress" label="Overall progress" value={pct} note={`% of all ${TOTAL_TOOLS} tools, every member`} bar={pct} />
         <Stat href="/admin/members?show=today" label="Assistant today" value={messagesToday} note={`Messages in 24h · cap ${limit} each`} />
