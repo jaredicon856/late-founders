@@ -22,6 +22,5 @@ export function resetUsable(r: { expiresAt: Date; usedAt: Date | null } | null, 
 export function appUrl(): string | null {
   const explicit = process.env.APP_URL?.replace(/\/+$/, "");
   if (explicit) return explicit;
-  const vercel = process.env.VERCEL_PROJECT_PRODUCTION_URL;
-  return vercel ? `https://${vercel}` : null;
+  return "https://portal.latefounders.com";
 }
