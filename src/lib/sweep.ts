@@ -186,7 +186,9 @@ async function trademark(name: string, category: string): Promise<NameSweep["tra
   const searchUrl = `https://tmsearch.uspto.gov/search/search-results?query=${encodeURIComponent(name)}`;
   const url = process.env.TRADEMARK_API_URL;
   const key = process.env.TRADEMARK_API_KEY;
-  if (process.env.MARKER_API_USER && process.env.MARKER_API_PASS) return markerTrademark(name, searchUrl);
+  // Marker API stopped answering (every API address redirects to a dead page),
+  // so it is off unless MARKER_API_ENABLED=1; members get the USPTO link.
+  if (process.env.MARKER_API_ENABLED === "1" && process.env.MARKER_API_USER && process.env.MARKER_API_PASS) return markerTrademark(name, searchUrl);
   if (!url || !key) {
     return {
       status: "not_run",
