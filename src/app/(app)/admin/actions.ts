@@ -1,6 +1,6 @@
 "use server";
 
-import { sendResetLink } from "@/lib/mailers";
+import { sendAdminWelcome, sendResetLink } from "@/lib/mailers";
 import { randomBytes } from "node:crypto";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
@@ -60,11 +60,14 @@ export async function setAdmin(_: TeamState, form: FormData): Promise<TeamState>
   const make = str(form.get("make")) === "1";
   if (!email) return { error: "Enter an email." };
   if (!make && email === me.email) return { error: "You can't remove yourself." };
-  const user = await db.user.findUnique({ where: { email }, select: { id: true, name: true } });
+  const user = await db.user.findUnique({ where: { email }, select: { id: true, name: true, role: true } });
   if (!user) return { error: `No account uses ${email}. They need to sign up with the member code first, then you can make them an admin.` };
   await db.user.update({ where: { id: user.id }, data: { role: make ? "admin" : "member" } });
   revalidatePath("/admin", "layout");
-  return { ok: make ? `${user.name} is now an admin.` : `${user.name} is no longer an admin.` };
+  if (!make) return { ok: `${user.name} is no longer an admin.` };
+  // Tell them, unless they already were one.
+  const mail = user.role === "admin" ? { sent: false } : await sendAdminWelcome(email, user.name, me.fullName);
+  return { ok: `${user.name} is now an admin.${mail.sent ? " We've emailed them how to log in." : ""}` };
 }
 
 // An admin changing their own password (the first admin's starts as a shared one).

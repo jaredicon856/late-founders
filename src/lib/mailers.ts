@@ -18,6 +18,18 @@ export async function sendWelcome(to: string, name: string) {
   return sendEmail(to, "Welcome to the Late Founders Portal", plain(heading, paras, button), layout(heading, paras, button));
 }
 
+// Sent when another admin gives someone admin access. Same login, same password.
+export async function sendAdminWelcome(to: string, name: string, byName: string) {
+  const heading = `You're now an admin of the Late Founders Portal, ${name}`;
+  const paras = [
+    `${byName} has given you admin access to the Late Founders Portal.`,
+    "As an admin you can see every member and their progress, reset passwords, build courses, upload files for the team and post announcements to everyone's notification bell.",
+    "You log in with the same email and password you already use. On the login page, choose \"Log in as admin\" to go straight to the admin area.",
+  ];
+  const button = { label: "Open the admin area", url: `${base()}/login?admin=1` };
+  return sendEmail(to, "You're now a Late Founders Portal admin", plain(heading, paras, button), layout(heading, paras, button, "You're getting this because someone on the Late Founders team made you a Portal admin."));
+}
+
 // kind "forgot": the member asked; one hour, limited per hour.
 // kind "admin": sent from the Members page for support; 24 hours.
 export async function sendResetLink(userId: string, kind: "forgot" | "admin"): Promise<{ sent: boolean; error?: string }> {

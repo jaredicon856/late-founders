@@ -35,10 +35,10 @@ const esc = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replac
 
 // One simple branded layout for every email: a heading, paragraphs, one button.
 export function layout(heading: string, paragraphs: string[], button?: { label: string; url: string }, footer?: string): string {
-  return `<!doctype html><html><body style="margin:0;background:#f4f4f2;font-family:Montserrat,Arial,sans-serif;color:#0b0b0d">
-<table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr><td align="center" style="padding:32px 16px">
-<table role="presentation" width="560" cellpadding="0" cellspacing="0" style="max-width:560px;background:#ffffff;border-radius:12px">
-<tr><td style="background:#0b0b0d;border-radius:12px 12px 0 0;padding:20px 28px;color:#73fed2;font-weight:800;letter-spacing:2px;font-size:13px">LATE FOUNDERS PORTAL</td></tr>
+  return `<!doctype html><html><body style="margin:0;background:#ffffff;font-family:Montserrat,Arial,sans-serif;color:#0b0b0d">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#ffffff"><tr><td align="center" style="padding:32px 16px">
+<table role="presentation" width="560" cellpadding="0" cellspacing="0" style="max-width:560px;background:#ffffff">
+<tr><td style="padding:8px 28px 14px;color:#0b0b0d;font-weight:800;letter-spacing:2px;font-size:13px;border-bottom:3px solid #73fed2">LATE FOUNDERS PORTAL</td></tr>
 <tr><td style="padding:28px">
 <h1 style="font-size:22px;margin:0 0 16px">${esc(heading)}</h1>
 ${paragraphs.map((p) => `<p style="font-size:15px;line-height:1.6;margin:0 0 14px">${esc(p)}</p>`).join("")}
