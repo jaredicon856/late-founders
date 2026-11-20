@@ -1,6 +1,8 @@
 "use server";
 
 import { sendAdminWelcome, sendResetLink } from "@/lib/mailers";
+import { emailAnnouncement } from "@/lib/notify";
+import { emailConfigured } from "@/lib/email";
 import { randomBytes } from "node:crypto";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
@@ -226,9 +228,13 @@ export async function postNotice(_: FormState, form: FormData): Promise<FormStat
   const link = str(form.get("link"));
   if (!title) return { error: "Give the announcement a title." };
   if (link && !/^(https:\/\/\S+|\/\S*)$/.test(link)) return { error: "The link must start with https:// or be a page in the app like /courses." };
-  await addNotice({ title, body: str(form.get("body")), link });
+  const body = str(form.get("body"));
+  await addNotice({ title, body, link });
   revalidateMaterials();
-  return { ok: "Posted. Members see it on their bell now." };
+  if (str(form.get("email")) !== "1") return { ok: "Posted. Members see it on their bell now." };
+  if (!emailConfigured()) return { ok: "Posted on the bell. Email isn't set up yet, so nothing was emailed." };
+  const sent = await emailAnnouncement({ title, body, link });
+  return { ok: `Posted on the bell and emailed to ${sent} member${sent === 1 ? "" : "s"}.` };
 }
 
 export async function deleteNotice(form: FormData) {

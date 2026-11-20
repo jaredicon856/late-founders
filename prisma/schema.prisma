@@ -25,6 +25,8 @@ model User {
   disabled      Boolean   @default(false) // turned off by an admin: cannot log in
   lastSeenAt    DateTime? // refreshed at most hourly while they use the app
   noticesSeenAt DateTime? // when they last opened Notifications; newer notices light the bell
+  emailUpdates  Boolean   @default(true) // announcements, reminders and admin alerts by email; off = unsubscribed
+  lastNudgedAt  DateTime? // last "gone quiet" reminder; one per quiet stretch
   createdAt     DateTime  @default(now())
 
   sessions      Session[]

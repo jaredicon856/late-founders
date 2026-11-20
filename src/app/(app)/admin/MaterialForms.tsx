@@ -95,6 +95,9 @@ export function NewNotice() {
         <label htmlFor="n-link">Link (optional)</label>
         <input className="input" id="n-link" name="link" placeholder="https://… or a page like /courses" />
       </div>
+      <label className="small" style={{ display: "flex", gap: 8, alignItems: "center", margin: "4px 0 12px" }}>
+        <input type="checkbox" name="email" value="1" /> Also email it to every member (members who unsubscribed are skipped)
+      </label>
       <div className="admin-action">
         <button className="btn-primary" disabled={pending}>{pending ? "Posting…" : "Post announcement"}</button>
         {state.ok && <span className="small" style={{ color: "var(--mint)" }}>{state.ok}</span>}

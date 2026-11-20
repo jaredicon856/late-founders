@@ -5,6 +5,8 @@ import { revalidatePath } from "next/cache";
 import { createSession, destroySession, getUser, hashPassword, safeNext, verifyPassword } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { sendResetLink, sendWelcome } from "@/lib/mailers";
+import { alertNewMember } from "@/lib/notify";
+import { isTestEmail } from "@/lib/admin";
 import { hashResetToken, resetUsable } from "@/lib/resetToken";
 
 export type AuthState = { error?: string };
@@ -40,6 +42,7 @@ export async function signup(_: AuthState, form: FormData): Promise<AuthState> {
   const user = await db.user.create({ data: { name, lastName, email, passwordHash: await hashPassword(password) } });
   await createSession(user.id);
   await sendWelcome(email, name); // never blocks sign-up: a failed send is only logged
+  if (!isTestEmail(email)) await alertNewMember({ name, lastName, email }).catch(() => {});
   redirect(safeNext(form.get("next")) ?? "/assets/founder-diagnostic");
 }
 

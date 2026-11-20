@@ -108,3 +108,19 @@ describe("Email", () => {
     expect(await sendEmail("a@b.c", "s", "t", "h")).toEqual({ sent: false, error: "Email isn't set up yet." });
   });
 });
+
+describe("Unsubscribe links", () => {
+  it("accept only the token made for that member", async () => {
+    process.env.CRON_SECRET = "test-secret";
+    const { unsubscribeToken, validUnsubscribe, unsubscribeUrl } = await import("@/lib/notify");
+    const t = unsubscribeToken("user1");
+    expect(validUnsubscribe("user1", t)).toBe(true);
+    expect(validUnsubscribe("user2", t)).toBe(false);
+    expect(validUnsubscribe("user1", "nope")).toBe(false);
+    expect(unsubscribeUrl("user1")).toContain("/email/unsubscribe?u=user1&t=");
+  });
+  it("puts an unsubscribe link in update emails", async () => {
+    const { layout } = await import("@/lib/email");
+    expect(layout("Hi", ["x"], undefined, "Footer", "https://portal.latefounders.com/email/unsubscribe?u=1&t=2")).toContain(">Unsubscribe</a>");
+  });
+});
